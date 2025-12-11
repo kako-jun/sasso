@@ -1,0 +1,143 @@
+:root {
+  --border: #0f0f0f;
+  --surface: #fdfdfc;
+  --shadow: #c7c7c7;
+  --accent: #111111;
+  --text: #0d0d0d;
+  --muted: #9a9a9a;
+}
+
+.app-shell {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 16px;
+  background: repeating-linear-gradient(
+      90deg,
+      rgba(0, 0, 0, 0.015) 0,
+      rgba(0, 0, 0, 0.015) 2px,
+      transparent 2px,
+      transparent 8px
+    ),
+    repeating-linear-gradient(
+      0deg,
+      rgba(0, 0, 0, 0.015) 0,
+      rgba(0, 0, 0, 0.015) 2px,
+      transparent 2px,
+      transparent 8px
+    ),
+    #ececec;
+}
+
+.calculator {
+  width: 360px;
+  background: var(--surface);
+  border: 2px solid var(--border);
+  box-shadow: 0 0 0 2px #ffffff, 0 10px 0 0 var(--border), 0 10px 0 2px #ffffff,
+    0 20px 0 0 var(--shadow);
+  padding: 18px;
+  display: grid;
+  gap: 14px;
+}
+
+.calculator__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 12px;
+  letter-spacing: 0.05em;
+  color: var(--text);
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 700;
+}
+
+.brand::before,
+.brand::after {
+  content: '';
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border: 2px solid var(--border);
+  background: #fff;
+  box-shadow: inset -2px -2px 0 var(--shadow);
+}
+
+.display {
+  background: #fff;
+  border: 2px solid var(--border);
+  box-shadow: inset -4px -4px 0 #d9d9d9, inset 4px 4px 0 #f6f6f6;
+  padding: 16px 12px;
+  min-height: 86px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.display__equation {
+  font-size: 14px;
+  color: var(--muted);
+  min-height: 18px;
+  word-break: break-all;
+}
+
+.display__value {
+  font-size: 36px;
+  line-height: 1;
+  text-align: right;
+  color: var(--text);
+  font-weight: 700;
+  text-shadow: 2px 2px 0 rgba(0, 0, 0, 0.08);
+}
+
+.keypad {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: repeat(4, 1fr);
+}
+
+button.key {
+  font: 14px 'Press Start 2P', 'Space Grotesk', system-ui;
+  padding: 14px 10px;
+  border: 2px solid var(--border);
+  background: #fff;
+  box-shadow: inset -4px -4px 0 #dcdcdc, inset 4px 4px 0 #f7f7f7,
+    4px 4px 0 var(--border), 6px 6px 0 #ffffff;
+  text-transform: uppercase;
+  color: var(--text);
+  cursor: pointer;
+  transition: transform 60ms ease, box-shadow 60ms ease;
+}
+
+button.key:active {
+  transform: translate(3px, 3px);
+  box-shadow: inset -2px -2px 0 #dcdcdc, inset 2px 2px 0 #f7f7f7,
+    2px 2px 0 var(--border), 3px 3px 0 #ffffff;
+}
+
+button.key.key--accent {
+  background: #f9f9f9;
+  color: var(--accent);
+}
+
+button.key.key--wide {
+  grid-column: span 2;
+}
+
+.panel {
+  display: grid;
+  gap: 10px;
+}
+
+.helper-text {
+  font-size: 11px;
+  color: var(--muted);
+  text-align: right;
+  letter-spacing: 0.04em;
+}
