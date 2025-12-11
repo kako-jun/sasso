@@ -89,6 +89,11 @@ function App() {
   };
 
   const performOperation = (nextOperator: Exclude<Operator, null>) => {
+    if (waitingForOperand && operator) {
+      setOperator(nextOperator);
+      return;
+    }
+
     const inputValue = parseFloat(display);
 
     if (Number.isNaN(inputValue)) {
