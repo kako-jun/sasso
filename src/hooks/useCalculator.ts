@@ -14,8 +14,10 @@ export interface UseCalculatorReturn {
   clearEntry: () => void;
   inputDigit: (digit: string) => void;
   inputDecimal: () => void;
-  performOperation: (op: Exclude<CalcOperator, null>) => { newDisplay: string } | null;
-  handleEqual: () => { newDisplay: string } | null;
+  performOperation: (
+    op: Exclude<CalcOperator, null>
+  ) => { newDisplay: string; left: number; op: CalcOperator; right: number } | null;
+  handleEqual: () => { newDisplay: string; left: number; op: CalcOperator; right: number } | null;
   resetCalculator: () => void;
 }
 
@@ -68,7 +70,9 @@ export function useCalculator(): UseCalculatorReturn {
   }, [waitingForOperand]);
 
   const performOperation = useCallback(
-    (nextOp: Exclude<CalcOperator, null>): { newDisplay: string } | null => {
+    (
+      nextOp: Exclude<CalcOperator, null>
+    ): { newDisplay: string; left: number; op: CalcOperator; right: number } | null => {
       if (waitingForOperand && operator) {
         setOperator(nextOp);
         return null;
@@ -80,13 +84,14 @@ export function useCalculator(): UseCalculatorReturn {
         return null;
       }
 
-      let newDisplay: string | null = null;
+      let calcResult: { newDisplay: string; left: number; op: CalcOperator; right: number } | null =
+        null;
 
       if (accumulator === null) {
         setAccumulator(inputValue);
       } else if (operator) {
         const result = calculate(accumulator, inputValue, operator);
-        newDisplay = formatDisplay(result);
+        const newDisplay = formatDisplay(result);
         setDisplay(newDisplay);
         setAccumulator(Number.isFinite(result) ? result : null);
 
@@ -95,17 +100,24 @@ export function useCalculator(): UseCalculatorReturn {
           setWaitingForOperand(false);
           return null;
         }
+
+        calcResult = { newDisplay, left: accumulator, op: operator, right: inputValue };
       }
 
       setWaitingForOperand(true);
       setOperator(nextOp);
 
-      return newDisplay ? { newDisplay } : null;
+      return calcResult;
     },
     [accumulator, display, operator, waitingForOperand, resetCalculator]
   );
 
-  const handleEqual = useCallback((): { newDisplay: string } | null => {
+  const handleEqual = useCallback((): {
+    newDisplay: string;
+    left: number;
+    op: CalcOperator;
+    right: number;
+  } | null => {
     const currentValue = parseFloat(display);
 
     // Consecutive = press: repeat last operation
@@ -113,13 +125,16 @@ export function useCalculator(): UseCalculatorReturn {
       const result = calculate(currentValue, lastOperand, lastOperator);
       const newDisplay = formatDisplay(result);
       setDisplay(newDisplay);
-      return { newDisplay };
+      return { newDisplay, left: currentValue, op: lastOperator, right: lastOperand };
     }
 
     if (operator === null || accumulator === null) return null;
 
     const result = calculate(accumulator, currentValue, operator);
     const newDisplay = formatDisplay(result);
+
+    // Save for return before clearing
+    const calcInfo = { newDisplay, left: accumulator, op: operator, right: currentValue };
 
     setLastOperator(operator);
     setLastOperand(currentValue);
@@ -129,7 +144,7 @@ export function useCalculator(): UseCalculatorReturn {
     setOperator(null);
     setWaitingForOperand(false);
 
-    return { newDisplay };
+    return calcInfo;
   }, [accumulator, display, operator, lastOperator, lastOperand]);
 
   return {

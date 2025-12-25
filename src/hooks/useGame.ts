@@ -45,8 +45,9 @@ export interface UseGameReturn {
   setJustPressedEqual: (value: boolean) => void;
   incrementCalculationCount: () => void;
   setCalculationHistory: (value: string) => void;
-  applyElimination: (displayStr: string) => string;
+  applyElimination: (displayStr: string, onDisplayUpdate?: (newDisplay: string) => void) => string;
   checkGameOverState: (displayStr: string) => boolean;
+  syncDisplay: (display: string) => void;
 }
 
 export function useGame(): UseGameReturn {
@@ -80,6 +81,10 @@ export function useGame(): UseGameReturn {
   useEffect(() => {
     calculationCountRef.current = calculationCount;
   }, [calculationCount]);
+
+  const syncDisplay = useCallback((display: string) => {
+    displayRef.current = display;
+  }, []);
 
   const clearCountdown = useCallback(() => {
     if (countdownRef.current) {
@@ -213,11 +218,11 @@ export function useGame(): UseGameReturn {
   );
 
   const applyElimination = useCallback(
-    (displayStr: string): string => {
+    (displayStr: string, onDisplayUpdate?: (newDisplay: string) => void): string => {
       const result = processElimination(displayStr);
 
       if (result.eliminated > 0) {
-        applyEliminationWithAnimation(displayStr);
+        applyEliminationWithAnimation(displayStr, 0, undefined, undefined, onDisplayUpdate);
         return result.result;
       }
 
@@ -353,5 +358,6 @@ export function useGame(): UseGameReturn {
     setCalculationHistory,
     applyElimination,
     checkGameOverState,
+    syncDisplay,
   };
 }

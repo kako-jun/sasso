@@ -1,4 +1,4 @@
-import { useCallback } from 'react';
+import { useCallback, useEffect } from 'react';
 import './App.css';
 import { useCalculator, useGame, useKeyboard } from './hooks';
 import {
@@ -15,6 +15,11 @@ import {
 function App() {
   const calculator = useCalculator();
   const game = useGame();
+
+  // Sync display with game for endless mode predictions
+  useEffect(() => {
+    game.syncDisplay(calculator.display);
+  }, [calculator.display, game]);
 
   const resetAll = useCallback(() => {
     calculator.resetCalculator();
@@ -77,12 +82,14 @@ function App() {
           if (result) {
             game.incrementCalculationCount();
             game.setCalculationHistory(
-              `${calculator.accumulator} ${calculator.operator} ${calculator.lastOperand} = ${result.newDisplay}`
+              `${result.left} ${result.op} ${result.right} = ${result.newDisplay}`
             );
             game.setJustPressedEqual(true);
 
             if (game.gameMode === 'practice' && game.gameStarted) {
-              const afterElimination = game.applyElimination(result.newDisplay);
+              const afterElimination = game.applyElimination(result.newDisplay, (newDisplay) => {
+                calculator.setDisplay(newDisplay);
+              });
               game.checkGameOverState(afterElimination);
             }
           }
@@ -97,7 +104,9 @@ function App() {
             game.incrementCalculationCount();
 
             if (game.gameMode === 'practice' && game.gameStarted) {
-              const afterElimination = game.applyElimination(result.newDisplay);
+              const afterElimination = game.applyElimination(result.newDisplay, (newDisplay) => {
+                calculator.setDisplay(newDisplay);
+              });
               game.checkGameOverState(afterElimination);
             }
           }
