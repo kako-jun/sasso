@@ -1,5 +1,6 @@
 import type { Prediction } from '../gameLogic';
 import { COUNTDOWN_TIME } from '../constants';
+import { operatorToSymbol } from '../utils';
 
 interface PredictionAreaProps {
   prediction: Prediction;
@@ -27,7 +28,7 @@ export function PredictionArea({ prediction, countdown }: PredictionAreaProps) {
         </svg>
       </div>
       <div className="prediction-operation">
-        {prediction.operator}
+        {operatorToSymbol(prediction.operator)}
         {prediction.operand}
       </div>
     </div>

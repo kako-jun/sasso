@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo } from 'react';
 import './App.css';
 import { useCalculator, useGame, useKeyboard } from './hooks';
+import { operatorToSymbol } from './utils';
 import {
   MenuBar,
   Display,
@@ -93,7 +94,7 @@ function App() {
           if (result) {
             game.incrementCalculationCount();
             game.setCalculationHistory(
-              `${result.left} ${result.op} ${result.right} = ${result.newDisplay}`
+              `${result.left} ${operatorToSymbol(result.op ?? '')} ${result.right} = ${result.newDisplay}`
             );
             game.setJustPressedEqual(true);
 

@@ -13,7 +13,7 @@ import {
   getDigitCount,
 } from '../gameLogic';
 import { COUNTDOWN_TIME } from '../constants';
-import { calculate, formatDisplay } from '../utils';
+import { calculate, formatDisplay, operatorToSymbol } from '../utils';
 
 export interface UseGameOptions {
   onDisplayUpdate?: (newDisplay: string) => void;
@@ -253,7 +253,7 @@ export function useGame(options: UseGameOptions = {}): UseGameReturn {
       const newDisplay = formatDisplay(result);
 
       setCalculationHistory(
-        `${currentDisplay} ${prediction.operator} ${prediction.operand} = ${newDisplay}`
+        `${currentDisplay} ${operatorToSymbol(prediction.operator)} ${prediction.operand} = ${newDisplay}`
       );
 
       onDisplayUpdate(newDisplay);

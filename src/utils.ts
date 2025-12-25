@@ -18,3 +18,17 @@ export const formatDisplay = (value: number): string => {
   const str = parseFloat(value.toPrecision(10)).toString();
   return str.length > 10 ? value.toExponential(4) : str;
 };
+
+/** Convert internal operator to display symbol */
+export const operatorToSymbol = (op: string): string => {
+  switch (op) {
+    case '*':
+      return '×';
+    case '/':
+      return '÷';
+    case '-':
+      return '−';
+    default:
+      return op;
+  }
+};
