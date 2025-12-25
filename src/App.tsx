@@ -1,101 +1,75 @@
-import { useMemo, useState } from 'react';
+import { useState, useCallback } from 'react';
 import './App.css';
 
-const keys = [
-  ['AC', '+/-', '%', '÷'],
-  ['7', '8', '9', '×'],
+type Operator = '+' | '-' | '*' | '/' | null;
+
+const KEYS = [
+  ['C', 'E', '=', '*'],
+  ['7', '8', '9', '/'],
   ['4', '5', '6', '-'],
-  ['1', '2', '3', '+'],
-  ['0', '.', '='],
-];
+  ['1', '2', '3'],
+  ['0', '.', '+'],
+] as const;
 
-type Operator = '+' | '-' | '×' | '÷' | null;
-
-const calculate = (left: number, right: number, operator: Exclude<Operator, null>): number => {
-  switch (operator) {
-    case '+':
-      return left + right;
-    case '-':
-      return left - right;
-    case '×':
-      return left * right;
-    case '÷':
-      return right === 0 ? NaN : left / right;
+const calculate = (left: number, right: number, op: Exclude<Operator, null>): number => {
+  switch (op) {
+    case '+': return left + right;
+    case '-': return left - right;
+    case '*': return left * right;
+    case '/': return right === 0 ? NaN : left / right;
   }
 };
 
-const formatNumber = (value: number): string => {
-  if (!Number.isFinite(value)) return 'Error';
-  const rounded = parseFloat(value.toFixed(10));
-  return rounded.toString();
+const formatDisplay = (value: number): string => {
+  if (!Number.isFinite(value)) return 'E';
+  const str = parseFloat(value.toPrecision(10)).toString();
+  return str.length > 10 ? value.toExponential(4) : str;
 };
 
 function App() {
   const [display, setDisplay] = useState('0');
-  const [operator, setOperator] = useState<Operator>(null);
   const [accumulator, setAccumulator] = useState<number | null>(null);
+  const [operator, setOperator] = useState<Operator>(null);
   const [waitingForOperand, setWaitingForOperand] = useState(false);
 
-  const equation = useMemo(() => {
-    if (accumulator === null) return '';
-    return `${formatNumber(accumulator)} ${operator ?? ''}`.trim();
-  }, [accumulator, operator]);
-
-  const clearAll = () => {
+  const clearAll = useCallback(() => {
     setDisplay('0');
-    setOperator(null);
     setAccumulator(null);
+    setOperator(null);
     setWaitingForOperand(false);
-  };
+  }, []);
 
-  const inputDigit = (digit: string) => {
-    setDisplay((prev) => {
+  const clearEntry = useCallback(() => {
+    setDisplay('0');
+  }, []);
+
+  const inputDigit = useCallback((digit: string) => {
+    setDisplay(prev => {
       if (waitingForOperand) {
         setWaitingForOperand(false);
         return digit;
       }
-      if (prev === '0') return digit;
-      return prev + digit;
+      return prev === '0' ? digit : prev + digit;
     });
-  };
+  }, [waitingForOperand]);
 
-  const inputDecimal = () => {
-    setDisplay((prev) => {
+  const inputDecimal = useCallback(() => {
+    setDisplay(prev => {
       if (waitingForOperand) {
         setWaitingForOperand(false);
         return '0.';
       }
-      if (prev.includes('.')) return prev;
-      return `${prev}.`;
+      return prev.includes('.') ? prev : prev + '.';
     });
-  };
+  }, [waitingForOperand]);
 
-  const toggleSign = () => {
-    setDisplay((prev) => {
-      if (prev === '0') return prev;
-      return prev.startsWith('-') ? prev.slice(1) : `-${prev}`;
-    });
-  };
-
-  const inputPercent = () => {
-    const current = parseFloat(display);
-    if (!Number.isNaN(current)) {
-      const nextValue = current / 100;
-      setDisplay(formatNumber(nextValue));
-      if (waitingForOperand && accumulator !== null) {
-        setAccumulator(nextValue);
-      }
-    }
-  };
-
-  const performOperation = (nextOperator: Exclude<Operator, null>) => {
+  const performOperation = useCallback((nextOp: Exclude<Operator, null>) => {
     if (waitingForOperand && operator) {
-      setOperator(nextOperator);
+      setOperator(nextOp);
       return;
     }
 
     const inputValue = parseFloat(display);
-
     if (Number.isNaN(inputValue)) {
       clearAll();
       return;
@@ -105,104 +79,87 @@ function App() {
       setAccumulator(inputValue);
     } else if (operator) {
       const result = calculate(accumulator, inputValue, operator);
-      if (Number.isNaN(result)) {
-        setDisplay('Error');
-        setAccumulator(null);
+      setDisplay(formatDisplay(result));
+      setAccumulator(Number.isFinite(result) ? result : null);
+      if (!Number.isFinite(result)) {
         setOperator(null);
         setWaitingForOperand(false);
         return;
       }
-      const formatted = formatNumber(result);
-      setAccumulator(result);
-      setDisplay(formatted);
     }
 
     setWaitingForOperand(true);
-    setOperator(nextOperator);
-  };
+    setOperator(nextOp);
+  }, [accumulator, display, operator, waitingForOperand, clearAll]);
 
-  const handleEqual = () => {
+  const handleEqual = useCallback(() => {
     if (operator === null || accumulator === null) return;
+
     const inputValue = parseFloat(display);
     const result = calculate(accumulator, inputValue, operator);
-    if (Number.isNaN(result)) {
-      setDisplay('Error');
-      setAccumulator(null);
-      setOperator(null);
-      setWaitingForOperand(false);
-      return;
-    }
-    const formatted = formatNumber(result);
-    setDisplay(formatted);
+
+    setDisplay(formatDisplay(result));
     setAccumulator(null);
     setOperator(null);
     setWaitingForOperand(false);
-  };
+  }, [accumulator, display, operator]);
 
-  const handlePress = (key: string) => {
+  const handleKey = useCallback((key: string) => {
     if (/^\d$/.test(key)) {
       inputDigit(key);
       return;
     }
 
     switch (key) {
-      case '.':
-        inputDecimal();
-        break;
-      case 'AC':
-        clearAll();
-        break;
-      case '+/-':
-        toggleSign();
-        break;
-      case '%':
-        inputPercent();
-        break;
+      case 'C': clearAll(); break;
+      case 'E': clearEntry(); break;
+      case '.': inputDecimal(); break;
+      case '=': handleEqual(); break;
       case '+':
       case '-':
-      case '×':
-      case '÷':
+      case '*':
+      case '/':
         performOperation(key);
         break;
-      case '=':
-        handleEqual();
-        break;
-      default:
-        break;
     }
-  };
+  }, [inputDigit, clearAll, clearEntry, inputDecimal, handleEqual, performOperation]);
 
   return (
-    <div className="app-shell">
-      <main className="calculator" role="application" aria-label="ピクセル電卓">
-        <header className="calculator__header">
-          <span className="brand">PIXEL CALC</span>
-          <span className="helper-text">モダンReact / 1pxデザイン</span>
-        </header>
-        <section className="display" aria-live="polite">
-          <div className="display__equation">{equation}</div>
-          <div className="display__value">{display}</div>
-        </section>
-        <section className="panel">
-          <div className="keypad" role="grid">
-            {keys.flat().map((label, index) => {
-              const isWide = label === '0';
-              const isAccent = ['AC', '+/-', '%', '÷', '×', '-', '+', '='].includes(label);
-              return (
-                <button
-                  type="button"
-                  className={`key${isWide ? ' key--wide' : ''}${isAccent ? ' key--accent' : ''}`}
-                  key={`${label}-${index}`}
-                  onClick={() => handlePress(label)}
-                  role="gridcell"
-                  aria-label={`キー ${label}`}
-                >
-                  {label}
-                </button>
-              );
-            })}
+    <div className="desktop">
+      <header className="menu-bar">
+        <span className="apple-logo"></span>
+        <span className="menu-item">File</span>
+        <span className="menu-item">Edit</span>
+        <span className="menu-item">View</span>
+        <span className="menu-item">Special</span>
+      </header>
+
+      <main className="window">
+        <div className="title-bar">
+          <div className="close-box" />
+          <span className="title">Calculator</span>
+        </div>
+
+        <div className="window-content">
+          <div className="display">{display}</div>
+
+          <div className="keypad">
+            {KEYS.map((row, rowIdx) => (
+              <div className="key-row" key={rowIdx}>
+                {row.map(key => (
+                  <button
+                    key={key}
+                    className={`key ${key === '0' ? 'key--wide' : ''}`}
+                    onClick={() => handleKey(key)}
+                    type="button"
+                  >
+                    {key}
+                  </button>
+                ))}
+              </div>
+            ))}
           </div>
-        </section>
+        </div>
       </main>
     </div>
   );
