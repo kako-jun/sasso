@@ -23,12 +23,16 @@ function App() {
   const [accumulator, setAccumulator] = useState<number | null>(null);
   const [operator, setOperator] = useState<Operator>(null);
   const [waitingForOperand, setWaitingForOperand] = useState(false);
+  const [lastOperator, setLastOperator] = useState<Operator>(null);
+  const [lastOperand, setLastOperand] = useState<number | null>(null);
 
   const clearAll = useCallback(() => {
     setDisplay('0');
     setAccumulator(null);
     setOperator(null);
     setWaitingForOperand(false);
+    setLastOperator(null);
+    setLastOperand(null);
   }, []);
 
   const clearEntry = useCallback(() => {
@@ -85,16 +89,28 @@ function App() {
   }, [accumulator, display, operator, waitingForOperand, clearAll]);
 
   const handleEqual = useCallback(() => {
+    const currentValue = parseFloat(display);
+
+    // 連続=押し: 直前の演算を繰り返す
+    if (operator === null && lastOperator !== null && lastOperand !== null) {
+      const result = calculate(currentValue, lastOperand, lastOperator);
+      setDisplay(formatDisplay(result));
+      return;
+    }
+
     if (operator === null || accumulator === null) return;
 
-    const inputValue = parseFloat(display);
-    const result = calculate(accumulator, inputValue, operator);
+    const result = calculate(accumulator, currentValue, operator);
+
+    // 直前の演算を記憶（連続=用）
+    setLastOperator(operator);
+    setLastOperand(currentValue);
 
     setDisplay(formatDisplay(result));
     setAccumulator(null);
     setOperator(null);
     setWaitingForOperand(false);
-  }, [accumulator, display, operator]);
+  }, [accumulator, display, operator, lastOperator, lastOperand]);
 
   const handleKey = useCallback((key: string) => {
     if (/^\d$/.test(key)) {
