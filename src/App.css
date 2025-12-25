@@ -40,6 +40,36 @@
 
 .menu-item {
   cursor: default;
+  padding: 2px 4px;
+}
+
+.menu-item:hover {
+  background: #000;
+  color: #fff;
+}
+
+.menu-item.active {
+  font-weight: bold;
+}
+
+.menu-spacer {
+  flex: 1;
+}
+
+.status-item {
+  font-size: 11px;
+  padding: 0 4px;
+}
+
+/* GitHub Logo */
+.github-logo {
+  width: 16px;
+  height: 16px;
+  background: #000;
+  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z'/%3E%3C/svg%3E");
+  -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z'/%3E%3C/svg%3E");
+  mask-size: contain;
+  -webkit-mask-size: contain;
 }
 
 /* Window */
@@ -149,4 +179,100 @@
   height: calc(28px * 2 + 8px);
   align-items: flex-end;
   padding-bottom: 6px;
+}
+
+/* Prediction Area */
+.prediction-area {
+  position: absolute;
+  top: calc(50% - 160px);
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: #fff;
+  border: 2px solid #000;
+  padding: 8px 16px;
+  box-shadow: 3px 3px 0 #000;
+  z-index: 5;
+}
+
+.prediction-clock {
+  width: 40px;
+  height: 40px;
+}
+
+.countdown-clock {
+  width: 100%;
+  height: 100%;
+}
+
+.prediction-operation {
+  font-size: 24px;
+  font-weight: bold;
+}
+
+/* Game Over Overlay */
+.game-over-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255, 255, 255, 0.9);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  z-index: 10;
+}
+
+.game-over-message {
+  font-size: 20px;
+  font-weight: bold;
+}
+
+.retry-button {
+  padding: 8px 24px;
+  font-size: 14px;
+  background: #fff;
+  border: 2px solid #000;
+  box-shadow: 2px 2px 0 #000;
+  cursor: pointer;
+}
+
+.retry-button:active {
+  box-shadow: none;
+  transform: translate(2px, 2px);
+}
+
+/* Calculation History */
+.calculation-history {
+  position: absolute;
+  top: calc(50% + 130px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: #fff;
+  border: 1px solid #000;
+  padding: 4px 12px;
+  font-size: 12px;
+}
+
+/* Start Prompt */
+.start-prompt {
+  position: absolute;
+  top: calc(50% - 100px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: #fff;
+  border: 2px solid #000;
+  padding: 12px 24px;
+  font-size: 14px;
+  box-shadow: 3px 3px 0 #000;
+}
+
+/* Window Content relative positioning for overlay */
+.window-content {
+  position: relative;
 }
