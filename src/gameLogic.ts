@@ -66,7 +66,7 @@ export function eliminateMatches(displayStr: string): { result: string; eliminat
   const parts = workStr.split('.');
   let totalEliminated = 0;
 
-  const processedParts = parts.map(part => {
+  const processedParts = parts.map((part) => {
     if (part.length === 0) return part;
 
     let result = '';
@@ -129,22 +129,22 @@ export function processElimination(displayStr: string): EliminationResult {
   let totalEliminated = 0;
   let chains = 0;
 
-  while (true) {
-    const { result, eliminated } = eliminateMatches(current);
+  let eliminated = 1;
+  while (eliminated > 0) {
+    const matchResult = eliminateMatches(current);
+    eliminated = matchResult.eliminated;
 
-    if (eliminated === 0) {
-      break;
+    if (eliminated > 0) {
+      totalEliminated += eliminated;
+      chains++;
+      current = matchResult.result;
     }
-
-    totalEliminated += eliminated;
-    chains++;
-    current = result;
   }
 
   return {
     result: current,
     eliminated: totalEliminated,
-    chains
+    chains,
   };
 }
 
@@ -163,16 +163,11 @@ export function checkOverflow(displayStr: string): boolean {
  */
 export function generateInitialState(): string {
   const now = new Date();
-  const year = now.getFullYear();
-  const month = now.getMonth() + 1;
-  const day = now.getDate();
   const hour = now.getHours();
   const minute = now.getMinutes();
   const second = now.getSeconds();
 
-  // YYYYMMDDHHmmss形式だと14桁で長すぎるので、加工する
-  // 例: 各要素を足し合わせたり、一部だけ使ったり
-  // ここでは HHmmss (6桁) を使用
+  // HHmmss format (6 digits max)
   const timeStr = `${hour}${minute}${second}`;
   return timeStr.replace(/^0+/, '') || '0';
 }
@@ -181,10 +176,10 @@ export function generateInitialState(): string {
  * 攻撃効果の計算結果
  */
 export interface AttackEffect {
-  predictions: Prediction[];      // 生成された予告（複数の場合あり）
-  difficultyLevel: string;        // 難易度レベル名
-  operatorBias: number;           // 掛け算確率の上昇量
-  operandMultiplier: number;      // 数字の大きさ倍率
+  predictions: Prediction[]; // 生成された予告（複数の場合あり）
+  difficultyLevel: string; // 難易度レベル名
+  operatorBias: number; // 掛け算確率の上昇量
+  operandMultiplier: number; // 数字の大きさ倍率
 }
 
 /**
@@ -199,44 +194,44 @@ export interface AttackEffect {
  */
 export function calculateAttackEffect(attackPower: number): {
   difficultyLevel: string;
-  operatorBias: number;      // 掛け算確率の追加 (0-0.4)
+  operatorBias: number; // 掛け算確率の追加 (0-0.4)
   operandMultiplier: number; // 数字の倍率 (1.0-2.0)
-  stackCount: number;        // 予告の数 (1-3)
+  stackCount: number; // 予告の数 (1-3)
 } {
   if (attackPower <= 50) {
     return {
       difficultyLevel: '通常',
       operatorBias: 0,
       operandMultiplier: 1.0,
-      stackCount: 1
+      stackCount: 1,
     };
   } else if (attackPower <= 150) {
     return {
       difficultyLevel: '軽微',
-      operatorBias: 0.10,
+      operatorBias: 0.1,
       operandMultiplier: 1.2,
-      stackCount: 1
+      stackCount: 1,
     };
   } else if (attackPower <= 300) {
     return {
       difficultyLevel: '中程度',
-      operatorBias: 0.20,
+      operatorBias: 0.2,
       operandMultiplier: 1.5,
-      stackCount: 1
+      stackCount: 1,
     };
   } else if (attackPower <= 500) {
     return {
       difficultyLevel: '強力',
-      operatorBias: 0.30,
+      operatorBias: 0.3,
       operandMultiplier: 1.8,
-      stackCount: 2
+      stackCount: 2,
     };
   } else {
     return {
       difficultyLevel: '壊滅的',
-      operatorBias: 0.40,
+      operatorBias: 0.4,
       operandMultiplier: 2.0,
-      stackCount: 3
+      stackCount: 3,
     };
   }
 }
@@ -257,9 +252,9 @@ export function generatePrediction(elapsedTime: number, attackPower = 0): Predic
   // 基本確率: +40%, -30%, *15%, /15%
   // 時間経過と攻撃で掛け算の確率が上がる
   const mulBoost = timeFactor * 0.15 + attackEffect.operatorBias;
-  const addProb = Math.max(0.40 - timeFactor * 0.15 - attackEffect.operatorBias * 0.5, 0.10);
-  const subProb = Math.max(0.30 - timeFactor * 0.05 - attackEffect.operatorBias * 0.3, 0.10);
-  const mulProb = Math.min(0.15 + mulBoost, 0.60);
+  const addProb = Math.max(0.4 - timeFactor * 0.15 - attackEffect.operatorBias * 0.5, 0.1);
+  const subProb = Math.max(0.3 - timeFactor * 0.05 - attackEffect.operatorBias * 0.3, 0.1);
+  const mulProb = Math.min(0.15 + mulBoost, 0.6);
   // divProb = 残り
 
   const rand = Math.random();
@@ -316,7 +311,7 @@ export function generateAttackPredictions(elapsedTime: number, attackPower: numb
     predictions,
     difficultyLevel: effect.difficultyLevel,
     operatorBias: effect.operatorBias,
-    operandMultiplier: effect.operandMultiplier
+    operandMultiplier: effect.operandMultiplier,
   };
 }
 
@@ -333,22 +328,22 @@ export function shouldTriggerAttack(eliminationResult: EliminationResult): boole
  * スコア計算パラメータ
  */
 export interface ScoreParams {
-  eliminated: number;      // 消去された桁数
-  chains: number;          // 連鎖数
-  calculationsSinceLastElimination: number;  // 前回消去からの計算回数（準備ボーナス）
-  digitCountBeforeElimination: number;       // 消去前の桁数（リスクボーナス）
+  eliminated: number; // 消去された桁数
+  chains: number; // 連鎖数
+  calculationsSinceLastElimination: number; // 前回消去からの計算回数（準備ボーナス）
+  digitCountBeforeElimination: number; // 消去前の桁数（リスクボーナス）
 }
 
 /**
  * スコア計算結果
  */
 export interface ScoreResult {
-  totalScore: number;      // 合計スコア
-  baseScore: number;       // 基礎スコア
+  totalScore: number; // 合計スコア
+  baseScore: number; // 基礎スコア
   chainMultiplier: number; // 連鎖倍率
-  prepBonus: number;       // 準備ボーナス倍率
-  riskBonus: number;       // リスクボーナス倍率
-  attackPower: number;     // 攻撃力（= totalScore）
+  prepBonus: number; // 準備ボーナス倍率
+  riskBonus: number; // リスクボーナス倍率
+  attackPower: number; // 攻撃力（= totalScore）
 }
 
 /**
@@ -361,7 +356,8 @@ export interface ScoreResult {
  * - リスクボーナス: 1 + (現在の桁数 ÷ 10), 最大2.0
  */
 export function calculateScore(params: ScoreParams): ScoreResult {
-  const { eliminated, chains, calculationsSinceLastElimination, digitCountBeforeElimination } = params;
+  const { eliminated, chains, calculationsSinceLastElimination, digitCountBeforeElimination } =
+    params;
 
   // 基礎スコア: 消去数 × 10
   const baseScore = eliminated * 10;
@@ -388,7 +384,7 @@ export function calculateScore(params: ScoreParams): ScoreResult {
     chainMultiplier,
     prepBonus,
     riskBonus,
-    attackPower
+    attackPower,
   };
 }
 

@@ -156,7 +156,9 @@
     radial-gradient(circle, #000 1px, transparent 1px),
     radial-gradient(circle, #000 1px, transparent 1px);
   background-size: 4px 4px;
-  background-position: 0 0, 2px 2px;
+  background-position:
+    0 0,
+    2px 2px;
 }
 
 /* Display */
@@ -184,11 +186,20 @@
 }
 
 @keyframes flash-eliminate {
-  0%, 20%, 40%, 60%, 80% {
+  0%,
+  20%,
+  40%,
+  60%,
+  80% {
     background: #000;
     color: #fff;
   }
-  10%, 30%, 50%, 70%, 90%, 100% {
+  10%,
+  30%,
+  50%,
+  70%,
+  90%,
+  100% {
     background: transparent;
     color: #000;
   }
