@@ -15,6 +15,10 @@ import {
 import { COUNTDOWN_TIME } from '../constants';
 import { calculate, formatDisplay } from '../utils';
 
+export interface UseGameOptions {
+  onDisplayUpdate?: (newDisplay: string) => void;
+}
+
 export interface UseGameReturn {
   // Game state
   gameMode: GameMode;
@@ -50,7 +54,8 @@ export interface UseGameReturn {
   syncDisplay: (display: string) => void;
 }
 
-export function useGame(): UseGameReturn {
+export function useGame(options: UseGameOptions = {}): UseGameReturn {
+  const { onDisplayUpdate: externalDisplayUpdate } = options;
   // Game state
   const [gameMode, setGameMode] = useState<GameMode>('calculator');
   const [gameStarted, setGameStarted] = useState(false);
@@ -77,6 +82,11 @@ export function useGame(): UseGameReturn {
   const countdownRef = useRef<number | null>(null);
   const displayRef = useRef('0');
   const calculationCountRef = useRef(0);
+  const externalDisplayUpdateRef = useRef(externalDisplayUpdate);
+
+  useEffect(() => {
+    externalDisplayUpdateRef.current = externalDisplayUpdate;
+  }, [externalDisplayUpdate]);
 
   useEffect(() => {
     calculationCountRef.current = calculationCount;
@@ -323,6 +333,8 @@ export function useGame(): UseGameReturn {
         if (prev <= 100) {
           applyPrediction(displayRef.current, (newDisplay) => {
             displayRef.current = newDisplay;
+            // Also update external display (calculator)
+            externalDisplayUpdateRef.current?.(newDisplay);
           });
           return COUNTDOWN_TIME;
         }

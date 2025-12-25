@@ -1,4 +1,4 @@
-import { useCallback, useEffect } from 'react';
+import { useCallback, useEffect, useMemo } from 'react';
 import './App.css';
 import { useCalculator, useGame, useKeyboard } from './hooks';
 import {
@@ -14,7 +14,18 @@ import {
 
 function App() {
   const calculator = useCalculator();
-  const game = useGame();
+
+  // Memoize the callback to avoid unnecessary re-renders
+  const gameOptions = useMemo(
+    () => ({
+      onDisplayUpdate: (newDisplay: string) => {
+        calculator.setDisplay(newDisplay);
+      },
+    }),
+    [calculator]
+  );
+
+  const game = useGame(gameOptions);
 
   // Sync display with game for endless mode predictions
   useEffect(() => {
