@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import './App.css';
 
 type Operator = '+' | '-' | '*' | '/' | null;
@@ -115,6 +115,27 @@ function App() {
         break;
     }
   }, [inputDigit, clearAll, clearEntry, inputDecimal, handleEqual, performOperation]);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key >= '0' && e.key <= '9') {
+        handleKey(e.key);
+      } else if (e.key === '+' || e.key === '-' || e.key === '*' || e.key === '/') {
+        handleKey(e.key);
+      } else if (e.key === 'Enter' || e.key === '=') {
+        handleKey('=');
+      } else if (e.key === 'Escape' || e.key === 'c' || e.key === 'C') {
+        handleKey('C');
+      } else if (e.key === 'Backspace' || e.key === 'Delete' || e.key === 'e' || e.key === 'E') {
+        handleKey('E');
+      } else if (e.key === '.') {
+        handleKey('.');
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [handleKey]);
 
   return (
     <div className="desktop">
