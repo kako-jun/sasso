@@ -3,14 +3,6 @@ import './App.css';
 
 type Operator = '+' | '-' | '*' | '/' | null;
 
-const KEYS = [
-  ['C', 'E', '=', '*'],
-  ['7', '8', '9', '/'],
-  ['4', '5', '6', '-'],
-  ['1', '2', '3'],
-  ['0', '.', '+'],
-] as const;
-
 const calculate = (left: number, right: number, op: Exclude<Operator, null>): number => {
   switch (op) {
     case '+': return left + right;
@@ -144,20 +136,28 @@ function App() {
           <div className="display">{display}</div>
 
           <div className="keypad">
-            {KEYS.map((row, rowIdx) => (
-              <div className="key-row" key={rowIdx}>
-                {row.map(key => (
-                  <button
-                    key={key}
-                    className={`key ${key === '0' ? 'key--wide' : ''}`}
-                    onClick={() => handleKey(key)}
-                    type="button"
-                  >
-                    {key}
-                  </button>
-                ))}
-              </div>
-            ))}
+            <button className="key" onClick={() => handleKey('C')} type="button">C</button>
+            <button className="key" onClick={() => handleKey('E')} type="button">E</button>
+            <button className="key" onClick={() => handleKey('=')} type="button">=</button>
+            <button className="key" onClick={() => handleKey('*')} type="button">*</button>
+
+            <button className="key" onClick={() => handleKey('7')} type="button">7</button>
+            <button className="key" onClick={() => handleKey('8')} type="button">8</button>
+            <button className="key" onClick={() => handleKey('9')} type="button">9</button>
+            <button className="key" onClick={() => handleKey('/')} type="button">/</button>
+
+            <button className="key" onClick={() => handleKey('4')} type="button">4</button>
+            <button className="key" onClick={() => handleKey('5')} type="button">5</button>
+            <button className="key" onClick={() => handleKey('6')} type="button">6</button>
+            <button className="key" onClick={() => handleKey('-')} type="button">-</button>
+
+            <button className="key" onClick={() => handleKey('1')} type="button">1</button>
+            <button className="key" onClick={() => handleKey('2')} type="button">2</button>
+            <button className="key" onClick={() => handleKey('3')} type="button">3</button>
+            <button className="key key--tall" onClick={() => handleKey('+')} type="button">+</button>
+
+            <button className="key key--wide" onClick={() => handleKey('0')} type="button">0</button>
+            <button className="key" onClick={() => handleKey('.')} type="button">.</button>
           </div>
         </div>
       </main>
