@@ -11,9 +11,6 @@ html {
   font-family: 'Chicago', 'Geneva', system-ui, sans-serif;
   font-size: 12px;
   line-height: 1.2;
-  -webkit-font-smoothing: none;
-  -moz-osx-font-smoothing: unset;
-  text-rendering: optimizeSpeed;
 }
 
 body {

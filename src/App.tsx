@@ -129,7 +129,7 @@ function App() {
       <main className="window">
         <div className="title-bar">
           <div className="close-box" />
-          <span className="title">Calculator</span>
+          <span className="title">Sasso</span>
         </div>
 
         <div className="window-content">
