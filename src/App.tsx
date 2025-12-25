@@ -559,7 +559,9 @@ function App() {
   return (
     <div className="desktop">
       <header className="menu-bar">
-        <span className="github-logo"></span>
+        <a href="https://github.com/kako-jun/sasso" target="_blank" rel="noopener noreferrer">
+          <span className="github-logo"></span>
+        </a>
         <span
           className={`menu-item ${gameMode === 'calculator' ? 'active' : ''}`}
           onClick={() => changeGameMode('calculator')}

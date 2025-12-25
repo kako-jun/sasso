@@ -89,6 +89,11 @@
 }
 
 /* GitHub Logo */
+.menu-bar a {
+  display: flex;
+  align-items: center;
+}
+
 .github-logo {
   width: 16px;
   height: 16px;
