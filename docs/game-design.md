@@ -1,173 +1,209 @@
 # Sasso - Game Design Document
 
-## ゲーム概要
+## Game Overview
 
-Sassoは電卓をモチーフにした頭脳パズルゲーム。
-「サッソ」と発音する。メンサ会員でないと意味を理解できない言葉。
+Sasso is a puzzle game based on a calculator.
+Pronounced "Sasso". A term only Mensa members can understand.
 
-## コンセプト
+## Concept
 
-電卓の四則演算を駆使して、同じ数字を隣り合わせに作り、消していくパズルゲーム。
+A puzzle game where you use the four arithmetic operations to create adjacent identical digits and eliminate them.
 
-## 基本ルール
+## Basic Rules
 
-### 重力と詰め方向
-- 重力は右端にある
-- 消えた後、残った数字は右に詰められる（右に落ちていく感じ）
+### Gravity and Compression Direction
+- Gravity pulls to the right
+- After elimination, remaining digits are compressed rightward (fall to the right)
 
-### 消去ルール
-- 同じ数字が隣り合ったら消える
-- 消えた後、残った数字が右に詰められて連鎖が発生する可能性あり
+### Elimination Rules
+- Adjacent identical digits are eliminated
+- After elimination, remaining digits compress right, potentially causing chain reactions
 
-### ゲームオーバー条件
-- 桁が増えて左端に到達したらゲームオーバー（桁溢れ）
+### Game Over Conditions
+- Digit overflow (exceeding 10 digits) = Game Over
 
-### 降伏（ミスによる即敗北）
-- =の後に数字を押す → 降伏（ミス操作）
-  - =の後は演算子を押して計算を続けるべき
-- CやEを押す → 降伏
-  - これらのボタンはゲーム中は使えない（飾りまたは降伏ボタン）
+### Surrender (Immediate Loss)
+- Pressing a digit after = → Surrender (misoperation)
+  - After =, you should press an operator to continue calculation
+- Pressing C or E → Surrender
+  - These buttons are decorative or surrender buttons during gameplay
 
-### =ボタンの連続押し
-- =を押すたびに直前の計算を繰り返す（電卓の標準挙動）
-- 例: `5 + 3 = 8` → `= 11` → `= 14`（+3が繰り返される）
-- ゲームにおいては連続=で素早く数値を調整する戦略が可能
+### Consecutive = Presses
+- Pressing = repeatedly repeats the previous calculation (standard calculator behavior)
+- Example: `5 + 3 = 8` → `= 11` → `= 14` (+3 is repeated)
+- In game, consecutive = can be used strategically to quickly adjust values
 
-### 数値ルール
-- マイナス値: あり
-- 小数点: 隣り合っても消去対象にならない
-  - 例: 「3.3」は同じ数字が隣り合っているが消えない
-  - 小数点は消去判定において「壁」のように機能する
+### Number Rules
+- Negative values: Allowed
+- Decimal point: Does not trigger elimination even when adjacent
+  - Example: "3.3" has identical digits adjacent but won't eliminate
+  - Decimal point acts as a "wall" in elimination logic
 
-### 初期状態
-- ゲーム起動時の年月日時分秒から初期値を生成
-- 例: 2025年12月25日 14:30:45 → 「20251225143045」または加工した値
-- 毎回異なる初期状態でゲームが始まる
+### Initial State
+- Generated from date/time at game start
+- Example: 2025/12/25 14:30:45 → "143045" or processed value
+- Different initial state each game
 
-### ゲーム開始タイミング
-- どちらかのプレイヤーが何かボタンを押した瞬間にゲーム開始
-- 押した瞬間の時刻が初期値の生成に使われる
-- ボタンを押すと同時に最初の予告が出現し、4.2秒のカウントダウン開始
-- 最初の1押しはゲーム開始のトリガー（どのボタンでもOK、降伏にならない）
-- 押したボタンはそのまま最初の入力として扱われる
-  - 例: 「1」を押して開始 → 「1」がすでに入力された状態でゲーム開始
-  - 例: 「+」を押して開始 → 演算子が入力された状態でゲーム開始
-  - 例: 「C」を押して開始 → クリアされた状態（初期値が消える）でゲーム開始
-- ゆっくり初期値を眺める猶予はない
+### Game Start Timing
+- Game starts the moment any button is pressed
+- The button pressed triggers the first input
+  - Example: Press "1" to start → Game starts with "1" already input
+  - Example: Press "+" to start → Operator is already input
+  - Example: Press "C" to start → Initial value is cleared
+- No time to leisurely observe the initial value
 
-### 配牌アルゴリズム（予告で出す演算）
-- 掛け算ばかりだと攻撃と区別がつかなくなるため、バランスが重要
+## Scoring System
 
-#### 演算子の出現確率（初期値）
-- 足し算: 40%
-- 引き算: 30%
-- 掛け算: 15%
-- 割り算: 15%
+### Score Formula
 
-#### 数字の範囲（演算子別）
-- 足し算: 大きめ（桁が増えにくいため）
-- 引き算: 中程度
-- 掛け算: 小さめ（桁が急増するのを防ぐ）
-- 割り算: 小さめ（小数点が出やすいため）
+```
+Score = Base × Chain × Prep × Risk
+```
 
-#### 難易度の進行
-- 時間経過で掛け算の確率を徐々に上げる
-- 数字の範囲も徐々に広げる
+| Component | Calculation | Range |
+|-----------|-------------|-------|
+| Base | Eliminated digits × 10 | - |
+| Chain | Chain count | 1.0+ |
+| Prep | 1 + (calculations since last elimination × 0.2) | 1.0-3.0 |
+| Risk | 1 + (digit count before elimination ÷ 10) | 1.0-2.0 |
 
-## ゲームモード
+### Score Examples
 
-### 練習モード
+- Simple 2-digit elimination (3 digits, 1 calculation):
+  `2×10×1×1.2×1.3 = 31 points`
 
-- お題なし、時間制限なし
-- 自分で自由に数字を打って消すだけ
-- ルールや消去の仕組みを理解するためのモード
-- スコアは記録されない（または別枠）
+- 5 calculations prep, 2-digit elimination (7 digits):
+  `2×10×1×2.0×1.7 = 68 points`
 
-### 1人用エンドレスモード
+- 2-chain 4-digit elimination (9 digits, 8 calculations prep):
+  `4×10×2×2.6×1.9 = 395 points`
 
-落ちものパズル形式:
-- 「4.2秒後に ×7 が来る」のように、演算子と数字の両方が予告される
-- 予告時間: 4.2秒
-- プレイヤーは予告を見て、待ち構える数字を自分で打って準備する
-- 予告された演算が実行され、結果に対して消去判定が行われる
-- 例: 現在「12」で「×7」が予告 → 84になる → 隣り合う8と4を作っておけば消せる
+### Attack Power
+- Attack Power = Score
+- Higher score = stronger attack on opponent
 
-### 2人対戦モード
+## Attack Effect Algorithm
 
-- 桁溢れさせたら勝ち
+Attack power affects opponent's next prediction difficulty:
 
-#### 攻撃システム
-- 攻撃発動条件:
-  - 3つ以上の同じ数字を同時に消す
-  - 2連鎖以上を発生させる
-- 攻撃効果: 相手の次の計算が「掛け算」に強制される
-- 掛け算は数字が大きくなりやすいため、攻撃として効果的
+| Attack Power | Difficulty | Multiply Prob | Number Scale | Predictions |
+|--------------|------------|---------------|--------------|-------------|
+| 0-50 | Normal | +0% | 1.0x | 1 |
+| 51-150 | Mild | +10% | 1.2x | 1 |
+| 151-300 | Medium | +20% | 1.5x | 1 |
+| 301-500 | Strong | +30% | 1.8x | 2 |
+| 501+ | Devastating | +40% | 2.0x | 3 |
 
-#### 攻撃の激しさ
-- 攻撃の強さは、連鎖が起きる前にプレイヤーが使った計算によって変化
-- 例: 掛け算や割り算を駆使して準備した場合はより強力な攻撃
-- 電卓の下にそのターンで使った計算式を表示（攻撃強度の可視化）
+Effects:
+- **Multiply Prob**: Increases chance of multiplication (causes digit growth)
+- **Number Scale**: Larger operands
+- **Predictions**: Multiple predictions queued at once
 
-## スコアリング（案）
+## Game Modes
 
-### 基本点
-- 2つ消し: 基本点
-- 3つ以上消し: ボーナス点
-- 連鎖: 連鎖数に応じてボーナス
+### Practice Mode
+- No predictions, no time limit
+- Free play to understand elimination mechanics
+- Score is tracked
 
-### 演算による点数調整
-- 足し算・引き算: 点数低め（調整が簡単なため）
-- 掛け算・割り算: 点数高め（難易度が高いため）
+### 1-Player Endless Mode
 
-## 検討事項
+Falling puzzle format:
+- "×7 coming in 4.2 seconds" - both operator and number are predicted
+- Prediction time: 4.2 seconds
+- Player prepares by inputting numbers to set up eliminations
+- Predicted operation executes, elimination check occurs
+- Example: Current "12", "×7" predicted → becomes 84 → prepare adjacent 8 and 4 to eliminate
 
-- [x] 連鎖の詰め方向 → 右詰め（重力は右端）
-- [x] ターン制か、リアルタイムか → 落ちものパズル形式（予告＋待機時間）
-- [x] 予告される演算の種類 → 演算子と数字の両方（例: ×7）
-- [x] 予告の表示時間 → 4.2秒
-- [x] 小数点を含む数値の詳細な扱い → 「3.3」のような場合も消えない（小数点が壁）
-- [x] 2人対戦時の攻撃発動条件 → 3つ以上同時消し or 2連鎖以上
-- [x] 対戦時の画面構成 → 横画面で左右に電卓、大きさは対等
-- [x] 初期状態 → 起動時の年月日時分秒から生成（毎回異なる）
-- [x] 配牌アルゴリズム → +40%/-30%/×15%/÷15%、数字は演算子別、時間で難化
-- [x] 降伏条件 → C/E押下、=の後に数字押下で即敗北
-- [x] ゲーム開始時のC/E押下 → 開始時のみ降伏にならない（安全に開始可能）
+### 2-Player Battle Mode
 
-## 画面設計
+- Cause opponent's digit overflow to win
 
-### 基本レイアウト
-- スマホの縦長画面を基本とする
-- 電卓自体が縦長なのでちょうど良い
+#### Attack System
+- Attack trigger conditions:
+  - Eliminate 3+ identical digits simultaneously
+  - Trigger 2+ chain reactions
+- Attack effect: Makes opponent's next prediction harder (see Attack Effect Algorithm)
 
-### メニューバー（上部・Classic MacOS風）
+## Prediction Algorithm (Tile Distribution)
 
-左側（実際のメニュー）:
-- アイコン: GitHub猫のSVG
-- ゲームモード選択
-- リセット
-- その他の設定
+### Operator Probability (Initial)
+- Addition: 40%
+- Subtraction: 30%
+- Multiplication: 15%
+- Division: 15%
 
-右側（ステータス表示）:
-- 計算回数
-- 点数
-- その他のゲーム情報
+### Number Range (by Operator)
+- Addition: Large (digits don't grow quickly)
+- Subtraction: Medium
+- Multiplication: Small (prevent rapid digit growth)
+- Division: Small (decimals appear easily)
 
-### 予告表示エリア
-- 電卓ウィンドウの少し上に配置
-- 「×7」のような次に来る演算を表示
-- カウントダウンはアナログ時計風（数字だとゲームの数字とややこしい）
+### Difficulty Progression
+- Multiplication probability gradually increases over time
+- Number ranges gradually expand
 
-### 計算式表示エリア
-- 電卓ウィンドウの下に配置
-- そのターンでプレイヤーが打った計算式を表示
-- 対戦モードでは攻撃強度の可視化に使用
+## Screen Layout
 
-### 対戦モード画面（横画面）
-- 左右に電卓を配置、大きさは対等
-- 各電卓の上に予告表示エリア
-- 各電卓の下に計算式表示エリア
-- 中央または上部にゲーム情報（スコア、攻撃ゲージなど）
+### Basic Layout
+- Vertical smartphone screen as base
+- Calculator itself is vertical, fits well
 
-## 今後の開発方針
+### Element Positioning (Non-overlapping during gameplay)
+- Prediction area: Above calculator
+- Score area: Below prediction, above calculator
+- Calculator: Center
+- Calculation history: Below calculator
 
-ルールは試行錯誤で決定していく。
+### Overlapping Elements (OK)
+- Start prompt: Overlaps calculator (game hasn't started)
+- Game over overlay: Inside calculator window
+
+### Menu Bar (Top - Classic MacOS style)
+
+Left side:
+- GitHub logo
+- Game mode selection (Calculator, Practice, Endless)
+
+### Score Display Area
+- Above calculator window
+- Shows: Score, Chains
+- Score breakdown: `+X = Base×Chain×Prep×Risk`
+- Labels: (Base×Chain×Prep×Risk)
+
+### Prediction Display Area
+- Above score area
+- Shows next operation (e.g., "×7")
+- Countdown as analog clock (digits would be confusing)
+
+### Calculation History Area
+- Below calculator window
+- Shows calculations made this turn
+- Operators displayed in bold
+- Max width with word-break for long expressions
+
+### Battle Mode Screen (Landscape)
+- Calculators left and right, equal size
+- Prediction area above each calculator
+- Score area above each calculator
+- Calculation history below each calculator
+
+## Design Decisions (Resolved)
+
+- [x] Chain compression direction → Right (gravity on right)
+- [x] Turn-based or real-time → Falling puzzle format (prediction + wait time)
+- [x] What gets predicted → Both operator and number (e.g., ×7)
+- [x] Prediction display time → 4.2 seconds
+- [x] Decimal number handling → "3.3" doesn't eliminate (decimal is wall)
+- [x] Battle mode attack conditions → 3+ simultaneous elimination or 2+ chains
+- [x] Battle screen layout → Landscape, left/right calculators, equal size
+- [x] Initial state → Generated from date/time (different each game)
+- [x] Tile distribution algorithm → +40%/-30%/×15%/÷15%, numbers by operator, difficulty over time
+- [x] Surrender conditions → C/E press, digit after = press = immediate loss
+- [x] C/E at game start → Doesn't count as surrender (safe start)
+- [x] Score system → Base×Chain×Prep×Risk formula
+- [x] Attack algorithm → Score-based difficulty scaling
+
+## Future Development
+
+Rules will be determined through trial and error.

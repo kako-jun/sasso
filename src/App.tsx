@@ -4,11 +4,15 @@ import {
   type GameMode,
   type Operator as GameOperator,
   type Prediction,
+  type ScoreResult,
   processElimination,
   checkOverflow,
   generateInitialState,
   generatePrediction,
-  shouldTriggerAttack
+  shouldTriggerAttack,
+  findEliminationIndices,
+  calculateScore,
+  getDigitCount
 } from './gameLogic';
 
 type CalcOperator = '+' | '-' | '*' | '/' | null;
@@ -26,6 +30,22 @@ const formatDisplay = (value: number): string => {
   if (!Number.isFinite(value)) return 'E';
   const str = parseFloat(value.toPrecision(10)).toString();
   return str.length > 10 ? value.toExponential(4) : str;
+};
+
+// 計算履歴の演算子を太字にする
+const FormatHistory = ({ text }: { text: string }) => {
+  const parts = text.split(/([+\-×÷*/=])/g);
+  return (
+    <>
+      {parts.map((part, i) =>
+        /[+\-×÷*/=]/.test(part) ? (
+          <span key={i} className="op-bold">{part}</span>
+        ) : (
+          <span key={i}>{part}</span>
+        )
+      )}
+    </>
+  );
 };
 
 const COUNTDOWN_TIME = 4200; // 4.2秒
@@ -54,9 +74,15 @@ function App() {
   // スコア
   const [score, setScore] = useState(0);
   const [chains, setChains] = useState(0);
+  const [calculationCount, setCalculationCount] = useState(0); // 準備ボーナス用
+  const [lastScoreBreakdown, setLastScoreBreakdown] = useState<ScoreResult | null>(null);
 
   // 計算式表示用
   const [calculationHistory, setCalculationHistory] = useState<string>('');
+
+  // 消去アニメーション用
+  const [eliminatingIndices, setEliminatingIndices] = useState<number[]>([]);
+  const [isAnimating, setIsAnimating] = useState(false);
 
   const countdownRef = useRef<number | null>(null);
 
@@ -77,7 +103,11 @@ function App() {
     setGameStartTime(null);
     setScore(0);
     setChains(0);
+    setCalculationCount(0);
+    setLastScoreBreakdown(null);
     setCalculationHistory('');
+    setEliminatingIndices([]);
+    setIsAnimating(false);
 
     if (countdownRef.current) {
       clearInterval(countdownRef.current);
@@ -127,78 +157,174 @@ function App() {
     }
   }, []);
 
-  // 消去処理を実行
-  const applyElimination = useCallback((displayStr: string) => {
-    const result = processElimination(displayStr);
+  // アニメーション付き消去処理を実行
+  const applyEliminationWithAnimation = useCallback((
+    displayStr: string,
+    chainCount = 0,
+    initialDigitCount?: number,
+    initialCalcCount?: number
+  ) => {
+    const indices = findEliminationIndices(displayStr);
 
-    if (result.eliminated > 0) {
-      setDisplay(result.result);
-      setChains(result.chains);
+    if (indices.length > 0) {
+      // 最初の消去時の桁数と計算回数を記録
+      const digitCountBeforeElimination = initialDigitCount ?? getDigitCount(displayStr);
+      const calcCount = initialCalcCount ?? calculationCountRef.current;
 
-      // スコア計算
-      let points = result.eliminated * 10;
-      if (result.chains > 1) {
-        points *= result.chains; // 連鎖ボーナス
-      }
-      setScore(prev => prev + points);
+      // 消去アニメーション開始
+      setEliminatingIndices(indices);
+      setIsAnimating(true);
 
-      // 攻撃判定（将来の2人対戦用）
-      if (shouldTriggerAttack(result)) {
-        // TODO: 攻撃処理
-      }
+      // アニメーション後に実際に消去
+      setTimeout(() => {
+        const result = processElimination(displayStr);
+        setDisplay(result.result);
+        setEliminatingIndices([]);
+        setIsAnimating(false);
 
-      return result.result;
+        const newChainCount = chainCount + 1;
+        setChains(newChainCount);
+
+        // 新しいスコア計算システム
+        const scoreResult = calculateScore({
+          eliminated: result.eliminated,
+          chains: newChainCount,
+          calculationsSinceLastElimination: calcCount,
+          digitCountBeforeElimination
+        });
+
+        setScore(prev => prev + scoreResult.totalScore);
+        setLastScoreBreakdown(scoreResult);
+
+        // 準備ボーナスカウンターをリセット
+        setCalculationCount(0);
+
+        // 攻撃判定（将来の2人対戦用）
+        if (shouldTriggerAttack(result)) {
+          // TODO: 攻撃処理 (attackPower = scoreResult.attackPower)
+          console.log('Attack triggered! Power:', scoreResult.attackPower);
+        }
+
+        // 連鎖チェック（少し遅延を入れて次の消去をチェック）
+        setTimeout(() => {
+          const nextIndices = findEliminationIndices(result.result);
+          if (nextIndices.length > 0) {
+            // 連鎖では最初の桁数と計算回数を引き継ぐ
+            applyEliminationWithAnimation(result.result, newChainCount, digitCountBeforeElimination, calcCount);
+          }
+        }, 100);
+      }, 400); // 400ms のアニメーション時間
+
+      return displayStr; // アニメーション中なので元の値を返す
     }
 
     return displayStr;
   }, []);
 
+  // 消去処理を実行（アニメーションなし版 - 互換性用）
+  const applyElimination = useCallback((displayStr: string) => {
+    const result = processElimination(displayStr);
+
+    if (result.eliminated > 0) {
+      // アニメーション付きで処理
+      applyEliminationWithAnimation(displayStr);
+      return result.result;
+    }
+
+    return displayStr;
+  }, [applyEliminationWithAnimation]);
+
   // 現在の状態を保持するref（タイマーから参照用）
   const displayRef = useRef(display);
   const predictionRef = useRef(prediction);
   const gameStartTimeRef = useRef(gameStartTime);
+  const calculationCountRef = useRef(calculationCount);
 
   useEffect(() => { displayRef.current = display; }, [display]);
   useEffect(() => { predictionRef.current = prediction; }, [prediction]);
   useEffect(() => { gameStartTimeRef.current = gameStartTime; }, [gameStartTime]);
+  useEffect(() => { calculationCountRef.current = calculationCount; }, [calculationCount]);
 
   // 予告された演算を実行
   const applyPrediction = useCallback(() => {
     const currentPrediction = predictionRef.current;
     const currentDisplay = displayRef.current;
     const startTime = gameStartTimeRef.current;
+    const currentCalcCount = calculationCountRef.current;
 
     if (!currentPrediction) return;
 
+    // 予告計算も計算回数としてカウント
+    setCalculationCount(prev => prev + 1);
+
+    const digitCountBeforeCalc = getDigitCount(currentDisplay);
     const currentValue = parseFloat(currentDisplay);
     const result = calculate(currentValue, currentPrediction.operand, currentPrediction.operator);
     const newDisplay = formatDisplay(result);
 
     setCalculationHistory(`${currentDisplay} ${currentPrediction.operator} ${currentPrediction.operand} = ${newDisplay}`);
 
-    // 消去処理
-    const eliminationResult = processElimination(newDisplay);
-    const finalDisplay = eliminationResult.eliminated > 0 ? eliminationResult.result : newDisplay;
+    // まず計算結果を表示
+    setDisplay(newDisplay);
 
-    setDisplay(finalDisplay);
+    // 消去があれば、アニメーション付きで処理
+    const indices = findEliminationIndices(newDisplay);
+    if (indices.length > 0) {
+      const digitCountBeforeElimination = getDigitCount(newDisplay);
 
-    if (eliminationResult.eliminated > 0) {
-      setChains(eliminationResult.chains);
-      let points = eliminationResult.eliminated * 10;
-      if (eliminationResult.chains > 1) {
-        points *= eliminationResult.chains;
+      // アニメーション開始
+      setEliminatingIndices(indices);
+      setIsAnimating(true);
+
+      setTimeout(() => {
+        const eliminationResult = processElimination(newDisplay);
+        const finalDisplay = eliminationResult.result;
+
+        setDisplay(finalDisplay);
+        setEliminatingIndices([]);
+        setIsAnimating(false);
+
+        setChains(eliminationResult.chains);
+
+        // 新しいスコア計算
+        const scoreResult = calculateScore({
+          eliminated: eliminationResult.eliminated,
+          chains: eliminationResult.chains,
+          calculationsSinceLastElimination: currentCalcCount + 1,
+          digitCountBeforeElimination
+        });
+        setScore(prev => prev + scoreResult.totalScore);
+        setLastScoreBreakdown(scoreResult);
+        setCalculationCount(0); // リセット
+
+        // 桁溢れチェック
+        if (checkOverflow(finalDisplay)) {
+          setIsGameOver(true);
+          if (countdownRef.current) {
+            clearInterval(countdownRef.current);
+            countdownRef.current = null;
+          }
+          return;
+        }
+
+        // 連鎖チェック
+        setTimeout(() => {
+          const nextIndices = findEliminationIndices(finalDisplay);
+          if (nextIndices.length > 0) {
+            applyEliminationWithAnimation(finalDisplay, eliminationResult.chains, digitCountBeforeElimination, currentCalcCount + 1);
+          }
+        }, 100);
+      }, 400);
+    } else {
+      // 桁溢れチェック
+      if (checkOverflow(newDisplay)) {
+        setIsGameOver(true);
+        if (countdownRef.current) {
+          clearInterval(countdownRef.current);
+          countdownRef.current = null;
+        }
+        return;
       }
-      setScore(prev => prev + points);
-    }
-
-    // 桁溢れチェック
-    if (checkOverflow(finalDisplay)) {
-      setIsGameOver(true);
-      if (countdownRef.current) {
-        clearInterval(countdownRef.current);
-        countdownRef.current = null;
-      }
-      return;
     }
 
     // 次の予告を生成
@@ -207,7 +333,7 @@ function App() {
       const nextPred = generatePrediction(elapsed);
       setPrediction(nextPred);
     }
-  }, []);
+  }, [applyEliminationWithAnimation]);
 
   // カウントダウンタイマー
   useEffect(() => {
@@ -304,6 +430,9 @@ function App() {
     if (accumulator === null) {
       setAccumulator(inputValue);
     } else if (operator) {
+      // 計算回数をインクリメント（準備ボーナス用）
+      setCalculationCount(prev => prev + 1);
+
       const result = calculate(accumulator, inputValue, operator);
       const newDisplay = formatDisplay(result);
       setDisplay(newDisplay);
@@ -331,6 +460,9 @@ function App() {
 
     // 連続=押し: 直前の演算を繰り返す
     if (operator === null && lastOperator !== null && lastOperand !== null) {
+      // 計算回数をインクリメント（準備ボーナス用）
+      setCalculationCount(prev => prev + 1);
+
       const result = calculate(currentValue, lastOperand, lastOperator);
       const newDisplay = formatDisplay(result);
       setDisplay(newDisplay);
@@ -345,6 +477,9 @@ function App() {
     }
 
     if (operator === null || accumulator === null) return;
+
+    // 計算回数をインクリメント（準備ボーナス用）
+    setCalculationCount(prev => prev + 1);
 
     const result = calculate(accumulator, currentValue, operator);
     const newDisplay = formatDisplay(result);
@@ -444,12 +579,6 @@ function App() {
           Endless
         </span>
         <div className="menu-spacer" />
-        {gameMode !== 'calculator' && (
-          <>
-            <span className="status-item">Score: {score}</span>
-            <span className="status-item">Chains: {chains}</span>
-          </>
-        )}
       </header>
 
       {/* 予告表示エリア */}
@@ -483,6 +612,29 @@ function App() {
         </div>
       )}
 
+      {/* スコア表示エリア（電卓の上） */}
+      {gameMode !== 'calculator' && (
+        <div className="player-score-area">
+          <div className="score-display">
+            <span className="score-value">Score: {score}</span>
+            <span className="chain-value">Chains: {chains}</span>
+          </div>
+          {lastScoreBreakdown && (
+            <div className="score-breakdown">
+              <div className="score-formula">
+                +{lastScoreBreakdown.totalScore} = {lastScoreBreakdown.baseScore}
+                ×{lastScoreBreakdown.chainMultiplier}
+                ×{lastScoreBreakdown.prepBonus.toFixed(1)}
+                ×{lastScoreBreakdown.riskBonus.toFixed(1)}
+              </div>
+              <div className="score-labels">
+                (Base×Chain×Prep×Risk)
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
       <main className="window">
         <div className="title-bar">
           <div className="close-box" onClick={() => changeGameMode('calculator')} />
@@ -501,28 +653,37 @@ function App() {
             </div>
           )}
 
-          <div className="display">{display}</div>
+          <div className="display">
+            {display.split('').map((char, idx) => (
+              <span
+                key={idx}
+                className={eliminatingIndices.includes(idx) ? 'digit eliminating' : 'digit'}
+              >
+                {char}
+              </span>
+            ))}
+          </div>
 
           <div className="keypad">
-            <button className="key" onClick={() => handleKey('C')} type="button">C</button>
-            <button className="key" onClick={() => handleKey('E')} type="button">E</button>
-            <button className="key" onClick={() => handleKey('=')} type="button">=</button>
-            <button className="key" onClick={() => handleKey('*')} type="button">*</button>
+            <button className="key key--op" onClick={() => handleKey('C')} type="button">C</button>
+            <button className="key key--op" onClick={() => handleKey('E')} type="button">E</button>
+            <button className="key key--op" onClick={() => handleKey('=')} type="button">=</button>
+            <button className="key key--op" onClick={() => handleKey('*')} type="button">×</button>
 
             <button className="key" onClick={() => handleKey('7')} type="button">7</button>
             <button className="key" onClick={() => handleKey('8')} type="button">8</button>
             <button className="key" onClick={() => handleKey('9')} type="button">9</button>
-            <button className="key" onClick={() => handleKey('/')} type="button">/</button>
+            <button className="key key--op" onClick={() => handleKey('/')} type="button">÷</button>
 
             <button className="key" onClick={() => handleKey('4')} type="button">4</button>
             <button className="key" onClick={() => handleKey('5')} type="button">5</button>
             <button className="key" onClick={() => handleKey('6')} type="button">6</button>
-            <button className="key" onClick={() => handleKey('-')} type="button">-</button>
+            <button className="key key--op" onClick={() => handleKey('-')} type="button">−</button>
 
             <button className="key" onClick={() => handleKey('1')} type="button">1</button>
             <button className="key" onClick={() => handleKey('2')} type="button">2</button>
             <button className="key" onClick={() => handleKey('3')} type="button">3</button>
-            <button className="key key--tall" onClick={() => handleKey('+')} type="button">+</button>
+            <button className="key key--tall key--op" onClick={() => handleKey('+')} type="button">+</button>
 
             <button className="key key--wide" onClick={() => handleKey('0')} type="button">0</button>
             <button className="key" onClick={() => handleKey('.')} type="button">.</button>
@@ -533,7 +694,7 @@ function App() {
       {/* 計算式表示エリア */}
       {gameMode !== 'calculator' && calculationHistory && (
         <div className="calculation-history">
-          {calculationHistory}
+          <FormatHistory text={calculationHistory} />
         </div>
       )}
 

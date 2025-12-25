@@ -1,18 +1,9 @@
 /* Classic Macintosh Calculator - Pixel Perfect Recreation */
 
-/* Desktop with diagonal stripe pattern */
+/* Desktop background */
 .desktop {
   min-height: 100vh;
-  background-color: #fff;
-  background-image:
-    repeating-linear-gradient(
-      45deg,
-      transparent,
-      transparent 1px,
-      #000 1px,
-      #000 2px
-    );
-  background-size: 4px 4px;
+  background-color: #808080;
   display: flex;
   flex-direction: column;
 }
@@ -59,6 +50,42 @@
 .status-item {
   font-size: 11px;
   padding: 0 4px;
+}
+
+/* Player Score Area (above calculator) */
+.player-score-area {
+  position: absolute;
+  top: calc(50% - 200px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: #fff;
+  border: 2px solid #000;
+  padding: 8px 16px;
+  box-shadow: 3px 3px 0 #000;
+  text-align: center;
+  z-index: 5;
+}
+
+.score-display {
+  display: flex;
+  gap: 16px;
+  font-size: 14px;
+  font-weight: bold;
+}
+
+.score-breakdown {
+  font-size: 10px;
+  color: #666;
+  margin-top: 4px;
+}
+
+.score-formula {
+  white-space: nowrap;
+}
+
+.score-labels {
+  font-size: 9px;
+  color: #999;
 }
 
 /* GitHub Logo */
@@ -134,9 +161,32 @@
   padding: 4px 8px;
   text-align: right;
   font-size: 20px;
-  min-width: 140px;
+  width: 140px;
   min-height: 28px;
   box-shadow: inset 2px 2px 0 #888;
+  overflow: hidden;
+  white-space: nowrap;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.digit {
+  display: inline-block;
+}
+
+.digit.eliminating {
+  animation: flash-eliminate 0.4s ease-out;
+}
+
+@keyframes flash-eliminate {
+  0%, 20%, 40%, 60%, 80% {
+    background: #000;
+    color: #fff;
+  }
+  10%, 30%, 50%, 70%, 90%, 100% {
+    background: transparent;
+    color: #000;
+  }
 }
 
 /* Keypad - CSS Grid */
@@ -165,6 +215,8 @@
 .key:active {
   box-shadow: none;
   transform: translate(2px, 2px);
+  background: #000;
+  color: #fff;
 }
 
 .key--wide {
@@ -181,10 +233,14 @@
   padding-bottom: 6px;
 }
 
+.key--op {
+  font-weight: bold;
+}
+
 /* Prediction Area */
 .prediction-area {
   position: absolute;
-  top: calc(50% - 160px);
+  top: calc(50% - 240px);
   left: 50%;
   transform: translateX(-50%);
   display: flex;
@@ -250,26 +306,34 @@
 /* Calculation History */
 .calculation-history {
   position: absolute;
-  top: calc(50% + 130px);
+  top: calc(50% + 175px);
   left: 50%;
   transform: translateX(-50%);
   background: #fff;
   border: 1px solid #000;
   padding: 4px 12px;
   font-size: 12px;
+  max-width: 300px;
+  word-break: break-all;
+  text-align: center;
 }
 
-/* Start Prompt */
+.op-bold {
+  font-weight: bold;
+}
+
+/* Start Prompt (overlaps calculator - intentional) */
 .start-prompt {
   position: absolute;
-  top: calc(50% - 100px);
+  top: calc(50%);
   left: 50%;
-  transform: translateX(-50%);
+  transform: translate(-50%, -50%);
   background: #fff;
   border: 2px solid #000;
   padding: 12px 24px;
   font-size: 14px;
   box-shadow: 3px 3px 0 #000;
+  z-index: 10;
 }
 
 /* Window Content relative positioning for overlay */

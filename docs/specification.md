@@ -1,122 +1,142 @@
 # Sasso - Classic Macintosh Style Calculator
 
-## 概要
+## Overview
 
-SassoはClassic Macintosh System 7風のデザインを再現した電卓アプリケーションです。
+Sasso is a calculator-based puzzle game with Classic Macintosh System 7 inspired design.
 
-## 技術スタック
+## Tech Stack
 
 - React 18
 - TypeScript
 - Vite
 - CSS (vanilla)
 
-## UI仕様
+## UI Specification
 
-### デスクトップ背景
-- 45度の斜線パターン（白地に黒線）
-- パターンサイズ: 4px x 4px
+### Desktop Background
+- Solid gray (#808080)
 
-### メニューバー
-- 白背景、下部に黒線
-- 項目: Apple logo, File, Edit, View, Special
-- 高さ: 20px
+### Menu Bar
+- White background with black bottom border
+- Items: GitHub logo, Calculator, Practice, Endless (mode selection)
+- Height: 20px
 
-### ウィンドウ
-- 角丸: 8px
-- 枠線: 3px solid black
-- 影: 5px 5px 0 black
+### Window
+- Border radius: 8px
+- Border: 3px solid black
+- Shadow: 5px 5px 0 black
+- Centered on screen
 
-### タイトルバー
-- 背景: 黒
-- 高さ: 24px
-- 下部ボーダー: 3px solid black
-- タイトル「Sasso」: 白文字、18px、中央揃え
-- クローズボックス: 16px x 16px、白背景、左端配置
+### Title Bar
+- Background: black
+- Height: 24px
+- Bottom border: 3px solid black
+- Title "Sasso": white, 18px, bold, centered
+- Close box: 16px x 16px, white background, left aligned
 
-### ウィンドウコンテンツ
-- 背景: 互い違いのドットパターン（1px黒ドット、4px間隔）
-- パディング: 12px 14px 12px 12px
+### Window Content
+- Background: staggered dot pattern (1px black dots, 4px spacing)
+- Padding: 12px 14px 12px 12px
 
-### ディスプレイ
-- 白背景
-- 枠線: 2px solid black
-- 内側シャドウ: inset 2px 2px 0 #888
-- テキスト: 右揃え、20px
+### Display
+- White background
+- Fixed width: 140px
+- Border: 2px solid black
+- Inner shadow: inset 2px 2px 0 #888
+- Text: right-aligned, 20px
+- Overflow: hidden (prevents horizontal stretching)
 
-### キーパッド
-- CSS Gridレイアウト: 4列
-- 列間隔: 4px
-- 行間隔: 8px
+### Keypad
+- CSS Grid layout: 4 columns
+- Column gap: 4px
+- Row gap: 8px
 
-### ボタン
-- サイズ: 34px x 28px
-- 背景: 白
-- 枠線: 2px solid black
-- 影: 2px 2px 0 black
-- フォントサイズ: 16px
-- クリック時: 影なし、2px右下に移動
+### Buttons
+- Size: 34px x 28px
+- Background: white
+- Border: 2px solid black
+- Shadow: 2px 2px 0 black
+- Font size: 16px
+- Active state: no shadow, translate 2px right/down, inverted colors (black bg, white text)
 
-### 特殊ボタン
-- 0ボタン: 2列幅、テキスト左揃え（padding-left: 12px）
-- +ボタン: 2行高、テキスト下揃え
+### Operator Buttons
+- Bold font weight
+- Symbols: × (multiply), ÷ (divide), − (minus), + (plus), =, C, E
 
-## ボタン配置
+### Special Buttons
+- 0 button: 2 columns wide, text left-aligned (padding-left: 12px)
+- + button: 2 rows tall, text bottom-aligned
+
+## Button Layout
 
 ```
-| C | E | = | * |
-| 7 | 8 | 9 | / |
-| 4 | 5 | 6 | - |
+| C | E | = | × |
+| 7 | 8 | 9 | ÷ |
+| 4 | 5 | 6 | − |
 | 1 | 2 | 3 |   |
 | 0     | . | + |
 ```
 
-## 機能仕様
+## Game Modes
 
-### 基本演算
-- 加算 (+)
-- 減算 (-)
-- 乗算 (*)
-- 除算 (/)
+### Calculator Mode
+- Standard calculator functionality
+- No game mechanics
 
-### 特殊機能
-- C: 全クリア（表示、累積値、演算子をリセット）
-- E: エントリクリア（表示のみリセット）
-- =: 計算実行（連続押しで直前の計算を繰り返す）
-- .: 小数点入力
+### Practice Mode
+- Free play with elimination mechanics
+- No time pressure
+- Score tracking enabled
 
-### =の連続押し挙動
-- =を押すたびに直前の演算子と被演算子で計算を繰り返す
-- 例: `5 + 3 = 8` → `= 11` → `= 14`
+### Endless Mode
+- Predictions every 4.2 seconds
+- Countdown displayed as analog clock (to avoid confusion with game numbers)
+- Score and chain tracking
 
-### エラー処理
-- 0除算: 「E」を表示
-- オーバーフロー: 指数表記で表示
+## Elimination Animation
+- Matching digits flash (black/white alternating) for 400ms before disappearing
+- Chain reactions show consecutive animations
 
-### 表示フォーマット
-- 最大10桁
-- 10桁を超える場合は指数表記（4桁精度）
+## Score Display
+- Positioned above calculator window
+- Shows: Score, Chains
+- Score breakdown formula: `+X = Base×Chain×Prep×Risk`
+- Labels: (Base×Chain×Prep×Risk)
 
-## キーボード操作
+## Calculation History
+- Positioned below calculator window
+- Max width: 300px with word-break
+- Operators displayed in bold
 
-| キー | 機能 |
-|------|------|
-| 0-9 | 数字入力 |
-| + | 加算 |
-| - | 減算 |
-| * | 乗算 |
-| / | 除算 |
-| Enter, = | 計算実行 |
-| Escape, C, c | 全クリア |
-| Backspace, Delete, E, e | エントリクリア |
-| . | 小数点 |
+## Keyboard Controls
 
-## ファイル構成
+| Key | Function |
+|-----|----------|
+| 0-9 | Digit input |
+| + | Add |
+| - | Subtract |
+| * | Multiply |
+| / | Divide |
+| Enter, = | Execute calculation |
+| Escape, C, c | Clear all |
+| Backspace, Delete, E, e | Clear entry |
+| . | Decimal point |
+
+## File Structure
 
 ```
 src/
-├── App.tsx      # メインコンポーネント、電卓ロジック
-├── App.css      # スタイル定義
-├── index.css    # グローバルスタイル
-└── main.tsx     # エントリーポイント
+├── App.tsx        # Main component, calculator UI and game state
+├── App.css        # Style definitions
+├── gameLogic.ts   # Game logic (elimination, scoring, predictions)
+├── index.css      # Global styles
+└── main.tsx       # Entry point
 ```
+
+## Error Handling
+- Division by zero: displays "E"
+- Overflow: exponential notation (4 digit precision)
+
+## Display Format
+- Maximum 10 digits
+- Numbers exceeding 10 digits shown in exponential notation
