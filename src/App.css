@@ -55,7 +55,7 @@
 /* Player Score Area (above calculator) */
 .player-score-area {
   position: absolute;
-  top: calc(50% - 200px);
+  top: calc(50% - 185px);
   left: 50%;
   transform: translateX(-50%);
   background: #fff;
@@ -245,7 +245,7 @@
 /* Prediction Area */
 .prediction-area {
   position: absolute;
-  top: calc(50% - 240px);
+  top: calc(50% - 225px);
   left: 50%;
   transform: translateX(-50%);
   display: flex;
@@ -311,7 +311,7 @@
 /* Calculation History */
 .calculation-history {
   position: absolute;
-  top: calc(50% + 175px);
+  top: calc(50% + 185px);
   left: 50%;
   transform: translateX(-50%);
   background: #fff;
