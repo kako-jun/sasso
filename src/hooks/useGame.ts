@@ -7,7 +7,6 @@ import {
   checkOverflow,
   generateInitialState,
   generatePrediction,
-  shouldTriggerAttack,
   findEliminationIndices,
   calculateScore,
   getDigitCount,
@@ -199,10 +198,6 @@ export function useGame(options: UseGameOptions = {}): UseGameReturn {
           setScore((prev) => prev + scoreResult.totalScore);
           setLastScoreBreakdown(scoreResult);
           setCalculationCount(0);
-
-          if (shouldTriggerAttack(result)) {
-            console.log('Attack triggered! Power:', scoreResult.attackPower);
-          }
 
           // Check for chain
           setTimeout(() => {
