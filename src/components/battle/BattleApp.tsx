@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useBattleMode, useKeyboard } from '../../hooks';
+import { useBattleMode, useKeyboard, useIsDesktop } from '../../hooks';
 import {
   MenuBar,
   Window,
@@ -28,20 +28,11 @@ interface BattleAppProps {
 export function BattleApp({ initialRoomId, onChangeMode }: BattleAppProps) {
   const battle = useBattleMode();
   const [showRoomCreation, setShowRoomCreation] = useState(!initialRoomId);
-  const [isDesktop, setIsDesktop] = useState(window.innerWidth >= 768);
   const [roomUrl, setRoomUrl] = useState('');
+  const isDesktop = useIsDesktop();
 
   // Handle keyboard input
   useKeyboard(battle.handleKey);
-
-  // Responsive layout detection
-  useEffect(() => {
-    const handleResize = () => {
-      setIsDesktop(window.innerWidth >= 768);
-    };
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
 
   // Auto-join room if roomId provided (only once on mount)
   useEffect(() => {
@@ -137,6 +128,9 @@ export function BattleApp({ initialRoomId, onChangeMode }: BattleAppProps) {
         isGameStarted={battle.gameStarted}
         playerScore={battle.score}
         opponentScore={battle.opponent?.score}
+        rematchRequested={battle.rematchRequested}
+        opponentRematchRequested={battle.opponentRematchRequested}
+        onRetry={battle.requestRematch}
         onLeave={handleLeave}
       />
     </div>

@@ -32,30 +32,30 @@ https://sasso.app/battle/{room-id}
 
 **特性:**
 | 項目 | 仕様 | 実装状況 |
-|------|------|----------|
+| ----------------- | ----------------------------- | ---------- |
 | 発行方法 | Create Room ボタン | ✓ 実装済 |
 | 共有方法 | ユーザーが任意の方法で共有 | ✓ |
-| 有効期限 | なし（Nostrリレー依存）| △ 未定義 |
+| 有効期限 | 10分（作成から） | ✓ 実装済 |
 | 使用回数 | 1回のみ（対戦終了後は無効） | ✓ |
 | ブラウザURL更新 | 作成/参加時に自動更新 | ✓ 実装済 |
 
 ### Waiting State (ルーム作成後)
 
-| 操作              | 動作                                  | 実装状況 |
-| ----------------- | ------------------------------------- | -------- |
-| 待機              | 「Waiting for opponent...」表示       | ✓        |
-| キャンセル        | Cancelボタンでルーム破棄、1人用に戻る | ✓        |
-| ページ離脱        | ルーム破棄（再接続不可）              | ✓        |
-| ページ再読込      | ルーム破棄（再接続不可）              | ✓        |
-| **途中離脱→復帰** | **不可（subscriptionが失われる）**    | ✗ 未実装 |
+| 操作          | 動作                                  | 実装状況 |
+| ------------- | ------------------------------------- | -------- |
+| 待機          | 「Waiting for opponent...」表示       | ✓        |
+| キャンセル    | Cancelボタンでルーム破棄、1人用に戻る | ✓        |
+| ページ離脱    | localStorageに保存、再接続可能        | ✓ 実装済 |
+| ページ再読込  | 自動で再接続を試みる                  | ✓ 実装済 |
+| 途中離脱→復帰 | 10分以内なら同じルームに再接続可能    | ✓ 実装済 |
 
 ### Game End (対戦終了後)
 
-| 操作        | 動作                          | 実装状況 |
-| ----------- | ----------------------------- | -------- |
-| 結果表示    | Victory/Defeat + 両者のスコア | ✓        |
-| Leave       | 1人用モードに戻る             | ✓        |
-| **Rematch** | **未実装（ボタン非表示）**    | ✗ 未実装 |
+| 操作     | 動作                                  | 実装状況 |
+| -------- | ------------------------------------- | -------- |
+| 結果表示 | Victory/Defeat + 両者のスコア         | ✓        |
+| Leave    | 1人用モードに戻る                     | ✓        |
+| Rematch  | 両者がRematchを押すと同じルームで再戦 | ✓ 実装済 |
 
 ### Returning to Single-Player
 
@@ -69,28 +69,31 @@ https://sasso.app/battle/{room-id}
 
 ---
 
-## Future Enhancements (未実装)
+## Implemented Features
 
-### Priority 1: Rematch
+### Rematch (実装済)
 
 - 対戦終了後に両者がRematchボタンを押すと再戦
 - 新しいシードを生成して同じルームで継続
+- 相手がリマッチをリクエストすると「Opponent wants a rematch!」表示
 
-### Priority 2: Reconnection
+### Reconnection (実装済)
 
-- 途中離脱しても同じルームに再接続可能
-- タイムアウト: 60秒
+- localStorageにルーム情報を保存
+- ページ再読込時に自動で再接続を試みる
+- タイムアウト: 10分（ルーム有効期限と同じ）
 
-### Priority 3: Room Expiration
+### Room Expiration (実装済)
 
 - ルーム作成から10分経過で自動無効化
-- 相手が参加しない場合の対策
+- 参加時に期限切れチェック
 
-### Priority 4: Disconnect Detection
+### Disconnect Detection (実装済)
 
 - 相手の切断を検知してゲーム終了
 - ハートビート間隔: 3秒
 - 切断判定: 10秒無応答
+- 切断時は相手の勝利として処理
 
 ---
 
@@ -196,12 +199,13 @@ const NOSTR_RELAYS = ['wss://relay.damus.io', 'wss://nos.lol', 'wss://relay.nost
 
 ### Timing Constants
 
-| Constant             | Value   | Description                        |
-| -------------------- | ------- | ---------------------------------- |
-| COUNTDOWN_TIME       | 10000ms | Prediction interval                |
-| STATE_THROTTLE       | 100ms   | Min interval between state updates |
-| ROOM_EXPIRY          | -       | Not implemented                    |
-| DISCONNECT_THRESHOLD | -       | Not implemented                    |
+| Constant             | Value    | Description                        |
+| -------------------- | -------- | ---------------------------------- |
+| COUNTDOWN_TIME       | 10000ms  | Prediction interval                |
+| STATE_THROTTLE       | 100ms    | Min interval between state updates |
+| HEARTBEAT_INTERVAL   | 3000ms   | Heartbeat sending interval         |
+| DISCONNECT_THRESHOLD | 10000ms  | Time before considering disconnect |
+| ROOM_EXPIRY          | 600000ms | Room expiration (10 minutes)       |
 
 ---
 

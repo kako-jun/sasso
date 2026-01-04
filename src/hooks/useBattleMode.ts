@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import type { Prediction, ScoreResult, AttackParams } from '../types';
+import type { Prediction, ScoreResult } from '../types';
 import type { RoomState, OpponentState } from '../types/battle';
 import { useNostr } from './useNostr';
 import { useBattleRoom } from './useBattleRoom';
@@ -14,7 +14,7 @@ import {
   shouldTriggerAttack,
   getDigitCount,
 } from '../game';
-import { calculate, formatDisplay, operatorToSymbol } from '../utils';
+import { calculate, formatDisplay, operatorToSymbol, BATTLE_EVENTS } from '../utils';
 import { COUNTDOWN_TIME, ELIMINATION_ANIMATION_MS, CHAIN_CHECK_DELAY_MS } from '../constants';
 
 export interface UseBattleModeReturn {
@@ -40,13 +40,17 @@ export interface UseBattleModeReturn {
   lastScoreBreakdown: ScoreResult | null;
 
   // Attack state
-  incomingAttack: AttackParams | null;
   isUnderAttack: boolean;
+
+  // Rematch state
+  rematchRequested: boolean;
+  opponentRematchRequested: boolean;
 
   // Actions
   handleKey: (key: string) => void;
   startGame: () => void;
   surrender: () => void;
+  requestRematch: () => void;
 }
 
 export function useBattleMode(): UseBattleModeReturn {
@@ -63,45 +67,108 @@ export function useBattleMode(): UseBattleModeReturn {
   const [isWinner, setIsWinner] = useState<boolean | null>(null);
   const [justPressedEqual, setJustPressedEqual] = useState(false);
   const [calculationHistory, setCalculationHistory] = useState('');
-  const [incomingAttack] = useState<AttackParams | null>(null);
   const [isUnderAttack, setIsUnderAttack] = useState(false);
   const [pendingAttackPower, setPendingAttackPower] = useState(0);
-
-  // Game started state (triggers timer)
   const [gameStarted, setGameStarted] = useState(false);
 
   // Refs
   const displayRef = useRef(calculator.display);
+  const applyPredictionRef = useRef<() => void>(() => {});
+  const handleGameOverRef = useRef<(reason: 'overflow' | 'surrender' | 'disconnect') => void>(
+    () => {}
+  );
 
   // Sync display ref
   useEffect(() => {
     displayRef.current = calculator.display;
   }, [calculator.display]);
 
-  // Listen for attack events from room
+  // Reset all game state (shared by leaveRoom and rematch)
+  const resetGameState = useCallback(
+    (seed?: number) => {
+      if (seed !== undefined) {
+        prediction.initWithSeed(seed);
+      } else {
+        prediction.resetPrediction();
+      }
+      calculator.resetCalculator();
+      elimination.resetElimination();
+      setIsGameOver(false);
+      setIsSurrender(false);
+      setIsWinner(null);
+      setCalculationHistory('');
+      setGameStarted(false);
+      setPendingAttackPower(0);
+      setIsUnderAttack(false);
+    },
+    [prediction, calculator, elimination]
+  );
+
+  // Handle game over (defined early, uses ref to avoid stale closure in applyPrediction)
+  const handleGameOver = useCallback(
+    (reason: 'overflow' | 'surrender' | 'disconnect') => {
+      setIsGameOver(true);
+      setIsWinner(false);
+      prediction.clearCountdown();
+      room.sendGameOver(reason, elimination.score);
+    },
+    [prediction, room, elimination.score]
+  );
+
+  // Keep handleGameOver ref updated
   useEffect(() => {
-    const handleAttack = (e: CustomEvent<{ power: number; timestamp: number }>) => {
+    handleGameOverRef.current = handleGameOver;
+  }, [handleGameOver]);
+
+  // Listen for battle events from room
+  useEffect(() => {
+    const handleAttack = (e: CustomEvent<{ power: number }>) => {
       setPendingAttackPower(e.detail.power);
       setIsUnderAttack(true);
     };
 
     const handleOpponentGameOver = () => {
-      // Opponent lost, we won!
       setIsGameOver(true);
       setIsWinner(true);
       prediction.clearCountdown();
     };
 
-    window.addEventListener('sasso-attack', handleAttack as EventListener);
-    window.addEventListener('sasso-opponent-gameover', handleOpponentGameOver as EventListener);
+    const handleOpponentDisconnect = () => {
+      if (gameStarted && !isGameOver) {
+        setIsGameOver(true);
+        setIsWinner(true);
+        prediction.clearCountdown();
+      }
+    };
+
+    const handleRematchStart = (e: CustomEvent<{ seed: number }>) => {
+      resetGameState(e.detail.seed);
+    };
+
+    window.addEventListener(BATTLE_EVENTS.ATTACK, handleAttack as EventListener);
+    window.addEventListener(
+      BATTLE_EVENTS.OPPONENT_GAMEOVER,
+      handleOpponentGameOver as EventListener
+    );
+    window.addEventListener(
+      BATTLE_EVENTS.OPPONENT_DISCONNECT,
+      handleOpponentDisconnect as EventListener
+    );
+    window.addEventListener(BATTLE_EVENTS.REMATCH_START, handleRematchStart as EventListener);
+
     return () => {
-      window.removeEventListener('sasso-attack', handleAttack as EventListener);
+      window.removeEventListener(BATTLE_EVENTS.ATTACK, handleAttack as EventListener);
       window.removeEventListener(
-        'sasso-opponent-gameover',
+        BATTLE_EVENTS.OPPONENT_GAMEOVER,
         handleOpponentGameOver as EventListener
       );
+      window.removeEventListener(
+        BATTLE_EVENTS.OPPONENT_DISCONNECT,
+        handleOpponentDisconnect as EventListener
+      );
+      window.removeEventListener(BATTLE_EVENTS.REMATCH_START, handleRematchStart as EventListener);
     };
-  }, [prediction]);
+  }, [prediction, gameStarted, isGameOver, resetGameState]);
 
   // Send state updates when display/score changes
   useEffect(() => {
@@ -110,14 +177,9 @@ export function useBattleMode(): UseBattleModeReturn {
     }
   }, [calculator.display, elimination.score, elimination.chains, calculationHistory, room]);
 
-  // Ref to hold latest applyPrediction to avoid stale closure
-  const applyPredictionRef = useRef<() => void>(() => {});
-
   // Prediction timer - starts when game is started
   useEffect(() => {
-    if (!gameStarted || isGameOver) {
-      return;
-    }
+    if (!gameStarted || isGameOver) return;
 
     prediction.countdownRef.current = window.setInterval(() => {
       prediction.setCountdown((prev) => {
@@ -129,10 +191,60 @@ export function useBattleMode(): UseBattleModeReturn {
       });
     }, 100);
 
-    return () => {
-      prediction.clearCountdown();
-    };
+    return () => prediction.clearCountdown();
   }, [gameStarted, isGameOver, prediction]);
+
+  // Process elimination result and handle scoring/attack
+  const processEliminationResult = useCallback(
+    (newDisplay: string, digitCountBefore: number, calcCount: number) => {
+      const eliminationResult = processElimination(newDisplay);
+      const finalDisplay = eliminationResult.result;
+
+      calculator.setDisplay(finalDisplay);
+      displayRef.current = finalDisplay;
+      elimination.setEliminatingIndices([]);
+      elimination.setChains(eliminationResult.chains);
+
+      const scoreResult = calculateScore({
+        eliminated: eliminationResult.eliminated,
+        chains: eliminationResult.chains,
+        calculationsSinceLastElimination: calcCount,
+        digitCountBeforeElimination: digitCountBefore,
+      });
+
+      elimination.setScore((prev) => prev + scoreResult.totalScore);
+      elimination.setLastScoreBreakdown(scoreResult);
+      elimination.setCalculationCount(0);
+      elimination.calculationCountRef.current = 0;
+
+      if (shouldTriggerAttack(eliminationResult)) {
+        room.sendAttack(scoreResult.attackPower);
+      }
+
+      if (checkOverflow(finalDisplay)) {
+        handleGameOverRef.current('overflow');
+        return;
+      }
+
+      // Check for chain
+      setTimeout(() => {
+        const nextIndices = findEliminationIndices(finalDisplay);
+        if (nextIndices.length > 0) {
+          elimination.applyEliminationWithAnimation(
+            finalDisplay,
+            eliminationResult.chains,
+            digitCountBefore,
+            calcCount,
+            (newDisp) => {
+              calculator.setDisplay(newDisp);
+              displayRef.current = newDisp;
+            }
+          );
+        }
+      }, CHAIN_CHECK_DELAY_MS);
+    },
+    [calculator, elimination, room]
+  );
 
   // Apply prediction (auto-execute when countdown reaches 0)
   const applyPrediction = useCallback(() => {
@@ -153,67 +265,19 @@ export function useBattleMode(): UseBattleModeReturn {
     calculator.setDisplay(newDisplay);
     displayRef.current = newDisplay;
 
-    // Check for elimination
     const indices = findEliminationIndices(newDisplay);
     if (indices.length > 0) {
-      const digitCountBeforeElimination = getDigitCount(newDisplay);
-      const currentCalcCount = elimination.calculationCountRef.current;
+      const digitCountBefore = getDigitCount(newDisplay);
+      const calcCount = elimination.calculationCountRef.current;
 
       elimination.setEliminatingIndices(indices);
-
-      setTimeout(() => {
-        const eliminationResult = processElimination(newDisplay);
-        const finalDisplay = eliminationResult.result;
-
-        calculator.setDisplay(finalDisplay);
-        displayRef.current = finalDisplay;
-        elimination.setEliminatingIndices([]);
-        elimination.setChains(eliminationResult.chains);
-
-        const scoreResult = calculateScore({
-          eliminated: eliminationResult.eliminated,
-          chains: eliminationResult.chains,
-          calculationsSinceLastElimination: currentCalcCount,
-          digitCountBeforeElimination,
-        });
-        elimination.setScore((prev) => prev + scoreResult.totalScore);
-        elimination.setLastScoreBreakdown(scoreResult);
-        elimination.setCalculationCount(0);
-        elimination.calculationCountRef.current = 0;
-
-        // Check for attack trigger
-        if (shouldTriggerAttack(eliminationResult)) {
-          room.sendAttack(scoreResult.attackPower);
-        }
-
-        // Check overflow
-        if (checkOverflow(finalDisplay)) {
-          handleGameOver('overflow');
-          return;
-        }
-
-        // Check for chain
-        setTimeout(() => {
-          const nextIndices = findEliminationIndices(finalDisplay);
-          if (nextIndices.length > 0) {
-            elimination.applyEliminationWithAnimation(
-              finalDisplay,
-              eliminationResult.chains,
-              digitCountBeforeElimination,
-              currentCalcCount,
-              (newDisp) => {
-                calculator.setDisplay(newDisp);
-                displayRef.current = newDisp;
-              }
-            );
-          }
-        }, CHAIN_CHECK_DELAY_MS);
-      }, ELIMINATION_ANIMATION_MS);
-    } else {
-      if (checkOverflow(newDisplay)) {
-        handleGameOver('overflow');
-        return;
-      }
+      setTimeout(
+        () => processEliminationResult(newDisplay, digitCountBefore, calcCount),
+        ELIMINATION_ANIMATION_MS
+      );
+    } else if (checkOverflow(newDisplay)) {
+      handleGameOverRef.current('overflow');
+      return;
     }
 
     // Generate next prediction (with attack power if under attack)
@@ -222,24 +286,12 @@ export function useBattleMode(): UseBattleModeReturn {
       setPendingAttackPower(0);
       setIsUnderAttack(false);
     }
-  }, [prediction, calculator, elimination, room, pendingAttackPower, handleGameOver]);
+  }, [prediction, calculator, elimination, pendingAttackPower, processEliminationResult]);
 
   // Keep ref updated with latest applyPrediction
   useEffect(() => {
     applyPredictionRef.current = applyPrediction;
   }, [applyPrediction]);
-
-  // Handle game over
-  // eslint-disable-next-line react-hooks/exhaustive-deps -- defined after applyPrediction but used via closure
-  const handleGameOver = useCallback(
-    (reason: 'overflow' | 'surrender' | 'disconnect') => {
-      setIsGameOver(true);
-      setIsWinner(false);
-      prediction.clearCountdown();
-      room.sendGameOver(reason, elimination.score);
-    },
-    [prediction, room, elimination.score]
-  );
 
   // Start the game
   const startGame = useCallback(() => {
@@ -261,17 +313,11 @@ export function useBattleMode(): UseBattleModeReturn {
     handleGameOver('surrender');
   }, [handleGameOver]);
 
-  // Leave room (wraps room.leaveRoom to also reset local state)
+  // Leave room
   const leaveRoom = useCallback(() => {
     room.leaveRoom();
-    setGameStarted(false);
-    setIsGameOver(false);
-    setIsSurrender(false);
-    setIsWinner(null);
-    prediction.resetPrediction();
-    calculator.resetCalculator();
-    elimination.resetElimination();
-  }, [room, prediction, calculator, elimination]);
+    resetGameState();
+  }, [room, resetGameState]);
 
   // Handle key input
   const handleKey = useCallback(
@@ -342,19 +388,19 @@ export function useBattleMode(): UseBattleModeReturn {
   );
 
   return {
-    // Room
     roomState: {
       roomId: room.roomId,
       status: room.status,
       isHost: room.isHost,
       seed: room.seed,
+      createdAt: room.createdAt,
+      rematchRequested: room.rematchRequested,
     },
     opponent: room.opponent,
     createRoom: room.createRoom,
     joinRoom: room.joinRoom,
     leaveRoom,
 
-    // Game state
     display: calculator.display,
     score: elimination.score,
     chains: elimination.chains,
@@ -368,13 +414,14 @@ export function useBattleMode(): UseBattleModeReturn {
     calculationHistory,
     lastScoreBreakdown: elimination.lastScoreBreakdown,
 
-    // Attack
-    incomingAttack,
     isUnderAttack,
 
-    // Actions
+    rematchRequested: room.rematchRequested || false,
+    opponentRematchRequested: room.opponent?.rematchRequested || false,
+
     handleKey,
     startGame,
     surrender,
+    requestRematch: room.requestRematch,
   };
 }

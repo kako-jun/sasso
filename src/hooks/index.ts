@@ -19,3 +19,7 @@ export { useSeededPrediction } from './useSeededPrediction';
 export type { UseSeededPredictionReturn } from './useSeededPrediction';
 export { useBattleMode } from './useBattleMode';
 export type { UseBattleModeReturn } from './useBattleMode';
+export { useConnectionHealth } from './useConnectionHealth';
+export { useRoomPersistence } from './useRoomPersistence';
+export type { StoredRoomData } from './useRoomPersistence';
+export { useMediaQuery, useIsDesktop } from './useMediaQuery';

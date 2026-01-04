@@ -15,6 +15,8 @@ export interface RoomState {
   status: RoomStatus;
   isHost: boolean;
   seed: number;
+  createdAt?: number;
+  rematchRequested?: boolean;
 }
 
 // Opponent State
@@ -25,6 +27,8 @@ export interface OpponentState {
   chains: number;
   calculationHistory: string;
   isConnected: boolean;
+  lastHeartbeat?: number;
+  rematchRequested?: boolean;
 }
 
 // Nostr Event Contents
@@ -67,13 +71,26 @@ export interface GameOverEventContent {
   winner: string;
 }
 
+export interface RematchEventContent {
+  type: 'rematch';
+  action: 'request' | 'accept';
+  newSeed?: number;
+}
+
+export interface HeartbeatEventContent {
+  type: 'heartbeat';
+  timestamp: number;
+}
+
 export type BattleEventContent =
   | RoomEventContent
   | JoinEventContent
   | StateEventContent
   | KeypressEventContent
   | AttackEventContent
-  | GameOverEventContent;
+  | GameOverEventContent
+  | RematchEventContent
+  | HeartbeatEventContent;
 
 // Battle Mode State
 export interface BattleState {
