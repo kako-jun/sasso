@@ -58,6 +58,9 @@ export function BattleApp({ initialRoomId, onChangeMode }: BattleAppProps) {
     const url = await battle.createRoom();
     setRoomUrl(url);
     setShowRoomCreation(false);
+    // Update browser URL so users can copy it from address bar
+    const roomId = url.split('/battle/')[1];
+    window.history.pushState(null, '', `/battle/${roomId}`);
     return url;
   };
 
@@ -65,6 +68,8 @@ export function BattleApp({ initialRoomId, onChangeMode }: BattleAppProps) {
   const handleJoinRoom = async (roomId: string) => {
     await battle.joinRoom(roomId);
     setShowRoomCreation(false);
+    // Update browser URL
+    window.history.pushState(null, '', `/battle/${roomId}`);
   };
 
   // Handle leaving battle mode
