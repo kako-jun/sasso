@@ -1,4 +1,4 @@
-import type { Prediction } from '../gameLogic';
+import type { Prediction } from '../types';
 import { COUNTDOWN_TIME } from '../constants';
 import { operatorToSymbol } from '../utils';
 

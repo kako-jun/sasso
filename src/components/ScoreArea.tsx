@@ -1,4 +1,4 @@
-import type { ScoreResult } from '../gameLogic';
+import type { ScoreResult } from '../types';
 
 interface ScoreAreaProps {
   score: number;
@@ -16,11 +16,11 @@ export function ScoreArea({ score, chains, lastScoreBreakdown }: ScoreAreaProps)
       {lastScoreBreakdown && (
         <div className="score-breakdown">
           <div className="score-formula">
-            +{lastScoreBreakdown.totalScore} = {lastScoreBreakdown.baseScore}×
-            {lastScoreBreakdown.chainMultiplier}×{lastScoreBreakdown.prepBonus.toFixed(1)}×
+            +{lastScoreBreakdown.totalScore} = {lastScoreBreakdown.baseScore} ×{' '}
+            {lastScoreBreakdown.chainMultiplier} × {lastScoreBreakdown.prepBonus.toFixed(1)} ×{' '}
             {lastScoreBreakdown.riskBonus.toFixed(1)}
           </div>
-          <div className="score-labels">(Base×Chain×Prep×Risk)</div>
+          <div className="score-labels">(Base × Chain × Prep × Risk)</div>
         </div>
       )}
     </div>

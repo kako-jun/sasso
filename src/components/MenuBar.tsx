@@ -1,4 +1,4 @@
-import type { GameMode } from '../gameLogic';
+import type { GameMode } from '../types';
 import { GITHUB_URL } from '../constants';
 
 interface MenuBarProps {
