@@ -368,7 +368,7 @@
 /* Multiplication Helper (Indian method grid) */
 .multiplication-helper {
   position: absolute;
-  top: calc(50% + 211px);
+  top: calc(50% + 215px);
   left: 50%;
   transform: translateX(-50%);
   background: #fff;

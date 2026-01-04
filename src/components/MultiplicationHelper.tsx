@@ -76,33 +76,34 @@ export function MultiplicationHelper({ displayValue, multiplier }: Multiplicatio
   const height = MARGIN * 2 + deltaY;
 
   // Generate lines
-  const displayTensLines = generateLineGroup(
-    display.tens,
+  // Top lines (right-down): multiplier (かける数)
+  const multTensLines = generateLineGroup(
+    mult.tens,
     MARGIN,
     lineSpacing,
     lineLength,
     deltaY,
     'right'
   );
-  const displayOnesLines = generateLineGroup(
-    display.ones,
+  const multOnesLines = generateLineGroup(
+    mult.ones,
     MARGIN + groupWidth + GROUP_GAP,
     lineSpacing,
     lineLength,
     deltaY,
     'right'
   );
-  // mult lines: tens on left, ones on right (same as display)
-  const multTensLines = generateLineGroup(
-    mult.tens,
+  // Bottom lines (left-down): display (かけられる数)
+  const displayTensLines = generateLineGroup(
+    display.tens,
     width - MARGIN - groupWidth - GROUP_GAP,
     lineSpacing,
     lineLength,
     deltaY,
     'left'
   );
-  const multOnesLines = generateLineGroup(
-    mult.ones,
+  const displayOnesLines = generateLineGroup(
+    display.ones,
     width - MARGIN,
     lineSpacing,
     lineLength,
@@ -110,16 +111,25 @@ export function MultiplicationHelper({ displayValue, multiplier }: Multiplicatio
     'left'
   );
 
-  const topLines = [...displayTensLines, ...displayOnesLines];
-  const bottomLines = [...multTensLines, ...multOnesLines];
+  const topLines = [...multTensLines, ...multOnesLines];
+  const bottomLines = [...displayTensLines, ...displayOnesLines];
 
-  // Intersection zone (middle area where lines cross)
-  const zoneX = groupWidth + GROUP_GAP;
-  const zoneWidth = width - 2 * (groupWidth + GROUP_GAP);
+  // Three intersection zones (hundreds, tens, ones)
+  const centerX = width / 2;
+  const zoneSpacing = groupWidth + GROUP_GAP / 2;
+  const zoneW = groupWidth;
 
   return (
     <div className="multiplication-helper">
-      <div className="mult-zone-bg" style={{ left: zoneX + 8, width: zoneWidth }} />
+      <div
+        className="mult-zone-bg"
+        style={{ left: centerX - zoneSpacing - zoneW / 2 + 8, width: zoneW }}
+      />
+      <div className="mult-zone-bg" style={{ left: centerX - zoneW / 2 + 8, width: zoneW }} />
+      <div
+        className="mult-zone-bg"
+        style={{ left: centerX + zoneSpacing - zoneW / 2 + 8, width: zoneW }}
+      />
       <svg width={width} height={height} className="mult-svg">
         {topLines.map((line, i) => (
           <line key={`top-${i}`} {...line} stroke="rgba(0,0,0,0.7)" strokeWidth="2" />
