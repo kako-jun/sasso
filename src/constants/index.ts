@@ -1,0 +1,38 @@
+// Timing
+export const COUNTDOWN_TIME = 4200; // 4.2 seconds
+export const MAX_TIME_FACTOR = 300000; // 5 minutes for difficulty scaling
+
+// Display
+export const MAX_DISPLAY_DIGITS = 10;
+
+// Scoring
+export const BASE_SCORE_PER_DIGIT = 10;
+export const MAX_PREP_BONUS = 3.0;
+export const MAX_RISK_BONUS = 2.0;
+export const PREP_BONUS_PER_CALC = 0.2;
+
+// Prediction
+export const OPERATOR_PROB = {
+  add: 0.4,
+  sub: 0.3,
+  mul: 0.15,
+  div: 0.15,
+} as const;
+
+export const OPERAND_RANGE = {
+  min: 1,
+  max: 99,
+  baseMax: 10,
+  timeScaling: 40,
+} as const;
+
+// Attack thresholds
+export const ATTACK_THRESHOLDS = {
+  mild: 50,
+  medium: 150,
+  strong: 300,
+  devastating: 500,
+} as const;
+
+// URLs
+export const GITHUB_URL = 'https://github.com/kako-jun/sasso';

@@ -1,8 +1,6 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
+import type { GameMode, Prediction, ScoreResult } from '../types';
 import {
-  type GameMode,
-  type Prediction,
-  type ScoreResult,
   processElimination,
   checkOverflow,
   generateInitialState,
@@ -10,7 +8,7 @@ import {
   findEliminationIndices,
   calculateScore,
   getDigitCount,
-} from '../gameLogic';
+} from '../game';
 import { COUNTDOWN_TIME } from '../constants';
 import { calculate, formatDisplay, operatorToSymbol } from '../utils';
 
