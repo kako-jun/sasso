@@ -1,6 +1,7 @@
 import { useReducer, useCallback } from 'react';
 import type { CalcOperator } from '../types';
 import { calculate, formatDisplay } from '../utils';
+import { MAX_DISPLAY_DIGITS } from '../constants';
 
 // State
 interface CalculatorState {
@@ -49,6 +50,11 @@ function calculatorReducer(state: CalculatorState, action: CalculatorAction): Ca
     case 'INPUT_DIGIT': {
       if (state.waitingForOperand) {
         return { ...state, display: action.payload, waitingForOperand: false };
+      }
+      // Ignore input if already at max digits (like real calculator)
+      const digitCount = state.display.replace(/[^0-9]/g, '').length;
+      if (digitCount >= MAX_DISPLAY_DIGITS) {
+        return state;
       }
       return {
         ...state,
