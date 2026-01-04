@@ -40,7 +40,8 @@ function splitIntoDigits(num: number): TwoDigitNumber {
 }
 
 function calculateLineSpacing(maxDigit: number): number {
-  return maxDigit > 5 ? 4 : 6;
+  // Minimum spacing of 5px to prevent overlap with strokeWidth 2
+  return maxDigit > 5 ? 5 : 7;
 }
 
 function generateLineGroup(
