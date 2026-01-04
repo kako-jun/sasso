@@ -4,13 +4,14 @@ import {
   processElimination,
   checkOverflow,
   generateInitialState,
-  generatePrediction,
   findEliminationIndices,
   calculateScore,
   getDigitCount,
 } from '../game';
 import { COUNTDOWN_TIME } from '../constants';
 import { calculate, formatDisplay, operatorToSymbol } from '../utils';
+import { usePrediction } from './usePrediction';
+import { useElimination } from './useElimination';
 
 export interface UseGameOptions {
   onDisplayUpdate?: (newDisplay: string) => void;
@@ -53,41 +54,26 @@ export interface UseGameReturn {
 
 export function useGame(options: UseGameOptions = {}): UseGameReturn {
   const { onDisplayUpdate: externalDisplayUpdate } = options;
+
   // Game state
   const [gameMode, setGameMode] = useState<GameMode>('calculator');
   const [gameStarted, setGameStarted] = useState(false);
   const [isGameOver, setIsGameOver] = useState(false);
   const [isSurrender, setIsSurrender] = useState(false);
   const [justPressedEqual, setJustPressedEqual] = useState(false);
-
-  // Score
-  const [score, setScore] = useState(0);
-  const [chains, setChains] = useState(0);
-  const [calculationCount, setCalculationCount] = useState(0);
-  const [lastScoreBreakdown, setLastScoreBreakdown] = useState<ScoreResult | null>(null);
-
-  // Prediction system
-  const [prediction, setPrediction] = useState<Prediction | null>(null);
-  const [countdown, setCountdown] = useState(0);
-  const [gameStartTime, setGameStartTime] = useState<number | null>(null);
-
-  // Animation
-  const [eliminatingIndices, setEliminatingIndices] = useState<number[]>([]);
   const [calculationHistory, setCalculationHistory] = useState('');
 
   // Refs
-  const countdownRef = useRef<number | null>(null);
   const displayRef = useRef('0');
-  const calculationCountRef = useRef(0);
   const externalDisplayUpdateRef = useRef(externalDisplayUpdate);
+
+  // Composed hooks
+  const predictionHook = usePrediction();
+  const eliminationHook = useElimination();
 
   useEffect(() => {
     externalDisplayUpdateRef.current = externalDisplayUpdate;
   }, [externalDisplayUpdate]);
-
-  useEffect(() => {
-    calculationCountRef.current = calculationCount;
-  }, [calculationCount]);
 
   const syncDisplay = useCallback(
     (display: string) => {
@@ -102,29 +88,15 @@ export function useGame(options: UseGameOptions = {}): UseGameReturn {
     [gameMode, gameStarted, isGameOver]
   );
 
-  const clearCountdown = useCallback(() => {
-    if (countdownRef.current) {
-      clearInterval(countdownRef.current);
-      countdownRef.current = null;
-    }
-  }, []);
-
   const resetGame = useCallback(() => {
     setGameStarted(false);
     setIsGameOver(false);
     setIsSurrender(false);
     setJustPressedEqual(false);
-    setPrediction(null);
-    setCountdown(0);
-    setGameStartTime(null);
-    setScore(0);
-    setChains(0);
-    setCalculationCount(0);
-    setLastScoreBreakdown(null);
     setCalculationHistory('');
-    setEliminatingIndices([]);
-    clearCountdown();
-  }, [clearCountdown]);
+    predictionHook.resetPrediction();
+    eliminationHook.resetElimination();
+  }, [predictionHook, eliminationHook]);
 
   const changeGameMode = useCallback(
     (mode: GameMode) => {
@@ -137,125 +109,49 @@ export function useGame(options: UseGameOptions = {}): UseGameReturn {
   const startGame = useCallback((): string => {
     const initialState = generateInitialState();
     setGameStarted(true);
-    setGameStartTime(Date.now());
 
     if (gameMode === 'endless') {
-      const pred = generatePrediction(0);
-      setPrediction(pred);
-      setCountdown(COUNTDOWN_TIME);
+      predictionHook.initPrediction();
     }
 
     return initialState;
-  }, [gameMode]);
+  }, [gameMode, predictionHook]);
 
   const surrender = useCallback(() => {
     setIsSurrender(true);
     setIsGameOver(true);
-    clearCountdown();
-  }, [clearCountdown]);
+    predictionHook.clearCountdown();
+  }, [predictionHook]);
 
   const checkGameOverState = useCallback(
     (displayStr: string): boolean => {
       if (checkOverflow(displayStr)) {
         setIsGameOver(true);
-        clearCountdown();
+        predictionHook.clearCountdown();
         return true;
       }
       return false;
     },
-    [clearCountdown]
-  );
-
-  const incrementCalculationCount = useCallback(() => {
-    setCalculationCount((prev) => prev + 1);
-  }, []);
-
-  // Apply elimination with animation
-  const applyEliminationWithAnimation = useCallback(
-    (
-      displayStr: string,
-      chainCount = 0,
-      initialDigitCount?: number,
-      initialCalcCount?: number,
-      onDisplayUpdate?: (newDisplay: string) => void
-    ): string => {
-      const indices = findEliminationIndices(displayStr);
-
-      if (indices.length > 0) {
-        const digitCountBeforeElimination = initialDigitCount ?? getDigitCount(displayStr);
-        const calcCount = initialCalcCount ?? calculationCountRef.current;
-
-        setEliminatingIndices(indices);
-
-        setTimeout(() => {
-          const result = processElimination(displayStr);
-          onDisplayUpdate?.(result.result);
-          setEliminatingIndices([]);
-
-          const newChainCount = chainCount + 1;
-          setChains(newChainCount);
-
-          const scoreResult = calculateScore({
-            eliminated: result.eliminated,
-            chains: newChainCount,
-            calculationsSinceLastElimination: calcCount,
-            digitCountBeforeElimination,
-          });
-
-          setScore((prev) => prev + scoreResult.totalScore);
-          setLastScoreBreakdown(scoreResult);
-          setCalculationCount(0);
-
-          // Check for chain
-          setTimeout(() => {
-            const nextIndices = findEliminationIndices(result.result);
-            if (nextIndices.length > 0) {
-              applyEliminationWithAnimation(
-                result.result,
-                newChainCount,
-                digitCountBeforeElimination,
-                calcCount,
-                onDisplayUpdate
-              );
-            }
-          }, 100);
-        }, 400);
-
-        return displayStr;
-      }
-
-      return displayStr;
-    },
-    []
-  );
-
-  const applyElimination = useCallback(
-    (displayStr: string, onDisplayUpdate?: (newDisplay: string) => void): string => {
-      const result = processElimination(displayStr);
-
-      if (result.eliminated > 0) {
-        applyEliminationWithAnimation(displayStr, 0, undefined, undefined, onDisplayUpdate);
-        return result.result;
-      }
-
-      return displayStr;
-    },
-    [applyEliminationWithAnimation]
+    [predictionHook]
   );
 
   // Apply prediction (for endless mode)
   const applyPrediction = useCallback(
     (currentDisplay: string, onDisplayUpdate: (newDisplay: string) => void) => {
-      if (!prediction) return;
+      if (!predictionHook.prediction) return;
 
-      setCalculationCount((prev) => prev + 1);
+      eliminationHook.incrementCalculationCount();
 
       const currentValue = parseFloat(currentDisplay);
-      const result = calculate(currentValue, prediction.operand, prediction.operator);
+      const result = calculate(
+        currentValue,
+        predictionHook.prediction.operand,
+        predictionHook.prediction.operator
+      );
       const newDisplay = formatDisplay(result);
 
       setCalculationHistory(
-        `${currentDisplay} ${operatorToSymbol(prediction.operator)} ${prediction.operand} = ${newDisplay}`
+        `${currentDisplay} ${operatorToSymbol(predictionHook.prediction.operator)} ${predictionHook.prediction.operand} = ${newDisplay}`
       );
 
       onDisplayUpdate(newDisplay);
@@ -263,18 +159,18 @@ export function useGame(options: UseGameOptions = {}): UseGameReturn {
       const indices = findEliminationIndices(newDisplay);
       if (indices.length > 0) {
         const digitCountBeforeElimination = getDigitCount(newDisplay);
-        const currentCalcCount = calculationCountRef.current;
+        const currentCalcCount = eliminationHook.calculationCountRef.current;
 
-        setEliminatingIndices(indices);
+        eliminationHook.setEliminatingIndices(indices);
 
         setTimeout(() => {
           const eliminationResult = processElimination(newDisplay);
           const finalDisplay = eliminationResult.result;
 
           onDisplayUpdate(finalDisplay);
-          setEliminatingIndices([]);
+          eliminationHook.setEliminatingIndices([]);
 
-          setChains(eliminationResult.chains);
+          eliminationHook.setChains(eliminationResult.chains);
 
           const scoreResult = calculateScore({
             eliminated: eliminationResult.eliminated,
@@ -282,13 +178,13 @@ export function useGame(options: UseGameOptions = {}): UseGameReturn {
             calculationsSinceLastElimination: currentCalcCount,
             digitCountBeforeElimination,
           });
-          setScore((prev) => prev + scoreResult.totalScore);
-          setLastScoreBreakdown(scoreResult);
-          setCalculationCount(0);
+          eliminationHook.setScore((prev) => prev + scoreResult.totalScore);
+          eliminationHook.setLastScoreBreakdown(scoreResult);
+          eliminationHook.setCalculationCount(0);
 
           if (checkOverflow(finalDisplay)) {
             setIsGameOver(true);
-            clearCountdown();
+            predictionHook.clearCountdown();
             return;
           }
 
@@ -296,7 +192,7 @@ export function useGame(options: UseGameOptions = {}): UseGameReturn {
           setTimeout(() => {
             const nextIndices = findEliminationIndices(finalDisplay);
             if (nextIndices.length > 0) {
-              applyEliminationWithAnimation(
+              eliminationHook.applyEliminationWithAnimation(
                 finalDisplay,
                 eliminationResult.chains,
                 digitCountBeforeElimination,
@@ -309,19 +205,15 @@ export function useGame(options: UseGameOptions = {}): UseGameReturn {
       } else {
         if (checkOverflow(newDisplay)) {
           setIsGameOver(true);
-          clearCountdown();
+          predictionHook.clearCountdown();
           return;
         }
       }
 
       // Generate next prediction
-      if (gameStartTime) {
-        const elapsed = Date.now() - gameStartTime;
-        const nextPred = generatePrediction(elapsed);
-        setPrediction(nextPred);
-      }
+      predictionHook.generateNextPrediction();
     },
-    [prediction, gameStartTime, clearCountdown, applyEliminationWithAnimation]
+    [predictionHook, eliminationHook]
   );
 
   // Countdown timer for endless mode
@@ -330,8 +222,8 @@ export function useGame(options: UseGameOptions = {}): UseGameReturn {
       return;
     }
 
-    countdownRef.current = window.setInterval(() => {
-      setCountdown((prev) => {
+    predictionHook.countdownRef.current = window.setInterval(() => {
+      predictionHook.setCountdown((prev) => {
         if (prev <= 100) {
           applyPrediction(displayRef.current, (newDisplay) => {
             displayRef.current = newDisplay;
@@ -345,9 +237,9 @@ export function useGame(options: UseGameOptions = {}): UseGameReturn {
     }, 100);
 
     return () => {
-      clearCountdown();
+      predictionHook.clearCountdown();
     };
-  }, [gameMode, gameStarted, isGameOver, applyPrediction, clearCountdown]);
+  }, [gameMode, gameStarted, isGameOver, applyPrediction, predictionHook]);
 
   return {
     gameMode,
@@ -355,22 +247,22 @@ export function useGame(options: UseGameOptions = {}): UseGameReturn {
     isGameOver,
     isSurrender,
     justPressedEqual,
-    score,
-    chains,
-    calculationCount,
-    lastScoreBreakdown,
-    prediction,
-    countdown,
-    eliminatingIndices,
+    score: eliminationHook.score,
+    chains: eliminationHook.chains,
+    calculationCount: eliminationHook.calculationCount,
+    lastScoreBreakdown: eliminationHook.lastScoreBreakdown,
+    prediction: predictionHook.prediction,
+    countdown: predictionHook.countdown,
+    eliminatingIndices: eliminationHook.eliminatingIndices,
     calculationHistory,
     changeGameMode,
     startGame,
     surrender,
     resetGame,
     setJustPressedEqual,
-    incrementCalculationCount,
+    incrementCalculationCount: eliminationHook.incrementCalculationCount,
     setCalculationHistory,
-    applyElimination,
+    applyElimination: eliminationHook.applyElimination,
     checkGameOverState,
     syncDisplay,
   };
