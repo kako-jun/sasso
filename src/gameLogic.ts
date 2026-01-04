@@ -270,24 +270,11 @@ export function generatePrediction(elapsedTime: number, attackPower = 0): Predic
     operator = '/';
   }
 
-  // 数字の範囲（演算子別）× 攻撃による倍率
-  let maxOperand: number;
-  switch (operator) {
-    case '+':
-      maxOperand = Math.floor((50 + timeFactor * 50) * attackEffect.operandMultiplier); // 50-200
-      break;
-    case '-':
-      maxOperand = Math.floor((30 + timeFactor * 30) * attackEffect.operandMultiplier); // 30-120
-      break;
-    case '*':
-      maxOperand = Math.floor((5 + timeFactor * 4) * attackEffect.operandMultiplier); // 5-18
-      break;
-    case '/':
-      maxOperand = Math.floor((3 + timeFactor * 4) * attackEffect.operandMultiplier); // 3-14
-      break;
-  }
+  // 全演算子で1-99の範囲（時間経過と攻撃で大きい数字が出やすくなる）
+  const baseMax = 10 + timeFactor * 40; // 10-50
+  const maxOperand = Math.min(Math.floor(baseMax * attackEffect.operandMultiplier), 99); // max 99
 
-  const operand = Math.floor(Math.random() * maxOperand) + 1;
+  const operand = Math.floor(Math.random() * maxOperand) + 1; // 1 to maxOperand
 
   return { operator, operand };
 }

@@ -11,6 +11,7 @@ import {
   CalculationHistory,
   GameOverOverlay,
   StartPrompt,
+  MultiplicationHelper,
 } from './components';
 
 function App() {
@@ -162,6 +163,16 @@ function App() {
       </main>
 
       {game.gameMode !== 'calculator' && <CalculationHistory text={game.calculationHistory} />}
+
+      {game.gameMode === 'endless' &&
+        game.gameStarted &&
+        !game.isGameOver &&
+        game.prediction?.operator === '*' && (
+          <MultiplicationHelper
+            displayValue={calculator.display}
+            multiplier={game.prediction.operand}
+          />
+        )}
 
       {game.gameMode !== 'calculator' && !game.gameStarted && <StartPrompt />}
     </div>

@@ -12,39 +12,47 @@ A puzzle game where you use the four arithmetic operations to create adjacent id
 ## Basic Rules
 
 ### Gravity and Compression Direction
+
 - Gravity pulls to the right
 - After elimination, remaining digits are compressed rightward (fall to the right)
 
 ### Elimination Rules
+
 - Adjacent identical digits are eliminated
 - After elimination, remaining digits compress right, potentially causing chain reactions
 
 ### Game Over Conditions
+
 - Digit overflow (exceeding 10 digits) = Game Over
 
 ### Surrender (Immediate Loss)
+
 - Pressing a digit after = → Surrender (misoperation)
   - After =, you should press an operator to continue calculation
 - Pressing C or E → Surrender
   - These buttons are decorative or surrender buttons during gameplay
 
 ### Consecutive = Presses
+
 - Pressing = repeatedly repeats the previous calculation (standard calculator behavior)
 - Example: `5 + 3 = 8` → `= 11` → `= 14` (+3 is repeated)
 - In game, consecutive = can be used strategically to quickly adjust values
 
 ### Number Rules
+
 - Negative values: Allowed
 - Decimal point: Does not trigger elimination even when adjacent
   - Example: "3.3" has identical digits adjacent but won't eliminate
   - Decimal point acts as a "wall" in elimination logic
 
 ### Initial State
+
 - Generated from date/time at game start
 - Example: 2025/12/25 14:30:45 → "143045" or processed value
 - Different initial state each game
 
 ### Game Start Timing
+
 - Game starts the moment any button is pressed
 - The button pressed triggers the first input
   - Example: Press "1" to start → Game starts with "1" already input
@@ -60,12 +68,12 @@ A puzzle game where you use the four arithmetic operations to create adjacent id
 Score = Base × Chain × Prep × Risk
 ```
 
-| Component | Calculation | Range |
-|-----------|-------------|-------|
-| Base | Eliminated digits × 10 | - |
-| Chain | Chain count | 1.0+ |
-| Prep | 1 + (calculations since last elimination × 0.2) | 1.0-3.0 |
-| Risk | 1 + (digit count before elimination ÷ 10) | 1.0-2.0 |
+| Component | Calculation                                     | Range   |
+| --------- | ----------------------------------------------- | ------- |
+| Base      | Eliminated digits × 10                          | -       |
+| Chain     | Chain count                                     | 1.0+    |
+| Prep      | 1 + (calculations since last elimination × 0.2) | 1.0-3.0 |
+| Risk      | 1 + (digit count before elimination ÷ 10)       | 1.0-2.0 |
 
 ### Score Examples
 
@@ -79,6 +87,7 @@ Score = Base × Chain × Prep × Risk
   `4×10×2×2.6×1.9 = 395 points`
 
 ### Attack Power
+
 - Attack Power = Score
 - Higher score = stronger attack on opponent
 
@@ -86,15 +95,16 @@ Score = Base × Chain × Prep × Risk
 
 Attack power affects opponent's next prediction difficulty:
 
-| Attack Power | Difficulty | Multiply Prob | Number Scale | Predictions |
-|--------------|------------|---------------|--------------|-------------|
-| 0-50 | Normal | +0% | 1.0x | 1 |
-| 51-150 | Mild | +10% | 1.2x | 1 |
-| 151-300 | Medium | +20% | 1.5x | 1 |
-| 301-500 | Strong | +30% | 1.8x | 2 |
-| 501+ | Devastating | +40% | 2.0x | 3 |
+| Attack Power | Difficulty  | Multiply Prob | Number Scale | Predictions |
+| ------------ | ----------- | ------------- | ------------ | ----------- |
+| 0-50         | Normal      | +0%           | 1.0x         | 1           |
+| 51-150       | Mild        | +10%          | 1.2x         | 1           |
+| 151-300      | Medium      | +20%          | 1.5x         | 1           |
+| 301-500      | Strong      | +30%          | 1.8x         | 2           |
+| 501+         | Devastating | +40%          | 2.0x         | 3           |
 
 Effects:
+
 - **Multiply Prob**: Increases chance of multiplication (causes digit growth)
 - **Number Scale**: Larger operands
 - **Predictions**: Multiple predictions queued at once
@@ -102,6 +112,7 @@ Effects:
 ## Game Modes
 
 ### Practice Mode
+
 - No predictions, no time limit
 - Free play to understand elimination mechanics
 - Score is tracked
@@ -109,6 +120,7 @@ Effects:
 ### 1-Player Endless Mode
 
 Falling puzzle format:
+
 - "×7 coming in 4.2 seconds" - both operator and number are predicted
 - Prediction time: 4.2 seconds
 - Player prepares by inputting numbers to set up eliminations
@@ -119,7 +131,16 @@ Falling puzzle format:
 
 - Cause opponent's digit overflow to win
 
+#### Prediction Synchronization
+
+- At game start: Both players receive the same predictions (fair start)
+- After first attack: Predictions diverge
+  - Attacker continues with original prediction sequence
+  - Defender receives new, harder predictions (based on attack power)
+- Once diverged, predictions remain separate for the rest of the game
+
 #### Attack System
+
 - Attack trigger conditions:
   - Eliminate 3+ identical digits simultaneously
   - Trigger 2+ chain reactions
@@ -128,61 +149,81 @@ Falling puzzle format:
 ## Prediction Algorithm (Tile Distribution)
 
 ### Operator Probability (Initial)
+
 - Addition: 40%
 - Subtraction: 30%
 - Multiplication: 15%
 - Division: 15%
 
-### Number Range (by Operator)
-- Addition: Large (digits don't grow quickly)
-- Subtraction: Medium
-- Multiplication: Small (prevent rapid digit growth)
-- Division: Small (decimals appear easily)
+### Number Range
+
+- All operators: 1-99 (unified range)
+- Time progression and attack effects increase the probability of larger numbers
+- Base range expands from 10 to 50 over 5 minutes
+- Attack multiplier can scale up to 2.0x (max 99)
 
 ### Difficulty Progression
+
 - Multiplication probability gradually increases over time
 - Number ranges gradually expand
 
 ## Screen Layout
 
 ### Basic Layout
+
 - Vertical smartphone screen as base
 - Calculator itself is vertical, fits well
 
 ### Element Positioning (Non-overlapping during gameplay)
+
 - Prediction area: Above calculator
 - Score area: Below prediction, above calculator
 - Calculator: Center
 - Calculation history: Below calculator
 
 ### Overlapping Elements (OK)
+
 - Start prompt: Overlaps calculator (game hasn't started)
 - Game over overlay: Inside calculator window
 
 ### Menu Bar (Top - Classic MacOS style)
 
 Left side:
+
 - GitHub logo
 - Game mode selection (Calculator, Practice, Endless)
 
 ### Score Display Area
+
 - Above calculator window
 - Shows: Score, Chains
 - Score breakdown: `+X = Base×Chain×Prep×Risk`
 - Labels: (Base×Chain×Prep×Risk)
 
 ### Prediction Display Area
+
 - Above score area
 - Shows next operation (e.g., "×7")
 - Countdown as analog clock (digits would be confusing)
 
 ### Calculation History Area
+
 - Below calculator window
 - Shows calculations made this turn
 - Operators displayed in bold
 - Max width with word-break for long expressions
 
+### Multiplication Helper (Indian/Vedic Method)
+
+- Fixed at screen bottom
+- Displays only when prediction is multiplication
+- Shows last 2 digits of calculator × prediction operand
+- Uses diagonal line intersection method (SVG)
+- Updates in real-time as calculator digits change
+- Shows zone intersection counts and final result
+
 ### Battle Mode Screen (Landscape)
+
 - Calculators left and right, equal size
 - Prediction area above each calculator
 - Score area above each calculator
