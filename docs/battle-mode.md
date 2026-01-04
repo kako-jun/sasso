@@ -1,51 +1,114 @@
-# Battle Mode - Technical Design
+# Battle Mode Specification
 
 ## Overview
 
-2-player online battle mode using Nostr protocol for real-time communication.
+2-player online battle mode using Nostr protocol for real-time P2P communication.
 
-## Technology Choice: Nostr
+---
 
-### Why Nostr?
+## User-Facing Specification
 
-- **No server required**: Relays handle message passing
-- **No NAT traversal issues**: Unlike WebRTC, relays bypass NAT problems
-- **No garbage data**: Ephemeral events are not stored
-- **Real-time**: WebSocket-based, ~50-200ms latency (sufficient for 10s prediction intervals)
-- **Built-in authentication**: Nostr public keys serve as player IDs
-
-### Alternatives Considered
-
-| Option                  | Pros                             | Cons                          |
-| ----------------------- | -------------------------------- | ----------------------------- |
-| WebRTC (P2P)            | Lower latency (20-50ms)          | NAT issues, TURN server costs |
-| Custom WebSocket server | Full control                     | Server hosting required       |
-| **Nostr (chosen)**      | Simple, no server, no NAT issues | Slightly higher latency       |
-
-## Matchmaking
-
-### Flow
+### Battle Flow
 
 ```
-1. Player A creates battle room → Generates URL
-2. Player A shares URL (via Nostr, LINE, Discord, etc.)
-3. Player B clicks URL → Joins room
-4. Battle starts
+1. Player A: メニューから "Battle" を選択
+2. Player A: "Create Room" をクリック → URL生成
+3. Player A: URLをコピーして相手に共有（LINE, Discord等）
+4. Player A: 「Waiting for opponent...」画面で待機
+5. Player B: 共有されたURLをクリック → 自動でルームに参加
+6. 両者: 「Opponent found!」表示
+7. 両者: 任意のキーを押すとゲーム開始
+8. ゲーム終了: Victory/Defeat 画面表示
+9. Leave ボタンで1人用モードに戻る
 ```
 
-### URL Format
+### Room URL
+
+**形式:**
 
 ```
 https://sasso.app/battle/{room-id}
 ```
 
-The sharing method is user's choice - works with any platform.
+**特性:**
+| 項目 | 仕様 | 実装状況 |
+|------|------|----------|
+| 発行方法 | Create Room ボタン | ✓ 実装済 |
+| 共有方法 | ユーザーが任意の方法で共有 | ✓ |
+| 有効期限 | なし（Nostrリレー依存）| △ 未定義 |
+| 使用回数 | 1回のみ（対戦終了後は無効） | ✓ |
+| ブラウザURL更新 | 作成/参加時に自動更新 | ✓ 実装済 |
 
-## Communication Protocol
+### Waiting State (ルーム作成後)
+
+| 操作              | 動作                                  | 実装状況 |
+| ----------------- | ------------------------------------- | -------- |
+| 待機              | 「Waiting for opponent...」表示       | ✓        |
+| キャンセル        | Cancelボタンでルーム破棄、1人用に戻る | ✓        |
+| ページ離脱        | ルーム破棄（再接続不可）              | ✓        |
+| ページ再読込      | ルーム破棄（再接続不可）              | ✓        |
+| **途中離脱→復帰** | **不可（subscriptionが失われる）**    | ✗ 未実装 |
+
+### Game End (対戦終了後)
+
+| 操作        | 動作                          | 実装状況 |
+| ----------- | ----------------------------- | -------- |
+| 結果表示    | Victory/Defeat + 両者のスコア | ✓        |
+| Leave       | 1人用モードに戻る             | ✓        |
+| **Rematch** | **未実装（ボタン非表示）**    | ✗ 未実装 |
+
+### Returning to Single-Player
+
+1人用モードに戻る方法:
+
+- **対戦中**: Surrender (C/Eキー or digit after =) → Leave
+- **待機中**: Cancel ボタン
+- **結果画面**: Leave ボタン
+
+ブラウザを閉じる必要はありません。
+
+---
+
+## Future Enhancements (未実装)
+
+### Priority 1: Rematch
+
+- 対戦終了後に両者がRematchボタンを押すと再戦
+- 新しいシードを生成して同じルームで継続
+
+### Priority 2: Reconnection
+
+- 途中離脱しても同じルームに再接続可能
+- タイムアウト: 60秒
+
+### Priority 3: Room Expiration
+
+- ルーム作成から10分経過で自動無効化
+- 相手が参加しない場合の対策
+
+### Priority 4: Disconnect Detection
+
+- 相手の切断を検知してゲーム終了
+- ハートビート間隔: 3秒
+- 切断判定: 10秒無応答
+
+---
+
+## Technical Specification
+
+### Technology Choice: Nostr
+
+**Why Nostr?**
+
+- No server required: Relays handle message passing
+- No NAT traversal issues: Unlike WebRTC, relays bypass NAT problems
+- No garbage data: Ephemeral events are not stored
+- Real-time: WebSocket-based, ~50-200ms latency
+- Built-in authentication: Nostr public keys serve as player IDs
 
 ### Nostr Event Types
 
-#### 1. Room Creation (Persistent)
+#### Room Creation (Persistent - kind 30078)
 
 ```json
 {
@@ -57,12 +120,13 @@ The sharing method is user's choice - works with any platform.
   "content": {
     "type": "room",
     "status": "waiting",
-    "seed": 123456789
+    "seed": 123456789,
+    "hostPubkey": "<pubkey>"
   }
 }
 ```
 
-#### 2. Game State (Ephemeral - not stored)
+#### Game State (Ephemeral - kind 25000)
 
 ```json
 {
@@ -72,25 +136,13 @@ The sharing method is user's choice - works with any platform.
     "type": "state",
     "display": "12345",
     "score": 150,
-    "chains": 2
+    "chains": 2,
+    "calculationHistory": "12 + 3 = 15"
   }
 }
 ```
 
-#### 3. Key Input (Ephemeral)
-
-```json
-{
-  "kind": 25000,
-  "tags": [["d", "sasso-room-{room-id}"]],
-  "content": {
-    "type": "keypress",
-    "key": "5"
-  }
-}
-```
-
-#### 4. Attack (Ephemeral)
+#### Attack (Ephemeral - kind 25000)
 
 ```json
 {
@@ -98,88 +150,71 @@ The sharing method is user's choice - works with any platform.
   "tags": [["d", "sasso-room-{room-id}"]],
   "content": {
     "type": "attack",
-    "power": 250
+    "power": 250,
+    "timestamp": 1704000000000
   }
 }
 ```
 
-#### 5. Game Over (Persistent for history)
+#### Game Over (Ephemeral - kind 25000)
 
 ```json
 {
-  "kind": 30078,
-  "tags": [
-    ["d", "sasso-result-{room-id}"],
-    ["t", "sasso"]
-  ],
+  "kind": 25000,
+  "tags": [["d", "sasso-room-{room-id}"]],
   "content": {
-    "type": "result",
-    "winner": "<pubkey>",
-    "loser": "<pubkey>",
-    "scores": {
-      "winner": 1250,
-      "loser": 890
-    }
+    "type": "gameover",
+    "reason": "overflow",
+    "finalScore": 890,
+    "winner": "<opponent-pubkey>"
   }
 }
 ```
 
-## Prediction Synchronization
+### Prediction Synchronization
 
-Both players must receive the same predictions. Solution:
-
-1. Room creator generates a random seed
-2. Seed is shared in room creation event
-3. Both clients use seed for deterministic prediction generation
+Both players receive identical predictions via shared seed:
 
 ```typescript
-// Seeded random for predictions
+// LCG-based seeded random (same as glibc)
 function seededRandom(seed: number): () => number {
+  let state = seed;
   return () => {
-    seed = (seed * 1103515245 + 12345) & 0x7fffffff;
-    return seed / 0x7fffffff;
+    state = (state * 1103515245 + 12345) & 0x7fffffff;
+    return state / 0x7fffffff;
   };
 }
 ```
 
-## Implementation Phases
+Difficulty scaling uses `predictionCount` (not time) for deterministic sync.
 
-### Phase 1: Foundation
+### Relay Configuration
 
-- [ ] Nostr connection (nostr-tools library)
-- [ ] Room creation and joining
-- [ ] Basic event send/receive
+```typescript
+const NOSTR_RELAYS = ['wss://relay.damus.io', 'wss://nos.lol', 'wss://relay.nostr.band'];
+```
 
-### Phase 2: Core Battle
+### Timing Constants
 
-- [ ] Prediction synchronization (shared seed)
-- [ ] Real-time display sync
-- [ ] Attack effect transmission
+| Constant             | Value   | Description                        |
+| -------------------- | ------- | ---------------------------------- |
+| COUNTDOWN_TIME       | 10000ms | Prediction interval                |
+| STATE_THROTTLE       | 100ms   | Min interval between state updates |
+| ROOM_EXPIRY          | -       | Not implemented                    |
+| DISCONNECT_THRESHOLD | -       | Not implemented                    |
 
-### Phase 3: UI
+---
 
-- [ ] Split-screen layout (left/right calculators)
-- [ ] Opponent's calculator display
-- [ ] Battle result screen
-
-### Phase 4: Polish
-
-- [ ] Reconnection handling
-- [ ] Timeout/disconnect detection
-- [ ] Match history (optional)
-
-## Screen Layout (Battle Mode)
+## Screen Layout
 
 ### Mobile (Portrait)
-
-Same as single-player. Opponent score shown below your score:
 
 ```
 ┌─────────────────────┐
 │ [Prediction ×7]     │
 ├─────────────────────┤
 │ Score: 150          │
-│ Opponent: 89        │  ← Added below your score
+│ Opponent: 89        │  ← Compact opponent display
 ├─────────────────────┤
 │ ┌─────────────────┐ │
 │ │     12345       │ │
@@ -190,62 +225,37 @@ Same as single-player. Opponent score shown below your score:
 └─────────────────────┘
 ```
 
-### PC (Wide Screen)
-
-Side-by-side. Right side shows opponent's full calculator (header/score only, no prediction):
+### Desktop (Wide)
 
 ```
-┌──────────────────────────┬──────────────────────────┐
-│ [Prediction ×7]          │                          │
-├──────────────────────────┼──────────────────────────┤
-│ Score: 150               │ Opponent: 89             │
-├──────────────────────────┼──────────────────────────┤
-│ ┌──────────────────────┐ │ ┌──────────────────────┐ │
-│ │       12345          │ │ │       6789           │ │
-│ │      [Keypad]        │ │ │      [Keypad]        │ │
-│ └──────────────────────┘ │ └──────────────────────┘ │
-├──────────────────────────┼──────────────────────────┤
-│ 12 + 3 = 15              │ 67 × 2 = 134             │
-└──────────────────────────┴──────────────────────────┘
-        YOU                        OPPONENT
+┌─────────────────────────────────────────────────┐
+│ [Prediction ×7]                                 │
+├────────────────────────┬────────────────────────┤
+│ Score: 150             │        Opponent        │
+├────────────────────────┤ ┌────────────────────┐ │
+│ ┌────────────────────┐ │ │       6789         │ │
+│ │       12345        │ │ │   Score: 89        │ │
+│ │      [Keypad]      │ │ │   Chains: 1        │ │
+│ └────────────────────┘ │ │   67 × 2 = 134     │ │
+├────────────────────────┤ └────────────────────┘ │
+│ 12 + 3 = 15            │                        │
+└────────────────────────┴────────────────────────┘
+        YOU                      OPPONENT
 ```
 
-Opponent's keypad is display-only (shows their inputs in real-time).
+---
 
-## Attack Visual Effects
+## Attack System
 
-When attacked, the prediction display changes to indicate increased difficulty:
+When attacked, opponent's next prediction becomes harder:
 
-```
-Normal:                    Under Attack:
-┌─────────────┐            ┌─────────────┐
-│    ×7       │            │ ░░░ ×23 ░░░ │  ← Gray grid overlay
-│   ○○○○○     │            │ ░░ ○○○○○ ░░ │  ← Harder numbers
-└─────────────┘            └─────────────┘
-```
+- Higher operand values
+- More multiplication/division
+- Visual indicator: Grid overlay + "ATTACK!" label
 
-Effects:
+Trigger conditions:
 
-- **Gray grid overlay**: Indicates prediction is "corrupted" by attack
-- **Larger/harder numbers**: Attack effect visible in prediction value
-- **Multiple predictions**: Stacked predictions if attack queues multiple
+- 3+ digits eliminated simultaneously
+- 2+ chain reactions
 
-The overlay clears after the affected prediction(s) are resolved.
-
-## Relay Selection
-
-Default relays for Sasso battles:
-
-```typescript
-const BATTLE_RELAYS = ['wss://relay.damus.io', 'wss://nos.lol', 'wss://relay.nostr.band'];
-```
-
-Users can add custom relays if needed.
-
-## Security Considerations
-
-- **Cheating**: Client-side calculation is vulnerable to manipulation
-  - Mitigation: Both clients verify each other's scores based on observed actions
-  - Accept that casual cheating is possible (not a competitive esport)
-- **Impersonation**: Nostr signatures prevent impersonation
-- **Replay attacks**: Room IDs include timestamp to prevent replay
+Attack power = score from that elimination.

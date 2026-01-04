@@ -162,8 +162,9 @@ All game constants are centralized in `constants/index.ts`:
 
 | Constant             | Value             | Description                    |
 | -------------------- | ----------------- | ------------------------------ |
-| COUNTDOWN_TIME       | 4200              | Prediction interval (ms)       |
-| MAX_DISPLAY_DIGITS   | 10                | Game over threshold            |
+| COUNTDOWN_TIME       | 10000             | Prediction interval (ms)       |
+| SPRINT_TIME_LIMIT    | 180000            | Sprint mode time limit (3 min) |
+| MAX_DISPLAY_DIGITS   | 12                | Game over at 13+ digits        |
 | BASE_SCORE_PER_DIGIT | 10                | Score per eliminated digit     |
 | OPERATOR_PROB        | {add: 0.4, ...}   | Initial operator probabilities |
 | OPERAND_RANGE        | {min: 1, max: 99} | Operand value range            |
@@ -172,7 +173,7 @@ All game constants are centralized in `constants/index.ts`:
 
 All types are in `types/index.ts`:
 
-- `GameMode`: 'calculator' | 'practice' | 'endless'
+- `GameMode`: 'calculator' | 'practice' | 'sprint' | 'endless' | 'battle'
 - `Operator`: '+' | '-' | '\*' | '/'
 - `Prediction`: { operator, operand }
 - `ScoreResult`: { totalScore, baseScore, chainMultiplier, ... }

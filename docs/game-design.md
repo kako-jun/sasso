@@ -132,8 +132,8 @@ Time-limited scoring mode:
 
 Falling puzzle format:
 
-- "×7 coming in 4.2 seconds" - both operator and number are predicted
-- Prediction time: 10 seconds
+- "×7 coming in 10 seconds" - both operator and number are predicted
+- Prediction interval: 10 seconds
 - Player prepares by inputting numbers to set up eliminations
 - Predicted operation executes, elimination check occurs
 - Example: Current "12", "×7" predicted → becomes 84 → prepare adjacent 8 and 4 to eliminate
@@ -249,7 +249,7 @@ Left side:
 - [x] Chain compression direction → Right (gravity on right)
 - [x] Turn-based or real-time → Falling puzzle format (prediction + wait time)
 - [x] What gets predicted → Both operator and number (e.g., ×7)
-- [x] Prediction display time → 4.2 seconds
+- [x] Prediction display time → 10 seconds
 - [x] Decimal number handling → "3.3" doesn't eliminate (decimal is wall)
 - [x] Battle mode attack conditions → 3+ simultaneous elimination or 2+ chains
 - [x] Battle screen layout → Landscape, left/right calculators, equal size

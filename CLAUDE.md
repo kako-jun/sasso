@@ -79,12 +79,13 @@ src/
 
 ## Game Modes
 
-| Mode       | Predictions | Time Limit | Score |
-| ---------- | ----------- | ---------- | ----- |
-| Calculator | No          | No         | No    |
-| Practice   | No          | No         | Yes   |
-| Sprint     | Yes (10s)   | 3:00       | Yes   |
-| Endless    | Yes (10s)   | No         | Yes   |
+| Mode       | Predictions | Time Limit | Score | Notes                      |
+| ---------- | ----------- | ---------- | ----- | -------------------------- |
+| Calculator | No          | No         | No    | Standard calculator        |
+| Practice   | No          | No         | Yes   | Free play with elimination |
+| Sprint     | Yes (10s)   | 3:00       | Yes   | Time attack                |
+| Endless    | Yes (10s)   | No         | Yes   | Survival                   |
+| Battle     | Yes (10s)   | No         | Yes   | 2P online via Nostr        |
 
 ## UI Layout (Non-overlapping during gameplay)
 

@@ -102,9 +102,19 @@ Sasso is a calculator-based puzzle game with Classic Macintosh System 7 inspired
 
 ### Endless Mode
 
-- Predictions every 4.2 seconds
+- Predictions every 10 seconds
 - Countdown displayed as analog clock (to avoid confusion with game numbers)
 - Score and chain tracking
+
+### Sprint Mode
+
+- Same as Endless but with 3-minute time limit
+- Game ends when time runs out
+
+### Battle Mode
+
+- 2-player online mode via Nostr
+- See [battle-mode.md](battle-mode.md) for details
 
 ## Elimination Animation
 
