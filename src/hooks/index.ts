@@ -9,3 +9,13 @@ export type { UsePredictionReturn } from './usePrediction';
 export { useElimination } from './useElimination';
 export type { UseEliminationReturn } from './useElimination';
 export { useEndlessMode } from './useEndlessMode';
+
+// Battle hooks
+export { useNostr } from './useNostr';
+export type { UseNostrReturn } from './useNostr';
+export { useBattleRoom } from './useBattleRoom';
+export type { UseBattleRoomReturn } from './useBattleRoom';
+export { useSeededPrediction } from './useSeededPrediction';
+export type { UseSeededPredictionReturn } from './useSeededPrediction';
+export { useBattleMode } from './useBattleMode';
+export type { UseBattleModeReturn } from './useBattleMode';

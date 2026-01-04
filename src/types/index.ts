@@ -2,7 +2,7 @@
 export type CalcOperator = '+' | '-' | '*' | '/' | null;
 
 // Game types
-export type GameMode = 'calculator' | 'practice' | 'sprint' | 'endless';
+export type GameMode = 'calculator' | 'practice' | 'sprint' | 'endless' | 'battle';
 export type Operator = '+' | '-' | '*' | '/';
 
 // Prediction
@@ -60,3 +60,6 @@ export interface ScoreBreakdown {
 }
 
 // Note: UseGameOptions and UseGameReturn are defined in hooks/useGame.ts
+
+// Battle types
+export * from './battle';

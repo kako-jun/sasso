@@ -7,3 +7,14 @@ export { PredictionArea } from './PredictionArea';
 export { CalculationHistory } from './CalculationHistory';
 export { GameOverOverlay, StartPrompt } from './GameOverlay';
 export { MultiplicationHelper } from './MultiplicationHelper';
+
+// Battle components
+export {
+  OpponentScore,
+  OpponentCalculator,
+  AttackIndicator,
+  BattleOverlay,
+  RoomCreation,
+  BattleLayout,
+  BattleApp,
+} from './battle';

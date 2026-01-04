@@ -1,3 +1,4 @@
+import { useState, useEffect, useCallback } from 'react';
 import './App.css';
 import { useGameController, useKeyboard } from './hooks';
 import {
@@ -11,11 +12,29 @@ import {
   GameOverOverlay,
   StartPrompt,
   MultiplicationHelper,
+  BattleApp,
 } from './components';
+import type { GameMode } from './types';
 
-function App() {
-  const controller = useGameController();
+/**
+ * Extract room ID from URL path /battle/{roomId}
+ */
+function getRoomIdFromUrl(): string | undefined {
+  const path = window.location.pathname;
+  const match = path.match(/^\/battle\/(.+)$/);
+  return match ? match[1] : undefined;
+}
 
+/**
+ * Main single-player app component
+ */
+function SinglePlayerApp({
+  controller,
+  onChangeMode,
+}: {
+  controller: ReturnType<typeof useGameController>;
+  onChangeMode: (mode: GameMode) => void;
+}) {
   useKeyboard(controller.handleKey);
 
   const isPlaying = controller.gameMode !== 'calculator';
@@ -28,7 +47,7 @@ function App() {
     <div className="desktop">
       <MenuBar
         gameMode={controller.gameMode}
-        onChangeMode={controller.handleModeChange}
+        onChangeMode={onChangeMode}
         score={controller.score}
         sprintTimeRemaining={controller.sprintTimeRemaining}
         gameStarted={controller.gameStarted}
@@ -40,7 +59,7 @@ function App() {
 
       {isPlaying && <ScoreArea lastScoreBreakdown={controller.lastScoreBreakdown} />}
 
-      <Window title="Sasso" onClose={() => controller.handleModeChange('calculator')}>
+      <Window title="Sasso" onClose={() => onChangeMode('calculator')}>
         {controller.isGameOver && (
           <GameOverOverlay isSurrender={controller.isSurrender} onRetry={controller.resetAll} />
         )}
@@ -60,6 +79,58 @@ function App() {
       {isPlaying && !controller.gameStarted && <StartPrompt />}
     </div>
   );
+}
+
+function App() {
+  const controller = useGameController();
+  const [battleRoomId, setBattleRoomId] = useState<string | undefined>(getRoomIdFromUrl);
+
+  // Handle URL changes (browser back/forward)
+  useEffect(() => {
+    const handlePopState = () => {
+      const roomId = getRoomIdFromUrl();
+      setBattleRoomId(roomId);
+      if (roomId) {
+        controller.handleModeChange('battle');
+      }
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, [controller]);
+
+  // Handle initial URL routing
+  useEffect(() => {
+    const roomId = getRoomIdFromUrl();
+    if (roomId) {
+      controller.handleModeChange('battle');
+    }
+  }, []);
+
+  // Handle mode changes with URL updates
+  const handleModeChange = useCallback(
+    (mode: GameMode) => {
+      if (mode === 'battle') {
+        // Don't update URL here - battle mode will handle it
+      } else {
+        // Clear battle URL when leaving battle mode
+        if (window.location.pathname.startsWith('/battle')) {
+          window.history.pushState(null, '', '/');
+        }
+        setBattleRoomId(undefined);
+      }
+      controller.handleModeChange(mode);
+    },
+    [controller]
+  );
+
+  // Render battle mode
+  if (controller.gameMode === 'battle') {
+    return <BattleApp initialRoomId={battleRoomId} onChangeMode={handleModeChange} />;
+  }
+
+  // Render single-player modes
+  return <SinglePlayerApp controller={controller} onChangeMode={handleModeChange} />;
 }
 
 export default App;

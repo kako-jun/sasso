@@ -55,6 +55,12 @@ export function MenuBar({
       >
         Endless
       </span>
+      <span
+        className={`menu-item ${gameMode === 'battle' ? 'active' : ''}`}
+        onClick={() => onChangeMode('battle')}
+      >
+        Battle
+      </span>
       <div className="menu-spacer" />
       {showScore && <span className="status-item">{(score ?? 0).toLocaleString()}</span>}
     </header>
