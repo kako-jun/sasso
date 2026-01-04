@@ -17,6 +17,7 @@ npm run lint  # Run ESLint
 - [docs/game-design.md](docs/game-design.md) - Game rules, scoring, attack system
 - [docs/specification.md](docs/specification.md) - UI specs, controls
 - [docs/architecture.md](docs/architecture.md) - File structure, hooks, patterns
+- [docs/battle-mode.md](docs/battle-mode.md) - 2P battle mode (Nostr-based)
 
 ## Key Concepts
 
