@@ -1,6 +1,8 @@
 export { useCalculator } from './useCalculator';
 export { useGame } from './useGame';
 export type { UseGameOptions, UseGameReturn } from './useGame';
+export { useGameController } from './useGameController';
+export type { UseGameControllerReturn } from './useGameController';
 export { useKeyboard } from './useKeyboard';
 export { usePrediction } from './usePrediction';
 export type { UsePredictionReturn } from './usePrediction';
