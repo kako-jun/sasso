@@ -24,18 +24,19 @@ function App() {
 
   return (
     <div className="desktop">
-      <MenuBar
-        gameMode={controller.gameMode}
-        onChangeMode={controller.handleModeChange}
-        score={controller.score}
-        chains={controller.chains}
-      />
+      <MenuBar gameMode={controller.gameMode} onChangeMode={controller.handleModeChange} />
 
       {isEndlessActive && controller.prediction && (
         <PredictionArea prediction={controller.prediction} countdown={controller.countdown} />
       )}
 
-      {isPlaying && <ScoreArea lastScoreBreakdown={controller.lastScoreBreakdown} />}
+      {isPlaying && (
+        <ScoreArea
+          score={controller.score}
+          chains={controller.chains}
+          lastScoreBreakdown={controller.lastScoreBreakdown}
+        />
+      )}
 
       <Window title="Sasso" onClose={() => controller.handleModeChange('calculator')}>
         {controller.isGameOver && (
