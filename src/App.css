@@ -375,10 +375,19 @@
   border: 2px solid #000;
   padding: 8px;
   box-shadow: 3px 3px 0 #000;
+  overflow: hidden;
+}
+
+.mult-zone-bg {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.08);
 }
 
 .mult-svg {
   display: block;
+  position: relative;
 }
 
 .mult-digits {

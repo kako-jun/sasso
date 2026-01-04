@@ -113,8 +113,13 @@ export function MultiplicationHelper({ displayValue, multiplier }: Multiplicatio
   const topLines = [...displayTensLines, ...displayOnesLines];
   const bottomLines = [...multTensLines, ...multOnesLines];
 
+  // Intersection zone (middle area where lines cross)
+  const zoneX = groupWidth + GROUP_GAP;
+  const zoneWidth = width - 2 * (groupWidth + GROUP_GAP);
+
   return (
     <div className="multiplication-helper">
+      <div className="mult-zone-bg" style={{ left: zoneX + 8, width: zoneWidth }} />
       <svg width={width} height={height} className="mult-svg">
         {topLines.map((line, i) => (
           <line key={`top-${i}`} {...line} stroke="rgba(0,0,0,0.7)" strokeWidth="2" />
