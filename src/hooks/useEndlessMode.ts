@@ -6,7 +6,7 @@ import {
   calculateScore,
   getDigitCount,
 } from '../game';
-import { COUNTDOWN_TIME } from '../constants';
+import { COUNTDOWN_TIME, ELIMINATION_ANIMATION_MS, CHAIN_CHECK_DELAY_MS } from '../constants';
 import { calculate, formatDisplay, operatorToSymbol } from '../utils';
 import type { UsePredictionReturn } from './usePrediction';
 import type { UseEliminationReturn } from './useElimination';
@@ -97,8 +97,8 @@ export function useEndlessMode({
                 onDisplayUpdate
               );
             }
-          }, 100);
-        }, 400);
+          }, CHAIN_CHECK_DELAY_MS);
+        }, ELIMINATION_ANIMATION_MS);
       } else {
         if (checkOverflow(newDisplay)) {
           setIsGameOver(true);

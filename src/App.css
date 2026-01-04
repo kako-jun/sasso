@@ -152,6 +152,7 @@
 
 /* Window Content - staggered dotted pattern */
 .window-content {
+  position: relative;
   padding: 12px 14px 12px 12px;
   display: flex;
   flex-direction: column;
@@ -360,11 +361,6 @@
   box-shadow: 3px 3px 0 #000;
   z-index: 10;
   white-space: nowrap;
-}
-
-/* Window Content relative positioning for overlay */
-.window-content {
-  position: relative;
 }
 
 /* Multiplication Helper (Indian method grid) */

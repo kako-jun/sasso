@@ -1,6 +1,7 @@
 import { useState, useCallback, useRef } from 'react';
 import type { ScoreResult } from '../types';
 import { processElimination, findEliminationIndices, calculateScore, getDigitCount } from '../game';
+import { ELIMINATION_ANIMATION_MS, CHAIN_CHECK_DELAY_MS } from '../constants';
 
 export interface UseEliminationReturn {
   eliminatingIndices: number[];
@@ -100,8 +101,8 @@ export function useElimination(): UseEliminationReturn {
                 onDisplayUpdate
               );
             }
-          }, 100);
-        }, 400);
+          }, CHAIN_CHECK_DELAY_MS);
+        }, ELIMINATION_ANIMATION_MS);
 
         return displayStr;
       }

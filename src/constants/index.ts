@@ -1,6 +1,8 @@
 // Timing
 export const COUNTDOWN_TIME = 4200; // 4.2 seconds
 export const MAX_TIME_FACTOR = 300000; // 5 minutes for difficulty scaling
+export const ELIMINATION_ANIMATION_MS = 400; // Flash animation duration
+export const CHAIN_CHECK_DELAY_MS = 100; // Delay before checking for chain
 
 // Display
 export const MAX_DISPLAY_DIGITS = 10;
