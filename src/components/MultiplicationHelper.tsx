@@ -117,10 +117,10 @@ export function MultiplicationHelper({ displayValue, multiplier }: Multiplicatio
     <div className="multiplication-helper">
       <svg width={width} height={height} className="mult-svg">
         {topLines.map((line, i) => (
-          <line key={`top-${i}`} {...line} stroke="#000" strokeWidth="2" />
+          <line key={`top-${i}`} {...line} stroke="rgba(0,0,0,0.7)" strokeWidth="2" />
         ))}
         {bottomLines.map((line, i) => (
-          <line key={`bottom-${i}`} {...line} stroke="#000" strokeWidth="2" />
+          <line key={`bottom-${i}`} {...line} stroke="rgba(0,0,0,0.7)" strokeWidth="2" />
         ))}
       </svg>
     </div>
