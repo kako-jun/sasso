@@ -116,8 +116,8 @@ export function MultiplicationHelper({ displayValue, multiplier }: Multiplicatio
 
   // Three intersection zones (hundreds, tens, ones)
   const centerX = width / 2;
-  const zoneSpacing = groupWidth + GROUP_GAP / 2;
-  const zoneW = groupWidth;
+  const zoneSpacing = (groupWidth + GROUP_GAP) / 2;
+  const zoneW = groupWidth / 2;
 
   return (
     <div className="multiplication-helper">

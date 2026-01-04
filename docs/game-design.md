@@ -23,7 +23,7 @@ A puzzle game where you use the four arithmetic operations to create adjacent id
 
 ### Game Over Conditions
 
-- Digit overflow (exceeding 12 digits) = Game Over
+- Digit overflow (13+ digits or exponential notation) = Game Over
 - Sprint mode: Time runs out (3:00) = Game Over
 
 ### Surrender (Immediate Loss)

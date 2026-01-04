@@ -150,8 +150,13 @@ export function processElimination(displayStr: string): EliminationResult {
 
 /**
  * Check if display has overflowed (game over condition)
+ * - 13+ digits = overflow
+ * - Exponential notation (e) = overflow
  */
 export function checkOverflow(displayStr: string): boolean {
+  if (displayStr.includes('e') || displayStr.includes('E')) {
+    return true;
+  }
   return getDigitCount(displayStr) > MAX_DISPLAY_DIGITS;
 }
 
