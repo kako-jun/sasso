@@ -365,12 +365,15 @@
 }
 
 /* Multiplication Helper (Indian method grid) */
-/* Multiplication Helper - lines only on gray background */
 .multiplication-helper {
   position: absolute;
   top: calc(50% + 220px);
   left: 50%;
   transform: translateX(-50%);
+  background: #fff;
+  border: 2px solid #000;
+  padding: 8px;
+  box-shadow: 3px 3px 0 #000;
 }
 
 .mult-svg {
