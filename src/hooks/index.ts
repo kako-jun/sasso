@@ -8,3 +8,4 @@ export { usePrediction } from './usePrediction';
 export type { UsePredictionReturn } from './usePrediction';
 export { useElimination } from './useElimination';
 export type { UseEliminationReturn } from './useElimination';
+export { useEndlessMode } from './useEndlessMode';
