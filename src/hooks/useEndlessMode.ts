@@ -76,6 +76,7 @@ export function useEndlessMode({
           eliminationHook.setScore((prev) => prev + scoreResult.totalScore);
           eliminationHook.setLastScoreBreakdown(scoreResult);
           eliminationHook.setCalculationCount(0);
+          eliminationHook.calculationCountRef.current = 0;
 
           if (checkOverflow(finalDisplay)) {
             setIsGameOver(true);

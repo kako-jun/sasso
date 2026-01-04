@@ -1,5 +1,5 @@
 // Timing
-export const COUNTDOWN_TIME = 4200; // 4.2 seconds
+export const COUNTDOWN_TIME = 10000; // 10 seconds
 export const SPRINT_TIME_LIMIT = 180000; // 3 minutes
 export const MAX_TIME_FACTOR = 300000; // 5 minutes for difficulty scaling
 export const ELIMINATION_ANIMATION_MS = 400; // Flash animation duration

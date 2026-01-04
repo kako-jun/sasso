@@ -133,7 +133,7 @@ Time-limited scoring mode:
 Falling puzzle format:
 
 - "×7 coming in 4.2 seconds" - both operator and number are predicted
-- Prediction time: 4.2 seconds
+- Prediction time: 10 seconds
 - Player prepares by inputting numbers to set up eliminations
 - Predicted operation executes, elimination check occurs
 - Example: Current "12", "×7" predicted → becomes 84 → prepare adjacent 8 and 4 to eliminate

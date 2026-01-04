@@ -82,8 +82,8 @@ src/
 | ---------- | ----------- | ---------- | ----- |
 | Calculator | No          | No         | No    |
 | Practice   | No          | No         | Yes   |
-| Sprint     | Yes (4.2s)  | 3:00       | Yes   |
-| Endless    | Yes (4.2s)  | No         | Yes   |
+| Sprint     | Yes (10s)   | 3:00       | Yes   |
+| Endless    | Yes (10s)   | No         | Yes   |
 
 ## UI Layout (Non-overlapping during gameplay)
 
