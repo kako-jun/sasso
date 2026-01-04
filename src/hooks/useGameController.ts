@@ -5,10 +5,7 @@ import { useCalculator } from './useCalculator';
 import { useGame } from './useGame';
 
 export interface UseGameControllerReturn {
-  // Calculator state
   display: string;
-
-  // Game state
   gameMode: GameMode;
   gameStarted: boolean;
   isGameOver: boolean;
@@ -20,8 +17,6 @@ export interface UseGameControllerReturn {
   eliminatingIndices: number[];
   calculationHistory: string;
   lastScoreBreakdown: ReturnType<typeof useGame>['lastScoreBreakdown'];
-
-  // Actions
   handleKey: (key: string) => void;
   handleModeChange: (mode: GameMode) => void;
   resetAll: () => void;
@@ -29,19 +24,13 @@ export interface UseGameControllerReturn {
 
 export function useGameController(): UseGameControllerReturn {
   const calculator = useCalculator();
-
   const gameOptions = useMemo(
-    () => ({
-      onDisplayUpdate: (newDisplay: string) => {
-        calculator.setDisplay(newDisplay);
-      },
-    }),
-    [calculator]
+    () => ({ onDisplayUpdate: calculator.setDisplay }),
+    [calculator.setDisplay]
   );
-
   const game = useGame(gameOptions);
 
-  // Sync display with game for endless mode predictions
+  // Sync display with game
   useEffect(() => {
     game.syncDisplay(calculator.display);
   }, [calculator.display, game]);
@@ -59,100 +48,96 @@ export function useGameController(): UseGameControllerReturn {
     [calculator, game]
   );
 
-  const handlePracticeElimination = useCallback(
+  // Helper: Check if in active game mode
+  const isActiveGame = game.gameMode !== 'calculator' && game.gameStarted;
+
+  // Helper: Apply elimination for practice mode
+  const applyPracticeElimination = useCallback(
     (newDisplay: string) => {
       if (game.gameMode === 'practice' && game.gameStarted) {
-        const afterElimination = game.applyElimination(newDisplay, (display) => {
-          calculator.setDisplay(display);
-        });
+        const afterElimination = game.applyElimination(newDisplay, calculator.setDisplay);
         game.checkGameOverState(afterElimination);
       }
     },
-    [calculator, game]
+    [calculator.setDisplay, game]
+  );
+
+  // Helper: Record calculation result
+  const recordCalculation = useCallback(
+    (result: { left: number; op: string | null; right: number; newDisplay: string }) => {
+      game.incrementCalculationCount();
+      game.setCalculationHistory(
+        `${result.left} ${operatorToSymbol(result.op ?? '')} ${result.right} = ${result.newDisplay}`
+      );
+    },
+    [game]
   );
 
   const handleKey = useCallback(
     (key: string) => {
       if (game.isGameOver) return;
 
-      // Start game on first key press in game modes
+      // Start game on first key press
       if (game.gameMode !== 'calculator' && !game.gameStarted) {
-        const initialState = game.startGame();
-        calculator.setDisplay(initialState);
+        calculator.setDisplay(game.startGame());
       }
 
       // Surrender on digit after =
-      if (game.gameMode !== 'calculator' && game.gameStarted && game.justPressedEqual) {
-        if (/^\d$/.test(key)) {
-          game.surrender();
-          return;
-        }
+      if (isActiveGame && game.justPressedEqual && /^\d$/.test(key)) {
+        game.surrender();
+        return;
       }
 
       game.setJustPressedEqual(false);
 
-      // Handle digit input
+      // Digit input
       if (/^\d$/.test(key)) {
         calculator.inputDigit(key);
         return;
       }
 
-      // Handle other keys
-      switch (key) {
-        case 'C':
-          if (game.gameMode !== 'calculator' && game.gameStarted) {
-            game.surrender();
-          } else {
-            calculator.clearAll();
-          }
-          break;
-
-        case 'E':
-          if (game.gameMode !== 'calculator' && game.gameStarted) {
-            game.surrender();
-          } else {
-            calculator.clearEntry();
-          }
-          break;
-
-        case '.':
-          calculator.inputDecimal();
-          break;
-
-        case '=': {
-          const result = calculator.handleEqual();
-          if (result) {
-            game.incrementCalculationCount();
-            game.setCalculationHistory(
-              `${result.left} ${operatorToSymbol(result.op ?? '')} ${result.right} = ${result.newDisplay}`
-            );
-            game.setJustPressedEqual(true);
-            handlePracticeElimination(result.newDisplay);
-          }
-          break;
+      // Special keys
+      if (key === 'C' || key === 'E') {
+        if (isActiveGame) {
+          game.surrender();
+        } else if (key === 'C') {
+          calculator.clearAll();
+        } else {
+          calculator.clearEntry();
         }
+        return;
+      }
 
-        case '+':
-        case '-':
-        case '*':
-        case '/': {
-          const result = calculator.performOperation(key);
-          if (result) {
-            game.incrementCalculationCount();
-            handlePracticeElimination(result.newDisplay);
-          }
-          break;
+      if (key === '.') {
+        calculator.inputDecimal();
+        return;
+      }
+
+      // Equal key
+      if (key === '=') {
+        const result = calculator.handleEqual();
+        if (result) {
+          recordCalculation(result);
+          game.setJustPressedEqual(true);
+          applyPracticeElimination(result.newDisplay);
+        }
+        return;
+      }
+
+      // Operator keys
+      if (['+', '-', '*', '/'].includes(key)) {
+        const result = calculator.performOperation(key as '+' | '-' | '*' | '/');
+        if (result) {
+          game.incrementCalculationCount();
+          applyPracticeElimination(result.newDisplay);
         }
       }
     },
-    [calculator, game, handlePracticeElimination]
+    [calculator, game, isActiveGame, recordCalculation, applyPracticeElimination]
   );
 
   return {
-    // Calculator state
     display: calculator.display,
-
-    // Game state
     gameMode: game.gameMode,
     gameStarted: game.gameStarted,
     isGameOver: game.isGameOver,
@@ -164,8 +149,6 @@ export function useGameController(): UseGameControllerReturn {
     eliminatingIndices: game.eliminatingIndices,
     calculationHistory: game.calculationHistory,
     lastScoreBreakdown: game.lastScoreBreakdown,
-
-    // Actions
     handleKey,
     handleModeChange,
     resetAll,
