@@ -91,9 +91,18 @@ export function useGame(options: UseGameOptions = {}): UseGameReturn {
     calculationCountRef.current = calculationCount;
   }, [calculationCount]);
 
-  const syncDisplay = useCallback((display: string) => {
-    displayRef.current = display;
-  }, []);
+  const syncDisplay = useCallback(
+    (display: string) => {
+      displayRef.current = display;
+      // Check overflow on every display update during gameplay
+      if (gameMode !== 'calculator' && gameStarted && !isGameOver) {
+        if (checkOverflow(display)) {
+          setIsGameOver(true);
+        }
+      }
+    },
+    [gameMode, gameStarted, isGameOver]
+  );
 
   const clearCountdown = useCallback(() => {
     if (countdownRef.current) {
