@@ -9,22 +9,26 @@ A calculator-based puzzle game with Classic Macintosh System 7 design.
 ```bash
 npm run dev   # Start dev server
 npm run build # Build for production
+npm run lint  # Run ESLint
 ```
 
 ## Documentation
 
 - [docs/game-design.md](docs/game-design.md) - Game rules, scoring, attack system
-- [docs/specification.md](docs/specification.md) - UI specs, file structure, controls
+- [docs/specification.md](docs/specification.md) - UI specs, controls
+- [docs/architecture.md](docs/architecture.md) - File structure, hooks, patterns
 
 ## Key Concepts
 
 ### Game Mechanics
+
 - **Elimination**: Adjacent identical digits disappear
 - **Gravity**: Right (digits compress rightward after elimination)
 - **Game Over**: 10+ digits (overflow)
 - **Surrender**: C/E press or digit after = during gameplay
 
 ### Score Formula
+
 ```
 Score = Base × Chain × Prep × Risk
 - Base: eliminated digits × 10
@@ -34,35 +38,51 @@ Score = Base × Chain × Prep × Risk
 ```
 
 ### Attack Effect (2P Battle)
+
 Score → Opponent's next prediction difficulty
+
 - Higher score = more multiplication, bigger numbers, multiple predictions
 
 ## Architecture
 
 ```
 src/
-├── App.tsx        # UI, game state, React components
-├── App.css        # All styling
-├── gameLogic.ts   # Core logic: elimination, scoring, predictions
-├── index.css      # Global styles (Chicago font)
-└── main.tsx       # Entry point
+├── App.tsx              # Layout component (63 lines)
+├── components/          # UI components (Window, Display, Keypad, etc.)
+├── hooks/               # React hooks
+│   ├── useGameController.ts  # Main controller
+│   ├── useGame.ts            # Game state (composed)
+│   ├── useCalculator.ts      # Calculator (useReducer)
+│   ├── useElimination.ts     # Scoring/elimination
+│   ├── usePrediction.ts      # Prediction state
+│   └── useEndlessMode.ts     # Endless mode timer
+├── game/                # Pure game logic
+│   ├── elimination.ts   # Digit elimination
+│   ├── scoring.ts       # Score calculation
+│   ├── prediction.ts    # Prediction generation
+│   └── attack.ts        # Attack effects
+├── types/               # TypeScript types
+├── constants/           # Game constants
+└── utils/               # Utilities
 ```
 
-### Key Functions in gameLogic.ts
-- `eliminateMatches()` - Single pass elimination
-- `processElimination()` - Full chain processing
-- `findEliminationIndices()` - For animation
-- `calculateScore()` - Score with all bonuses
-- `generatePrediction()` - Next operation (with attack effect)
-- `calculateAttackEffect()` - Difficulty scaling
+### Key Modules
+
+| Module                     | Key Functions                                                   |
+| -------------------------- | --------------------------------------------------------------- |
+| game/elimination.ts        | `processElimination`, `findEliminationIndices`, `checkOverflow` |
+| game/scoring.ts            | `calculateScore`, `shouldTriggerAttack`                         |
+| game/prediction.ts         | `generatePrediction`                                            |
+| hooks/useCalculator.ts     | Calculator state (useReducer pattern)                           |
+| hooks/useGameController.ts | Bridges calculator + game, handles input                        |
 
 ## Game Modes
 
-| Mode | Predictions | Time Limit | Score |
-|------|-------------|------------|-------|
-| Calculator | No | No | No |
-| Practice | No | No | Yes |
-| Endless | Yes (4.2s) | No | Yes |
+| Mode       | Predictions | Time Limit | Score |
+| ---------- | ----------- | ---------- | ----- |
+| Calculator | No          | No         | No    |
+| Practice   | No          | No         | Yes   |
+| Endless    | Yes (4.2s)  | No         | Yes   |
 
 ## UI Layout (Non-overlapping during gameplay)
 
