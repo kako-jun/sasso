@@ -5,7 +5,7 @@ export const ELIMINATION_ANIMATION_MS = 400; // Flash animation duration
 export const CHAIN_CHECK_DELAY_MS = 100; // Delay before checking for chain
 
 // Display
-export const MAX_DISPLAY_DIGITS = 10;
+export const MAX_DISPLAY_DIGITS = 12; // Game over at 13+ digits
 
 // Scoring
 export const BASE_SCORE_PER_DIGIT = 10;
