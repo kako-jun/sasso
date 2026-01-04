@@ -123,6 +123,12 @@ export function MultiplicationHelper({ displayValue, multiplier }: Multiplicatio
           <line key={`bottom-${i}`} {...line} stroke="rgba(0,0,0,0.7)" strokeWidth="2" />
         ))}
       </svg>
+      <div className="mult-digits">
+        <span>{display.tens}</span>
+        <span>{display.ones}</span>
+        <span>{mult.tens}</span>
+        <span>{mult.ones}</span>
+      </div>
     </div>
   );
 }
