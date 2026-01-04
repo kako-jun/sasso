@@ -87,7 +87,7 @@ export function BattleApp({ initialRoomId, onChangeMode }: BattleAppProps) {
     );
   }
 
-  const isPredictionMode = battle.roomState.status === 'playing' && !battle.isGameOver;
+  const isPredictionMode = battle.gameStarted && !battle.isGameOver;
 
   return (
     <div className="desktop">

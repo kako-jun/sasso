@@ -222,7 +222,7 @@ export function useBattleMode(): UseBattleModeReturn {
       setPendingAttackPower(0);
       setIsUnderAttack(false);
     }
-  }, [prediction, calculator, elimination, room, pendingAttackPower]);
+  }, [prediction, calculator, elimination, room, pendingAttackPower, handleGameOver]);
 
   // Keep ref updated with latest applyPrediction
   useEffect(() => {
@@ -230,6 +230,7 @@ export function useBattleMode(): UseBattleModeReturn {
   }, [applyPrediction]);
 
   // Handle game over
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- defined after applyPrediction but used via closure
   const handleGameOver = useCallback(
     (reason: 'overflow' | 'surrender' | 'disconnect') => {
       setIsGameOver(true);
