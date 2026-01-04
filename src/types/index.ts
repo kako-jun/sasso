@@ -2,7 +2,7 @@
 export type CalcOperator = '+' | '-' | '*' | '/' | null;
 
 // Game types
-export type GameMode = 'calculator' | 'practice' | 'endless';
+export type GameMode = 'calculator' | 'practice' | 'sprint' | 'endless';
 export type Operator = '+' | '-' | '*' | '/';
 
 // Prediction

@@ -14,6 +14,7 @@ export interface UseGameControllerReturn {
   chains: number;
   prediction: ReturnType<typeof useGame>['prediction'];
   countdown: number;
+  sprintTimeRemaining: number;
   eliminatingIndices: number[];
   calculationHistory: string;
   lastScoreBreakdown: ReturnType<typeof useGame>['lastScoreBreakdown'];
@@ -146,6 +147,7 @@ export function useGameController(): UseGameControllerReturn {
     chains: game.chains,
     prediction: game.prediction,
     countdown: game.countdown,
+    sprintTimeRemaining: game.sprintTimeRemaining,
     eliminatingIndices: game.eliminatingIndices,
     calculationHistory: game.calculationHistory,
     lastScoreBreakdown: game.lastScoreBreakdown,

@@ -19,8 +19,10 @@ function App() {
   useKeyboard(controller.handleKey);
 
   const isPlaying = controller.gameMode !== 'calculator';
-  const isEndlessActive =
-    controller.gameMode === 'endless' && controller.gameStarted && !controller.isGameOver;
+  const isPredictionMode =
+    (controller.gameMode === 'endless' || controller.gameMode === 'sprint') &&
+    controller.gameStarted &&
+    !controller.isGameOver;
 
   return (
     <div className="desktop">
@@ -28,9 +30,11 @@ function App() {
         gameMode={controller.gameMode}
         onChangeMode={controller.handleModeChange}
         score={controller.score}
+        sprintTimeRemaining={controller.sprintTimeRemaining}
+        gameStarted={controller.gameStarted}
       />
 
-      {isEndlessActive && controller.prediction && (
+      {isPredictionMode && controller.prediction && (
         <PredictionArea prediction={controller.prediction} countdown={controller.countdown} />
       )}
 
@@ -46,7 +50,7 @@ function App() {
 
       {isPlaying && <CalculationHistory text={controller.calculationHistory} />}
 
-      {isEndlessActive && controller.prediction?.operator === '*' && (
+      {isPredictionMode && controller.prediction?.operator === '*' && (
         <MultiplicationHelper
           displayValue={controller.display}
           multiplier={controller.prediction.operand}

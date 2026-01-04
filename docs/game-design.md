@@ -23,7 +23,8 @@ A puzzle game where you use the four arithmetic operations to create adjacent id
 
 ### Game Over Conditions
 
-- Digit overflow (exceeding 10 digits) = Game Over
+- Digit overflow (exceeding 12 digits) = Game Over
+- Sprint mode: Time runs out (4:20) = Game Over
 
 ### Surrender (Immediate Loss)
 
@@ -117,6 +118,16 @@ Effects:
 - Free play to understand elimination mechanics
 - Score is tracked
 
+### Sprint Mode
+
+Time-limited scoring mode:
+
+- Time limit: 4 minutes 20 seconds
+- Predictions enabled (same as Endless)
+- Compete for highest score within time limit
+- Game over: Time runs out OR digit overflow
+- Remaining time displayed in menu bar (replaces "Sprint" text)
+
 ### 1-Player Endless Mode
 
 Falling puzzle format:
@@ -191,7 +202,8 @@ Falling puzzle format:
 Left side:
 
 - GitHub logo
-- Game mode selection (Calculator, Practice, Endless)
+- Game mode selection (Calculator, Practice, Sprint, Endless)
+- Sprint mode: Shows remaining time (M:SS) instead of "Sprint" during gameplay
 
 ### Score Display Area
 

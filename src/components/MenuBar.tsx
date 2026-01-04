@@ -5,10 +5,26 @@ interface MenuBarProps {
   gameMode: GameMode;
   onChangeMode: (mode: GameMode) => void;
   score?: number;
+  sprintTimeRemaining?: number;
+  gameStarted?: boolean;
 }
 
-export function MenuBar({ gameMode, onChangeMode, score }: MenuBarProps) {
+function formatTime(ms: number): string {
+  const totalSeconds = Math.ceil(ms / 1000);
+  const minutes = Math.floor(totalSeconds / 60);
+  const seconds = totalSeconds % 60;
+  return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+}
+
+export function MenuBar({
+  gameMode,
+  onChangeMode,
+  score,
+  sprintTimeRemaining,
+  gameStarted,
+}: MenuBarProps) {
   const showScore = gameMode !== 'calculator';
+  const showSprintTimer = gameMode === 'sprint' && gameStarted && sprintTimeRemaining !== undefined;
 
   return (
     <header className="menu-bar">
@@ -26,6 +42,12 @@ export function MenuBar({ gameMode, onChangeMode, score }: MenuBarProps) {
         onClick={() => onChangeMode('practice')}
       >
         Practice
+      </span>
+      <span
+        className={`menu-item ${gameMode === 'sprint' ? 'active' : ''}`}
+        onClick={() => onChangeMode('sprint')}
+      >
+        {showSprintTimer ? formatTime(sprintTimeRemaining) : 'Sprint'}
       </span>
       <span
         className={`menu-item ${gameMode === 'endless' ? 'active' : ''}`}

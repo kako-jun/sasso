@@ -112,9 +112,9 @@ export function useEndlessMode({
     [predictionHook, eliminationHook, setIsGameOver, setCalculationHistory]
   );
 
-  // Countdown timer for endless mode
+  // Countdown timer for endless and sprint modes
   useEffect(() => {
-    if (gameMode !== 'endless' || !gameStarted || isGameOver) {
+    if ((gameMode !== 'endless' && gameMode !== 'sprint') || !gameStarted || isGameOver) {
       return;
     }
 

@@ -1,6 +1,7 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
 import type { GameMode, Prediction, ScoreResult } from '../types';
 import { checkOverflow, generateInitialState } from '../game';
+import { SPRINT_TIME_LIMIT } from '../constants';
 import { usePrediction } from './usePrediction';
 import { useElimination } from './useElimination';
 import { useEndlessMode } from './useEndlessMode';
@@ -26,6 +27,9 @@ export interface UseGameReturn {
   // Prediction
   prediction: Prediction | null;
   countdown: number;
+
+  // Sprint
+  sprintTimeRemaining: number;
 
   // Animation
   eliminatingIndices: number[];
@@ -54,10 +58,12 @@ export function useGame(options: UseGameOptions = {}): UseGameReturn {
   const [isSurrender, setIsSurrender] = useState(false);
   const [justPressedEqual, setJustPressedEqual] = useState(false);
   const [calculationHistory, setCalculationHistory] = useState('');
+  const [sprintTimeRemaining, setSprintTimeRemaining] = useState(SPRINT_TIME_LIMIT);
 
   // Refs
   const displayRef = useRef('0');
   const externalDisplayUpdateRef = useRef(externalDisplayUpdate);
+  const sprintTimerRef = useRef<number | null>(null);
 
   // Composed hooks
   const predictionHook = usePrediction();
@@ -80,6 +86,35 @@ export function useGame(options: UseGameOptions = {}): UseGameReturn {
     externalDisplayUpdateRef.current = externalDisplayUpdate;
   }, [externalDisplayUpdate]);
 
+  // Sprint timer
+  useEffect(() => {
+    if (gameMode !== 'sprint' || !gameStarted || isGameOver) {
+      if (sprintTimerRef.current) {
+        clearInterval(sprintTimerRef.current);
+        sprintTimerRef.current = null;
+      }
+      return;
+    }
+
+    sprintTimerRef.current = window.setInterval(() => {
+      setSprintTimeRemaining((prev) => {
+        if (prev <= 100) {
+          setIsGameOver(true);
+          predictionHook.clearCountdown();
+          return 0;
+        }
+        return prev - 100;
+      });
+    }, 100);
+
+    return () => {
+      if (sprintTimerRef.current) {
+        clearInterval(sprintTimerRef.current);
+        sprintTimerRef.current = null;
+      }
+    };
+  }, [gameMode, gameStarted, isGameOver, predictionHook]);
+
   const syncDisplay = useCallback(
     (display: string) => {
       displayRef.current = display;
@@ -98,6 +133,11 @@ export function useGame(options: UseGameOptions = {}): UseGameReturn {
     setIsSurrender(false);
     setJustPressedEqual(false);
     setCalculationHistory('');
+    setSprintTimeRemaining(SPRINT_TIME_LIMIT);
+    if (sprintTimerRef.current) {
+      clearInterval(sprintTimerRef.current);
+      sprintTimerRef.current = null;
+    }
     predictionHook.resetPrediction();
     eliminationHook.resetElimination();
   }, [predictionHook, eliminationHook]);
@@ -114,7 +154,7 @@ export function useGame(options: UseGameOptions = {}): UseGameReturn {
     const initialState = generateInitialState();
     setGameStarted(true);
 
-    if (gameMode === 'endless') {
+    if (gameMode === 'endless' || gameMode === 'sprint') {
       predictionHook.initPrediction();
     }
 
@@ -151,6 +191,7 @@ export function useGame(options: UseGameOptions = {}): UseGameReturn {
     lastScoreBreakdown: eliminationHook.lastScoreBreakdown,
     prediction: predictionHook.prediction,
     countdown: predictionHook.countdown,
+    sprintTimeRemaining,
     eliminatingIndices: eliminationHook.eliminatingIndices,
     calculationHistory,
     changeGameMode,
