@@ -219,6 +219,9 @@ Left side:
 - Displays only when prediction is multiplication
 - Shows last 2 digits of calculator × prediction operand
 - Uses diagonal line intersection method (SVG)
+  - Lines at 30° from horizontal
+  - Dynamic spacing: 4px for digits >5, 6px otherwise
+  - Supports up to 99×99
 - Updates in real-time as calculator digits change
 - Shows zone intersection counts and final result
 
