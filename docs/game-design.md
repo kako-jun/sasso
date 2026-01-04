@@ -24,7 +24,7 @@ A puzzle game where you use the four arithmetic operations to create adjacent id
 ### Game Over Conditions
 
 - Digit overflow (exceeding 12 digits) = Game Over
-- Sprint mode: Time runs out (4:20) = Game Over
+- Sprint mode: Time runs out (3:00) = Game Over
 
 ### Surrender (Immediate Loss)
 
@@ -69,12 +69,12 @@ A puzzle game where you use the four arithmetic operations to create adjacent id
 Score = Base × Chain × Prep × Risk
 ```
 
-| Component | Calculation                                     | Range   |
-| --------- | ----------------------------------------------- | ------- |
-| Base      | Eliminated digits × 10                          | -       |
-| Chain     | Chain count                                     | 1.0+    |
-| Prep      | 1 + (calculations since last elimination × 0.2) | 1.0-3.0 |
-| Risk      | 1 + (digit count before elimination ÷ 10)       | 1.0-2.0 |
+| Component | Calculation                                     | Range      |
+| --------- | ----------------------------------------------- | ---------- |
+| Base      | Eliminated digits × 10                          | -          |
+| Chain     | Chain count² (squared)                          | 1, 4, 9... |
+| Prep      | 1 + (calculations since last elimination × 0.2) | 1.0-3.0    |
+| Risk      | 1 + (digit count before elimination ÷ 10)       | 1.0-2.0    |
 
 ### Score Examples
 
@@ -85,7 +85,7 @@ Score = Base × Chain × Prep × Risk
   `2×10×1×2.0×1.7 = 68 points`
 
 - 2-chain 4-digit elimination (9 digits, 8 calculations prep):
-  `4×10×2×2.6×1.9 = 395 points`
+  `4×10×4×2.6×1.9 = 790 points` (Chain² = 4)
 
 ### Attack Power
 
@@ -122,7 +122,7 @@ Effects:
 
 Time-limited scoring mode:
 
-- Time limit: 4 minutes 20 seconds
+- Time limit: 3 minutes
 - Predictions enabled (same as Endless)
 - Compete for highest score within time limit
 - Game over: Time runs out OR digit overflow

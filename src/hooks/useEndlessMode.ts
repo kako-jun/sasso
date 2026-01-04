@@ -38,8 +38,6 @@ export function useEndlessMode({
     (currentDisplay: string, onDisplayUpdate: (newDisplay: string) => void) => {
       if (!predictionHook.prediction) return;
 
-      eliminationHook.incrementCalculationCount();
-
       const currentValue = parseFloat(currentDisplay);
       const result = calculate(
         currentValue,

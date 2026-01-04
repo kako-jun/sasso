@@ -24,7 +24,7 @@ npm run lint  # Run ESLint
 
 - **Elimination**: Adjacent identical digits disappear
 - **Gravity**: Right (digits compress rightward after elimination)
-- **Game Over**: 13+ digits (overflow) or time limit (Sprint mode)
+- **Game Over**: 13+ digits (overflow) or 3 min time limit (Sprint mode)
 - **Surrender**: C/E press or digit after = during gameplay
 
 ### Score Formula
@@ -32,7 +32,7 @@ npm run lint  # Run ESLint
 ```
 Score = Base × Chain × Prep × Risk
 - Base: eliminated digits × 10
-- Chain: chain count (1+)
+- Chain: chain count² (1, 4, 9...)
 - Prep: 1 + (calculations × 0.2), max 3.0
 - Risk: 1 + (digits ÷ 10), max 2.0
 ```
@@ -82,7 +82,7 @@ src/
 | ---------- | ----------- | ---------- | ----- |
 | Calculator | No          | No         | No    |
 | Practice   | No          | No         | Yes   |
-| Sprint     | Yes (4.2s)  | 4:20       | Yes   |
+| Sprint     | Yes (4.2s)  | 3:00       | Yes   |
 | Endless    | Yes (4.2s)  | No         | Yes   |
 
 ## UI Layout (Non-overlapping during gameplay)

@@ -20,7 +20,7 @@ export function calculateScore(params: ScoreParams): ScoreResult {
     params;
 
   const baseScore = eliminated * BASE_SCORE_PER_DIGIT;
-  const chainMultiplier = Math.max(chains, 1);
+  const chainMultiplier = Math.max(chains, 1) ** 2;
   const prepBonus = Math.min(
     1 + calculationsSinceLastElimination * PREP_BONUS_PER_CALC,
     MAX_PREP_BONUS
