@@ -365,74 +365,14 @@
 }
 
 /* Multiplication Helper (Indian method grid) */
+/* Multiplication Helper - lines only on gray background */
 .multiplication-helper {
-  position: fixed;
-  bottom: 16px;
+  position: absolute;
+  top: calc(50% + 220px);
   left: 50%;
   transform: translateX(-50%);
-  background: #fff;
-  border: 2px solid #000;
-  padding: 8px 12px;
-  box-shadow: 3px 3px 0 #000;
-  z-index: 5;
-}
-
-.mult-header {
-  text-align: center;
-  font-size: 14px;
-  font-weight: bold;
-  margin-bottom: 8px;
-  border-bottom: 1px solid #000;
-  padding-bottom: 4px;
-}
-
-.mult-grid {
-  border-collapse: collapse;
-  font-size: 12px;
-}
-
-.mult-grid th,
-.mult-grid td {
-  border: 1px solid #000;
-  padding: 4px 8px;
-  text-align: center;
-  min-width: 40px;
-}
-
-.mult-grid th {
-  background: #e0e0e0;
-  font-weight: bold;
-}
-
-.mult-grid td {
-  background: #fff;
 }
 
 .mult-svg {
   display: block;
-  margin: 0 auto;
-}
-
-.mult-zones {
-  display: flex;
-  justify-content: space-around;
-  font-size: 14px;
-  font-weight: bold;
-  margin-top: 4px;
-  padding-top: 4px;
-  border-top: 1px dashed #999;
-}
-
-.zone {
-  min-width: 30px;
-  text-align: center;
-}
-
-.mult-result {
-  text-align: center;
-  font-size: 16px;
-  font-weight: bold;
-  margin-top: 4px;
-  padding-top: 4px;
-  border-top: 1px solid #000;
 }

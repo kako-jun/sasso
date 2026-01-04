@@ -34,7 +34,7 @@ export function MenuBar({ gameMode, onChangeMode, score }: MenuBarProps) {
         Endless
       </span>
       <div className="menu-spacer" />
-      {showScore && <span className="status-item">Score: {(score ?? 0).toLocaleString()}</span>}
+      {showScore && <span className="status-item">{(score ?? 0).toLocaleString()}</span>}
     </header>
   );
 }

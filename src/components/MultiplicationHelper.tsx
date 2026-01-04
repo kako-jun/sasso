@@ -60,14 +60,6 @@ function generateLineGroup(
   return lines;
 }
 
-function calculateZones(display: TwoDigitNumber, mult: TwoDigitNumber) {
-  return {
-    left: display.tens * mult.tens,
-    middle: display.tens * mult.ones + display.ones * mult.tens,
-    right: display.ones * mult.ones,
-  };
-}
-
 // Component
 export function MultiplicationHelper({ displayValue, multiplier }: MultiplicationHelperProps) {
   const display = extractLastTwoDigits(displayValue);
@@ -99,9 +91,10 @@ export function MultiplicationHelper({ displayValue, multiplier }: Multiplicatio
     deltaY,
     'right'
   );
+  // mult lines: tens on left, ones on right (same as display)
   const multTensLines = generateLineGroup(
     mult.tens,
-    width - MARGIN,
+    width - MARGIN - groupWidth - GROUP_GAP,
     lineSpacing,
     lineLength,
     deltaY,
@@ -109,7 +102,7 @@ export function MultiplicationHelper({ displayValue, multiplier }: Multiplicatio
   );
   const multOnesLines = generateLineGroup(
     mult.ones,
-    width - MARGIN - groupWidth - GROUP_GAP,
+    width - MARGIN,
     lineSpacing,
     lineLength,
     deltaY,
@@ -118,27 +111,17 @@ export function MultiplicationHelper({ displayValue, multiplier }: Multiplicatio
 
   const topLines = [...displayTensLines, ...displayOnesLines];
   const bottomLines = [...multTensLines, ...multOnesLines];
-  const zones = calculateZones(display, mult);
 
   return (
     <div className="multiplication-helper">
-      <div className="mult-header">
-        {display.value} × {mult.value}
-      </div>
       <svg width={width} height={height} className="mult-svg">
         {topLines.map((line, i) => (
           <line key={`top-${i}`} {...line} stroke="#000" strokeWidth="2" />
         ))}
         {bottomLines.map((line, i) => (
-          <line key={`bottom-${i}`} {...line} stroke="#666" strokeWidth="2" />
+          <line key={`bottom-${i}`} {...line} stroke="#000" strokeWidth="2" />
         ))}
       </svg>
-      <div className="mult-zones">
-        <span className="zone">{zones.left > 0 ? zones.left : ''}</span>
-        <span className="zone">{zones.middle}</span>
-        <span className="zone">{zones.right}</span>
-      </div>
-      <div className="mult-result">= {display.value * mult.value}</div>
     </div>
   );
 }
