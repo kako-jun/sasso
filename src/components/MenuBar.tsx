@@ -4,9 +4,12 @@ import { GITHUB_URL } from '../constants';
 interface MenuBarProps {
   gameMode: GameMode;
   onChangeMode: (mode: GameMode) => void;
+  score?: number;
 }
 
-export function MenuBar({ gameMode, onChangeMode }: MenuBarProps) {
+export function MenuBar({ gameMode, onChangeMode, score }: MenuBarProps) {
+  const showScore = gameMode !== 'calculator';
+
   return (
     <header className="menu-bar">
       <a href={GITHUB_URL} target="_blank" rel="noopener noreferrer">
@@ -31,6 +34,7 @@ export function MenuBar({ gameMode, onChangeMode }: MenuBarProps) {
         Endless
       </span>
       <div className="menu-spacer" />
+      {showScore && <span className="status-item">Score: {(score ?? 0).toLocaleString()}</span>}
     </header>
   );
 }
