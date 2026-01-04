@@ -64,7 +64,7 @@
   box-shadow: 3px 3px 0 #000;
   text-align: center;
   z-index: 5;
-  height: 70px;
+  height: 40px;
   box-sizing: border-box;
   max-width: calc(100vw - 32px);
   white-space: nowrap;
@@ -262,7 +262,7 @@
 /* Prediction Area */
 .prediction-area {
   position: absolute;
-  bottom: calc(50% + 260px);
+  bottom: calc(50% + 230px);
   left: 50%;
   transform: translateX(-50%);
   display: flex;
