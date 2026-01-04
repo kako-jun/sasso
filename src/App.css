@@ -55,7 +55,7 @@
 /* Player Score Area (above calculator) */
 .player-score-area {
   position: absolute;
-  bottom: calc(50% + 175px);
+  bottom: calc(50% + 140px);
   left: 50%;
   transform: translateX(-50%);
   background: #fff;
@@ -262,7 +262,7 @@
 /* Prediction Area */
 .prediction-area {
   position: absolute;
-  bottom: calc(50% + 240px);
+  bottom: calc(50% + 198px);
   left: 50%;
   transform: translateX(-50%);
   display: flex;
@@ -331,7 +331,7 @@
 /* Calculation History */
 .calculation-history {
   position: absolute;
-  top: calc(50% + 185px);
+  top: calc(50% + 140px);
   left: 50%;
   transform: translateX(-50%);
   background: #fff;
@@ -367,7 +367,7 @@
 /* Multiplication Helper (Indian method grid) */
 .multiplication-helper {
   position: absolute;
-  top: calc(50% + 220px);
+  top: calc(50% + 172px);
   left: 50%;
   transform: translateX(-50%);
   background: #fff;
