@@ -1,5 +1,13 @@
 import type { AttackParams } from './index';
 
+// Sasso-specific game state (matches nostr-battle-room TGameState)
+export interface SassoGameState {
+  display: string;
+  score: number;
+  chains: number;
+  calculationHistory: string;
+}
+
 // Room States
 export type RoomStatus =
   | 'idle'
@@ -19,13 +27,10 @@ export interface RoomState {
   rematchRequested?: boolean;
 }
 
-// Opponent State
+// Opponent State (matches nostr-battle-room OpponentState<TGameState>)
 export interface OpponentState {
   publicKey: string;
-  display: string;
-  score: number;
-  chains: number;
-  calculationHistory: string;
+  gameState: SassoGameState | null;
   isConnected: boolean;
   lastHeartbeat?: number;
   rematchRequested?: boolean;
@@ -46,10 +51,7 @@ export interface JoinEventContent {
 
 export interface StateEventContent {
   type: 'state';
-  display: string;
-  score: number;
-  chains: number;
-  calculationHistory: string;
+  gameState: SassoGameState;
 }
 
 export interface KeypressEventContent {

@@ -5,6 +5,7 @@ import type {
   RoomEventContent,
   JoinEventContent,
   NostrEvent,
+  SassoGameState,
 } from '../types/battle';
 import { NOSTR_EVENT_KINDS, NOSTR_TIMEOUTS } from '../constants/nostr';
 import { generateSeed } from '../game';
@@ -23,7 +24,7 @@ export interface UseBattleRoomReturn extends RoomState {
   createRoom: () => Promise<string>;
   joinRoom: (roomId: string) => Promise<void>;
   leaveRoom: () => void;
-  sendState: (display: string, score: number, chains: number, calculationHistory: string) => void;
+  sendState: (state: SassoGameState) => void;
   sendAttack: (power: number) => void;
   sendGameOver: (reason: 'overflow' | 'surrender' | 'disconnect', finalScore: number) => void;
   requestRematch: () => void;
@@ -39,10 +40,7 @@ const INITIAL_ROOM_STATE: RoomState = {
 
 const createInitialOpponent = (publicKey: string): OpponentState => ({
   publicKey,
-  display: '0',
-  score: 0,
-  chains: 0,
-  calculationHistory: '',
+  gameState: null,
   isConnected: true,
   lastHeartbeat: Date.now(),
 });
@@ -85,10 +83,7 @@ export function useBattleRoom(nostr: UseNostrReturn): UseBattleRoomReturn {
       prev
         ? {
             ...prev,
-            display: '0',
-            score: 0,
-            chains: 0,
-            calculationHistory: '',
+            gameState: null,
             rematchRequested: false,
           }
         : null
@@ -124,10 +119,7 @@ export function useBattleRoom(nostr: UseNostrReturn): UseBattleRoomReturn {
               prev
                 ? {
                     ...prev,
-                    display: content.display,
-                    score: content.score,
-                    chains: content.chains,
-                    calculationHistory: content.calculationHistory,
+                    gameState: content.gameState,
                     lastHeartbeat: Date.now(),
                     isConnected: true,
                   }
@@ -290,7 +282,7 @@ export function useBattleRoom(nostr: UseNostrReturn): UseBattleRoomReturn {
 
   // Send state update (throttled)
   const sendState = useCallback(
-    (display: string, score: number, chains: number, calculationHistory: string) => {
+    (state: SassoGameState) => {
       const now = Date.now();
       if (now - lastStateUpdateRef.current < NOSTR_TIMEOUTS.STATE_THROTTLE) return;
       lastStateUpdateRef.current = now;
@@ -298,10 +290,7 @@ export function useBattleRoom(nostr: UseNostrReturn): UseBattleRoomReturn {
       if (roomState.roomId) {
         publishToRoom(nostr, roomState.roomId, {
           type: 'state',
-          display,
-          score,
-          chains,
-          calculationHistory,
+          gameState: state,
         });
       }
     },

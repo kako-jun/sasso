@@ -173,7 +173,12 @@ export function useBattleMode(): UseBattleModeReturn {
   // Send state updates when display/score changes
   useEffect(() => {
     if (room.status === 'playing' || room.status === 'ready') {
-      room.sendState(calculator.display, elimination.score, elimination.chains, calculationHistory);
+      room.sendState({
+        display: calculator.display,
+        score: elimination.score,
+        chains: elimination.chains,
+        calculationHistory,
+      });
     }
   }, [calculator.display, elimination.score, elimination.chains, calculationHistory, room]);
 

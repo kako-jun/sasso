@@ -1,12 +1,15 @@
 # TODO
 
-## Phase 1: Validation (現在)
+## Phase 1: Validation (完了)
 
-- [ ] Sassoで使用テスト
+- [x] Sassoで使用テスト
   - 現在のSasso実装を新パッケージで置き換え
-  - 動作確認（ルーム作成、参加、状態同期、切断検出、リマッチ）
-  - API の使い勝手を検証
-  - 不足機能の洗い出し
+  - 仕様ベースのテストチェックリスト作成 (docs/test-checklist.md)
+  - 3つの仕様違反を発見・修正:
+    1. StateEventContent: gameStateラッパー追加
+    2. OpponentState: gameStateプロパティ使用
+    3. sendState: 単一オブジェクト引数に変更
+  - 全52項目の仕様確認完了
 
 ## Phase 2: Stabilization
 
@@ -51,3 +54,5 @@
 - [x] CLAUDE.md 作成
 - [x] docs/architecture.md 作成
 - [x] docs/protocol.md 作成
+- [x] docs/test-checklist.md 作成（仕様ベーステスト項目）
+- [x] Sasso統合検証（全52項目合格）

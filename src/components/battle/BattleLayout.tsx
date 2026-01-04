@@ -19,6 +19,14 @@ export function BattleLayout({ children, opponent, isDesktop }: BattleLayoutProp
     return <>{children}</>;
   }
 
+  // Extract game state with defaults for when no state received yet
+  const gameState = opponent.gameState ?? {
+    display: '0',
+    score: 0,
+    chains: 0,
+    calculationHistory: '',
+  };
+
   if (isDesktop) {
     // Side-by-side layout for desktop
     return (
@@ -26,10 +34,10 @@ export function BattleLayout({ children, opponent, isDesktop }: BattleLayoutProp
         <div className="battle-player-side">{children}</div>
         <div className="battle-opponent-side">
           <OpponentCalculator
-            display={opponent.display}
-            score={opponent.score}
-            chains={opponent.chains}
-            calculationHistory={opponent.calculationHistory}
+            display={gameState.display}
+            score={gameState.score}
+            chains={gameState.chains}
+            calculationHistory={gameState.calculationHistory}
             isConnected={opponent.isConnected}
           />
         </div>
@@ -42,10 +50,10 @@ export function BattleLayout({ children, opponent, isDesktop }: BattleLayoutProp
     <div className="battle-layout-mobile">
       {children}
       <OpponentScore
-        display={opponent.display}
-        score={opponent.score}
-        chains={opponent.chains}
-        calculationHistory={opponent.calculationHistory}
+        display={gameState.display}
+        score={gameState.score}
+        chains={gameState.chains}
+        calculationHistory={gameState.calculationHistory}
         isConnected={opponent.isConnected}
       />
     </div>
