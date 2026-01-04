@@ -2,67 +2,51 @@ interface KeypadProps {
   onKey: (key: string) => void;
 }
 
+interface KeyConfig {
+  key: string;
+  label: string;
+  className: string;
+}
+
+const KEYPAD_LAYOUT: KeyConfig[][] = [
+  [
+    { key: 'C', label: 'C', className: 'key key--op' },
+    { key: 'E', label: 'E', className: 'key key--op' },
+    { key: '=', label: '=', className: 'key key--op' },
+    { key: '*', label: '×', className: 'key key--op' },
+  ],
+  [
+    { key: '7', label: '7', className: 'key' },
+    { key: '8', label: '8', className: 'key' },
+    { key: '9', label: '9', className: 'key' },
+    { key: '/', label: '÷', className: 'key key--op' },
+  ],
+  [
+    { key: '4', label: '4', className: 'key' },
+    { key: '5', label: '5', className: 'key' },
+    { key: '6', label: '6', className: 'key' },
+    { key: '-', label: '−', className: 'key key--op' },
+  ],
+  [
+    { key: '1', label: '1', className: 'key' },
+    { key: '2', label: '2', className: 'key' },
+    { key: '3', label: '3', className: 'key' },
+    { key: '+', label: '+', className: 'key key--tall key--op' },
+  ],
+  [
+    { key: '0', label: '0', className: 'key key--wide' },
+    { key: '.', label: '.', className: 'key' },
+  ],
+];
+
 export function Keypad({ onKey }: KeypadProps) {
   return (
     <div className="keypad">
-      <button className="key key--op" onClick={() => onKey('C')} type="button">
-        C
-      </button>
-      <button className="key key--op" onClick={() => onKey('E')} type="button">
-        E
-      </button>
-      <button className="key key--op" onClick={() => onKey('=')} type="button">
-        =
-      </button>
-      <button className="key key--op" onClick={() => onKey('*')} type="button">
-        ×
-      </button>
-
-      <button className="key" onClick={() => onKey('7')} type="button">
-        7
-      </button>
-      <button className="key" onClick={() => onKey('8')} type="button">
-        8
-      </button>
-      <button className="key" onClick={() => onKey('9')} type="button">
-        9
-      </button>
-      <button className="key key--op" onClick={() => onKey('/')} type="button">
-        ÷
-      </button>
-
-      <button className="key" onClick={() => onKey('4')} type="button">
-        4
-      </button>
-      <button className="key" onClick={() => onKey('5')} type="button">
-        5
-      </button>
-      <button className="key" onClick={() => onKey('6')} type="button">
-        6
-      </button>
-      <button className="key key--op" onClick={() => onKey('-')} type="button">
-        −
-      </button>
-
-      <button className="key" onClick={() => onKey('1')} type="button">
-        1
-      </button>
-      <button className="key" onClick={() => onKey('2')} type="button">
-        2
-      </button>
-      <button className="key" onClick={() => onKey('3')} type="button">
-        3
-      </button>
-      <button className="key key--tall key--op" onClick={() => onKey('+')} type="button">
-        +
-      </button>
-
-      <button className="key key--wide" onClick={() => onKey('0')} type="button">
-        0
-      </button>
-      <button className="key" onClick={() => onKey('.')} type="button">
-        .
-      </button>
+      {KEYPAD_LAYOUT.flat().map(({ key, label, className }) => (
+        <button key={key} className={className} onClick={() => onKey(key)} type="button">
+          {label}
+        </button>
+      ))}
     </div>
   );
 }
