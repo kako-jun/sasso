@@ -127,7 +127,7 @@ src/
 | -------------- | -------------------------- | ------------------------------------------------------------- |
 | elimination.ts | Digit matching and removal | `eliminateMatches`, `findEliminationIndices`, `checkOverflow` |
 | scoring.ts     | Score calculation          | `calculateScore`, `shouldTriggerAttack`                       |
-| prediction.ts  | Next operation generation  | `generatePrediction`, `generateAttackPredictions`             |
+| prediction.ts  | Next operation generation  | `generatePrediction`                                          |
 | attack.ts      | Attack effect calculation  | `calculateAttackEffect`                                       |
 
 ## Components Overview

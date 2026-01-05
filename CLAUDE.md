@@ -74,13 +74,13 @@ src/
 
 ### Key Modules
 
-| Module                     | Key Functions                                                   |
-| -------------------------- | --------------------------------------------------------------- |
-| game/elimination.ts        | `processElimination`, `findEliminationIndices`, `checkOverflow` |
-| game/scoring.ts            | `calculateScore`, `shouldTriggerAttack`                         |
-| game/prediction.ts         | `generatePrediction`                                            |
-| hooks/useCalculator.ts     | Calculator state (useReducer pattern)                           |
-| hooks/useGameController.ts | Bridges calculator + game, handles input                        |
+| Module                     | Key Functions                                                 |
+| -------------------------- | ------------------------------------------------------------- |
+| game/elimination.ts        | `findEliminationIndices`, `eliminateMatches`, `checkOverflow` |
+| game/scoring.ts            | `calculateScore`, `shouldTriggerAttack`                       |
+| game/prediction.ts         | `generatePrediction`                                          |
+| hooks/useCalculator.ts     | Calculator state (useReducer pattern)                         |
+| hooks/useGameController.ts | Bridges calculator + game, handles input                      |
 
 ## Game Modes
 
