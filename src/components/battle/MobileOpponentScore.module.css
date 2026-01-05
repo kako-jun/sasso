@@ -2,22 +2,25 @@
 .opponentScoreBar {
   display: flex;
   align-items: center;
-  justify-content: flex-end;
   gap: 4px;
   padding: 2px 8px;
   font-size: 12px;
   height: 20px;
 }
 
+.disconnected {
+  color: #666;
+  font-size: 10px;
+}
+
 .label {
   color: #666;
 }
 
-.score {
-  /* Same as MenuBar statusItem */
+.spacer {
+  flex: 1;
 }
 
-.disconnected {
-  color: #666;
-  font-size: 10px;
+.score {
+  /* Same as MenuBar statusItem - fixed to right */
 }
