@@ -42,8 +42,13 @@ export function useArena(): UseArenaReturn {
   const config = useMemo(
     () => ({
       gameId: 'sasso',
-      // Exclude relay.nostr.band due to expired SSL certificate
-      relays: ['wss://relay.damus.io', 'wss://nos.lol'],
+      // Multiple relays for better reliability
+      relays: [
+        'wss://relay.damus.io',
+        'wss://nos.lol',
+        'wss://relay.snort.social',
+        'wss://relay.primal.net',
+      ],
     }),
     []
   );
