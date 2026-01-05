@@ -1,3 +1,4 @@
+import { QRCodeSVG } from 'qrcode.react';
 import type { RoomStatus } from '../../types/battle';
 import styles from './BattleOverlay.module.css';
 
@@ -30,22 +31,26 @@ function WaitingOverlay({ roomUrl, onLeave }: { roomUrl?: string; onLeave?: () =
     <OverlayWrapper>
       <div className={styles.battleStatus}>Waiting for opponent...</div>
       {roomUrl && (
-        <div className={styles.roomUrlDisplay}>
-          <div className={styles.roomUrlLabel}>Share this URL:</div>
-          <input
-            type="text"
-            className={styles.roomUrlInput}
-            value={roomUrl}
-            readOnly
-            onClick={(e) => (e.target as HTMLInputElement).select()}
-          />
-          <button
-            className={styles.copyButton}
-            onClick={() => navigator.clipboard.writeText(roomUrl)}
-          >
-            Copy
-          </button>
-        </div>
+        <>
+          <div className={styles.qrCode}>
+            <QRCodeSVG value={roomUrl} size={120} />
+          </div>
+          <div className={styles.roomUrlDisplay}>
+            <input
+              type="text"
+              className={styles.roomUrlInput}
+              value={roomUrl}
+              readOnly
+              onClick={(e) => (e.target as HTMLInputElement).select()}
+            />
+            <button
+              className={styles.copyButton}
+              onClick={() => navigator.clipboard.writeText(roomUrl)}
+            >
+              Copy
+            </button>
+          </div>
+        </>
       )}
       <button className={styles.leaveButton} onClick={onLeave}>
         Cancel

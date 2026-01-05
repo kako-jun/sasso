@@ -27,6 +27,14 @@
   margin-bottom: 16px;
 }
 
+.qrCode {
+  margin-bottom: 16px;
+  padding: 12px;
+  background: #fff;
+  border: 2px solid #000;
+  display: inline-block;
+}
+
 .battleStartHint {
   font-size: 14px;
   color: #666;
