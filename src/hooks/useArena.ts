@@ -53,6 +53,10 @@ export function useArena(): UseArenaReturn {
     []
   );
 
+  // Ref to track last sent state for attack injection
+  const lastSentStateRef = useRef<SassoGameState | null>(null);
+  const pendingAttackRef = useRef<{ power: number; timestamp: number } | null>(null);
+
   // Callbacks for nostr-arena
   const callbacks = useMemo<ArenaCallbacks<SassoGameState>>(
     () => ({
@@ -81,6 +85,9 @@ export function useArena(): UseArenaReturn {
         dispatchBattleEvent(BATTLE_EVENTS.REMATCH_REQUESTED);
       },
       onRematchStart: (newSeed: number) => {
+        // Reset attack refs on rematch
+        lastAttackTimestampRef.current = 0;
+        pendingAttackRef.current = null;
         dispatchBattleEvent(BATTLE_EVENTS.REMATCH_START, { seed: newSeed });
       },
       onError: (error: Error) => {
@@ -92,10 +99,6 @@ export function useArena(): UseArenaReturn {
 
   // Use the package hook
   const room = usePackageArena<SassoGameState>(config, callbacks);
-
-  // Ref to track last sent state for attack injection
-  const lastSentStateRef = useRef<SassoGameState | null>(null);
-  const pendingAttackRef = useRef<{ power: number; timestamp: number } | null>(null);
 
   // Send state with attack injection
   const sendState = useCallback(
