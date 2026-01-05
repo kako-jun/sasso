@@ -138,6 +138,12 @@ Falling puzzle format:
 - Predicted operation executes, elimination check occurs
 - Example: Current "12", "×7" predicted → becomes 84 → prepare adjacent 8 and 4 to eliminate
 
+**Pending Calculation Handling:**
+
+- If player has a pending operation when prediction fires (e.g., "100 + 1" before pressing =)
+- The pending calculation is auto-completed first (100 + 1 = 101)
+- Then prediction is applied to the result (101 × 7 = 707)
+
 ### 2-Player Battle Mode
 
 - Cause opponent's digit overflow to win
@@ -259,6 +265,7 @@ Left side:
 - [x] C/E at game start → Doesn't count as surrender (safe start)
 - [x] Score system → Base×Chain×Prep×Risk formula
 - [x] Attack algorithm → Score-based difficulty scaling
+- [x] Pending calculation at prediction → Auto-complete before applying prediction
 
 ## Future Development
 

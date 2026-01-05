@@ -21,6 +21,7 @@ For generic battle room documentation, see:
 3. Player A: URLをコピーして相手に共有（LINE, Discord等）
 4. Player A: 「Waiting for opponent...」画面で待機
 5. Player B: 共有されたURLをクリック → 自動でルームに参加
+   または: "Join Room" → QRコードをスキャン / Room IDを手入力
 6. 両者: 「Opponent found!」表示
 7. 両者: 任意のキーを押すとゲーム開始
 8. ゲーム終了: Victory/Defeat 画面表示
@@ -160,10 +161,12 @@ Attack power = score from that elimination.
 | `src/hooks/useBattleMode.ts`                    | Main battle mode orchestrator              |
 | `src/hooks/useArena.ts`                         | Room management (uses nostr-arena pattern) |
 | `src/hooks/useSeededPrediction.ts`              | Deterministic prediction with shared seed  |
+| `src/hooks/usePredictionTimer.ts`               | Shared prediction countdown logic          |
+| `src/hooks/useElimination.ts`                   | Shared chain elimination and scoring       |
 | `src/components/battle/BattleApp.tsx`           | Battle mode UI and layout orchestration    |
 | `src/components/battle/BattleLayout.tsx`        | Desktop/Mobile responsive layout           |
 | `src/components/battle/BattleOverlay.tsx`       | Waiting/Victory/Defeat overlays            |
 | `src/components/battle/MobileOpponentScore.tsx` | Mobile opponent score display              |
 | `src/components/battle/OpponentHeader.tsx`      | Desktop opponent header bar                |
-| `src/components/battle/RoomCreation.tsx`        | Room creation/join UI                      |
+| `src/components/battle/RoomCreation.tsx`        | Room creation/join UI with QR code scanner |
 | `src/components/battle/AttackIndicator.tsx`     | Attack visual indicator                    |

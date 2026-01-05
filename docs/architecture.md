@@ -26,9 +26,13 @@ src/
 │   ├── useGameController.ts  # Main controller (bridges calculator + game)
 │   ├── useGame.ts          # Game state management
 │   ├── useCalculator.ts    # Calculator logic (useReducer pattern)
-│   ├── useElimination.ts   # Elimination and scoring
+│   ├── useElimination.ts   # Elimination, scoring, chain animation
 │   ├── usePrediction.ts    # Prediction state
-│   ├── useEndlessMode.ts   # Endless mode timer/prediction
+│   ├── usePredictionTimer.ts # Shared prediction countdown logic
+│   ├── useEndlessMode.ts   # Endless/Sprint mode integration
+│   ├── useBattleMode.ts    # Battle mode orchestration
+│   ├── useSeededPrediction.ts # Deterministic prediction (battle sync)
+│   ├── useArena.ts         # Room management (nostr-arena)
 │   └── useKeyboard.ts      # Keyboard input handling
 │
 ├── game/                   # Game Logic (pure functions)
@@ -58,44 +62,64 @@ src/
 │                    (Layout Component)                        │
 └─────────────────────┬───────────────────────────────────────┘
                       │
-┌─────────────────────▼───────────────────────────────────────┐
-│                  useGameController                           │
-│            (Bridges Calculator + Game)                       │
-├─────────────────────┬───────────────────────────────────────┤
-│                     │                                        │
-│  ┌──────────────────▼──────────────┐  ┌───────────────────┐ │
-│  │        useCalculator            │  │     useGame       │ │
-│  │     (useReducer pattern)        │  │  (Composed Hook)  │ │
-│  └─────────────────────────────────┘  └────────┬──────────┘ │
-│                                                 │            │
-│                     ┌───────────────────────────┼──────────┐ │
-│                     │                           │          │ │
-│          ┌──────────▼─────┐  ┌─────────▼───────┐ ┌────────▼┐│
-│          │ usePrediction  │  │ useElimination  │ │useEndless││
-│          └────────────────┘  └─────────────────┘ └─────────┘│
-└─────────────────────────────────────────────────────────────┘
+        ┌─────────────┴─────────────┐
+        │                           │
+┌───────▼───────────────────┐ ┌─────▼─────────────────────────┐
+│    useGameController      │ │        useBattleMode          │
+│  (Single-player modes)    │ │      (Battle mode only)       │
+├───────────────────────────┤ ├───────────────────────────────┤
+│  ┌─────────────────────┐  │ │  ┌─────────────────────────┐  │
+│  │   useCalculator     │  │ │  │    useCalculator        │  │
+│  │ (useReducer pattern)│  │ │  │  (useReducer pattern)   │  │
+│  └─────────────────────┘  │ │  └─────────────────────────┘  │
+│  ┌─────────────────────┐  │ │  ┌─────────────────────────┐  │
+│  │      useGame        │  │ │  │  useSeededPrediction    │  │
+│  │  (Composed Hook)    │  │ │  │  (Deterministic sync)   │  │
+│  └──────────┬──────────┘  │ │  └─────────────────────────┘  │
+│             │             │ │  ┌─────────────────────────┐  │
+│  ┌──────────┴──────────┐  │ │  │      useArena           │  │
+│  │                     │  │ │  │  (Room management)      │  │
+│  ▼                     ▼  │ │  └─────────────────────────┘  │
+│ usePrediction  useElimination │                             │
+│      │              │     │ │                               │
+│      └──────┬───────┘     │ │                               │
+│             ▼             │ │                               │
+│       useEndlessMode      │ │                               │
+│             │             │ │                               │
+└─────────────┼─────────────┘ └───────────────┬───────────────┘
+              │                               │
+              └───────────────┬───────────────┘
+                              ▼
+                    ┌─────────────────────┐
+                    │ usePredictionTimer  │ (Shared countdown logic)
+                    │ useElimination      │ (Shared chain/score)
+                    └─────────────────────┘
 ```
 
 ## Hooks Overview
 
-| Hook              | Responsibility                                 | Lines |
-| ----------------- | ---------------------------------------------- | ----- |
-| useGameController | Bridges calculator and game, handles key input | 156   |
-| useGame           | Composes game state from sub-hooks             | 167   |
-| useCalculator     | Calculator state machine (useReducer)          | 211   |
-| useElimination    | Elimination animation and scoring              | 145   |
-| usePrediction     | Prediction state and generation                | 71    |
-| useEndlessMode    | Countdown timer and auto-prediction            | 148   |
-| useKeyboard       | Keyboard event handling                        | 41    |
+| Hook                | Responsibility                                    |
+| ------------------- | ------------------------------------------------- |
+| useGameController   | Bridges calculator and game, handles key input    |
+| useGame             | Composes game state from sub-hooks                |
+| useCalculator       | Calculator state machine (useReducer)             |
+| useElimination      | Elimination chain animation and scoring           |
+| usePrediction       | Prediction state and generation                   |
+| usePredictionTimer  | Shared prediction countdown and application logic |
+| useEndlessMode      | Endless/Sprint mode integration                   |
+| useBattleMode       | Battle mode orchestration (room + game)           |
+| useSeededPrediction | Deterministic prediction with shared seed         |
+| useArena            | Room management using nostr-arena                 |
+| useKeyboard         | Keyboard event handling                           |
 
 ## Game Logic Modules
 
-| Module         | Responsibility             | Key Functions                                                   |
-| -------------- | -------------------------- | --------------------------------------------------------------- |
-| elimination.ts | Digit matching and removal | `processElimination`, `findEliminationIndices`, `checkOverflow` |
-| scoring.ts     | Score calculation          | `calculateScore`, `shouldTriggerAttack`                         |
-| prediction.ts  | Next operation generation  | `generatePrediction`, `generateAttackPredictions`               |
-| attack.ts      | Attack effect calculation  | `calculateAttackEffect`                                         |
+| Module         | Responsibility             | Key Functions                                                 |
+| -------------- | -------------------------- | ------------------------------------------------------------- |
+| elimination.ts | Digit matching and removal | `eliminateMatches`, `findEliminationIndices`, `checkOverflow` |
+| scoring.ts     | Score calculation          | `calculateScore`, `shouldTriggerAttack`                       |
+| prediction.ts  | Next operation generation  | `generatePrediction`, `generateAttackPredictions`             |
+| attack.ts      | Attack effect calculation  | `calculateAttackEffect`                                       |
 
 ## Components Overview
 
@@ -118,7 +142,7 @@ src/
 | BattleApp           | Battle mode UI orchestration              |
 | BattleLayout        | Desktop (50/50 split) / Mobile responsive |
 | BattleOverlay       | Waiting/Ready/Finished overlays           |
-| RoomCreation        | Create/Join room UI with QR code          |
+| RoomCreation        | Create/Join room UI with QR scanner       |
 | MobileOpponentScore | Simple opponent score for mobile          |
 | OpponentHeader      | Opponent score bar for desktop            |
 | AttackIndicator     | Visual indicator when under attack        |
