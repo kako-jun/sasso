@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { Prediction, ScoreResult } from '../types';
 import type { RoomState, OpponentState } from '../types/battle';
-import { useNostr } from './useNostr';
 import { useBattleRoom } from './useBattleRoom';
 import { useSeededPrediction } from './useSeededPrediction';
 import { useCalculator } from './useCalculator';
@@ -55,8 +54,7 @@ export interface UseBattleModeReturn {
 
 export function useBattleMode(): UseBattleModeReturn {
   // Core hooks
-  const nostr = useNostr();
-  const room = useBattleRoom(nostr);
+  const room = useBattleRoom();
   const calculator = useCalculator();
   const prediction = useSeededPrediction();
   const elimination = useElimination();

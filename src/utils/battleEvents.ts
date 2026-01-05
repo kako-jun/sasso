@@ -1,28 +1,3 @@
-import { NOSTR_EVENT_KINDS, SASSO_TAG_PREFIX } from '../constants/nostr';
-import type { UseNostrReturn } from '../hooks/useNostr';
-
-/**
- * Creates a room tag for Nostr events.
- */
-export function createRoomTag(roomId: string): string {
-  return `${SASSO_TAG_PREFIX}${roomId}`;
-}
-
-/**
- * Helper to publish ephemeral events to a room.
- */
-export function publishToRoom(
-  nostr: UseNostrReturn,
-  roomId: string,
-  content: Record<string, unknown>
-): void {
-  nostr.publish({
-    kind: NOSTR_EVENT_KINDS.EPHEMERAL,
-    tags: [['d', createRoomTag(roomId)]],
-    content: JSON.stringify(content),
-  });
-}
-
 /**
  * Dispatches a custom battle event.
  */

@@ -1,26 +1,29 @@
-import { useCallback, useEffect, useState, useRef } from 'react';
-import type {
-  RoomState,
-  OpponentState,
-  RoomEventContent,
-  JoinEventContent,
-  NostrEvent,
-  SassoGameState,
-} from '../types/battle';
-import { NOSTR_EVENT_KINDS, NOSTR_TIMEOUTS } from '../constants/nostr';
-import { generateSeed } from '../game';
-import {
-  publishToRoom,
-  dispatchBattleEvent,
-  BATTLE_EVENTS,
-  createRoomTag,
-} from '../utils/battleEvents';
-import { useRoomPersistence } from './useRoomPersistence';
-import { useConnectionHealth } from './useConnectionHealth';
-import type { UseNostrReturn } from './useNostr';
+/**
+ * useBattleRoom - Wrapper around nostr-battle-room package
+ *
+ * Uses the generic nostr-battle-room package with Sasso-specific types.
+ * Attack handling is done through game state (attack field with timestamp).
+ */
 
-export interface UseBattleRoomReturn extends RoomState {
+import { useCallback, useRef, useEffect, useMemo } from 'react';
+import { useBattleRoom as usePackageBattleRoom } from 'nostr-battle-room/react';
+import type { BattleRoomCallbacks } from 'nostr-battle-room';
+import type { SassoGameState, OpponentState, RoomState } from '../types/battle';
+import { dispatchBattleEvent, BATTLE_EVENTS } from '../utils/battleEvents';
+
+export interface UseBattleRoomReturn {
+  // Room state
+  roomId: string | null;
+  status: RoomState['status'];
+  isHost: boolean;
+  seed: number;
+  createdAt?: number;
+  rematchRequested?: boolean;
+
+  // Opponent
   opponent: OpponentState | null;
+
+  // Actions
   createRoom: () => Promise<string>;
   joinRoom: (roomId: string) => Promise<void>;
   leaveRoom: () => void;
@@ -31,379 +34,132 @@ export interface UseBattleRoomReturn extends RoomState {
   acceptRematch: () => void;
 }
 
-const INITIAL_ROOM_STATE: RoomState = {
-  roomId: null,
-  status: 'idle',
-  isHost: false,
-  seed: 0,
-};
+export function useBattleRoom(): UseBattleRoomReturn {
+  const lastAttackTimestampRef = useRef<number>(0);
 
-const createInitialOpponent = (publicKey: string): OpponentState => ({
-  publicKey,
-  gameState: null,
-  isConnected: true,
-  lastHeartbeat: Date.now(),
-});
+  // Config for nostr-battle-room
+  const config = useMemo(
+    () => ({
+      gameId: 'sasso',
+    }),
+    []
+  );
 
-export function useBattleRoom(nostr: UseNostrReturn): UseBattleRoomReturn {
-  const [roomState, setRoomState] = useState<RoomState>(INITIAL_ROOM_STATE);
-  const [opponent, setOpponent] = useState<OpponentState | null>(null);
-  const unsubscribeRef = useRef<(() => void) | null>(null);
-  const lastStateUpdateRef = useRef<number>(0);
-
-  // Extracted hooks
-  const persistence = useRoomPersistence();
-
-  const handleOpponentDisconnect = useCallback(() => {
-    dispatchBattleEvent(BATTLE_EVENTS.OPPONENT_DISCONNECT, { timestamp: Date.now() });
-  }, []);
-
-  const connectionHealth = useConnectionHealth({
-    nostr,
-    roomId: roomState.roomId,
-    isActive: roomState.status !== 'idle' && roomState.status !== 'finished',
-    onOpponentDisconnect: handleOpponentDisconnect,
-    setOpponent,
-  });
-
-  // Generate unique room ID
-  const generateRoomId = useCallback(() => {
-    return `${Date.now().toString(36)}-${Math.random().toString(36).substr(2, 9)}`;
-  }, []);
-
-  // Reset state for rematch (shared by initiator and receiver)
-  const resetForRematch = useCallback((newSeed: number) => {
-    setRoomState((prev) => ({
-      ...prev,
-      seed: newSeed,
-      status: 'ready',
-      rematchRequested: false,
-    }));
-    setOpponent((prev) =>
-      prev
-        ? {
-            ...prev,
-            gameState: null,
-            rematchRequested: false,
-          }
-        : null
-    );
-    dispatchBattleEvent(BATTLE_EVENTS.REMATCH_START, { seed: newSeed });
-  }, []);
-
-  // Handle incoming room events
-  const handleRoomEvent = useCallback(
-    (event: NostrEvent) => {
-      if (event.pubkey === nostr.publicKey) return;
-
-      try {
-        const content = JSON.parse(event.content);
-
-        switch (content.type) {
-          case 'join':
-            setOpponent(createInitialOpponent(content.playerPubkey));
-            setRoomState((prev) => ({ ...prev, status: 'ready' }));
-            if (roomState.roomId) {
-              persistence.saveRoom({
-                roomId: roomState.roomId,
-                isHost: roomState.isHost,
-                seed: roomState.seed,
-                createdAt: roomState.createdAt || Date.now(),
-                opponentPubkey: content.playerPubkey,
-              });
-            }
-            break;
-
-          case 'state':
-            setOpponent((prev) =>
-              prev
-                ? {
-                    ...prev,
-                    gameState: content.gameState,
-                    lastHeartbeat: Date.now(),
-                    isConnected: true,
-                  }
-                : null
-            );
-            break;
-
-          case 'attack':
-            dispatchBattleEvent(BATTLE_EVENTS.ATTACK, {
-              power: content.power,
-              timestamp: content.timestamp,
-            });
-            break;
-
-          case 'gameover':
-            dispatchBattleEvent(BATTLE_EVENTS.OPPONENT_GAMEOVER, {
-              reason: content.reason,
-              finalScore: content.finalScore,
-            });
-            setRoomState((prev) => ({ ...prev, status: 'finished', rematchRequested: false }));
-            setOpponent((prev) => (prev ? { ...prev, rematchRequested: false } : null));
-            break;
-
-          case 'heartbeat':
-            connectionHealth.updateOpponentHeartbeat(content.timestamp);
-            break;
-
-          case 'rematch':
-            if (content.action === 'request') {
-              setOpponent((prev) => (prev ? { ...prev, rematchRequested: true } : null));
-              dispatchBattleEvent(BATTLE_EVENTS.REMATCH_REQUESTED);
-            } else if (content.action === 'accept' && content.newSeed) {
-              resetForRematch(content.newSeed);
-            }
-            break;
+  // Callbacks for nostr-battle-room
+  const callbacks = useMemo<BattleRoomCallbacks<SassoGameState>>(
+    () => ({
+      onOpponentState: (state: SassoGameState) => {
+        // Detect new attack from state
+        if (state.attack && state.attack.timestamp > lastAttackTimestampRef.current) {
+          lastAttackTimestampRef.current = state.attack.timestamp;
+          dispatchBattleEvent(BATTLE_EVENTS.ATTACK, {
+            power: state.attack.power,
+            timestamp: state.attack.timestamp,
+          });
         }
-      } catch (e) {
-        console.error('Failed to parse room event:', e);
-      }
-    },
-    [
-      nostr.publicKey,
-      roomState.roomId,
-      roomState.isHost,
-      roomState.seed,
-      roomState.createdAt,
-      persistence,
-      connectionHealth,
-      resetForRematch,
-    ]
-  );
-
-  // Subscribe to room events
-  const subscribeToRoom = useCallback(
-    (roomId: string) => {
-      const unsubscribe = nostr.subscribe(
-        [{ kinds: [NOSTR_EVENT_KINDS.EPHEMERAL], '#d': [createRoomTag(roomId)] }],
-        handleRoomEvent
-      );
-      unsubscribeRef.current = unsubscribe;
-    },
-    [nostr, handleRoomEvent]
-  );
-
-  // Create a new battle room
-  const createRoom = useCallback(async (): Promise<string> => {
-    const roomId = generateRoomId();
-    const seed = generateSeed();
-    const createdAt = Date.now();
-
-    setRoomState({ roomId, status: 'waiting', isHost: true, seed, createdAt });
-    persistence.saveRoom({ roomId, isHost: true, seed, createdAt });
-
-    const content: RoomEventContent = {
-      type: 'room',
-      status: 'waiting',
-      seed,
-      hostPubkey: nostr.publicKey,
-    };
-
-    await nostr.publish({
-      kind: NOSTR_EVENT_KINDS.ROOM,
-      tags: [
-        ['d', createRoomTag(roomId)],
-        ['t', 'sasso'],
-      ],
-      content: JSON.stringify(content),
-    });
-
-    subscribeToRoom(roomId);
-    return `${window.location.origin}/battle/${roomId}`;
-  }, [nostr, generateRoomId, persistence, subscribeToRoom]);
-
-  // Join an existing room
-  const joinRoom = useCallback(
-    async (roomId: string): Promise<void> => {
-      setRoomState((prev) => ({ ...prev, roomId, status: 'joining', isHost: false }));
-
-      // Fetch room info with timeout
-      const roomEvents = await new Promise<NostrEvent[]>((resolve) => {
-        const events: NostrEvent[] = [];
-        const unsubscribe = nostr.subscribe(
-          [{ kinds: [NOSTR_EVENT_KINDS.ROOM], '#d': [createRoomTag(roomId)], limit: 1 }],
-          (event) => events.push(event)
-        );
-        setTimeout(() => {
-          unsubscribe();
-          resolve(events);
-        }, 2000);
-      });
-
-      if (roomEvents.length === 0) {
-        setRoomState((prev) => ({ ...prev, status: 'idle', roomId: null }));
-        throw new Error('Room not found');
-      }
-
-      const roomContent = JSON.parse(roomEvents[0].content) as RoomEventContent;
-      const roomCreatedAt = (roomEvents[0].created_at || 0) * 1000;
-
-      if (persistence.isExpired(roomCreatedAt)) {
-        setRoomState((prev) => ({ ...prev, status: 'idle', roomId: null }));
-        throw new Error('Room has expired');
-      }
-
-      setRoomState((prev) => ({
-        ...prev,
-        seed: roomContent.seed,
-        status: 'ready',
-        createdAt: roomCreatedAt,
-      }));
-      setOpponent(createInitialOpponent(roomContent.hostPubkey));
-      persistence.saveRoom({
-        roomId,
-        isHost: false,
-        seed: roomContent.seed,
-        createdAt: roomCreatedAt,
-        opponentPubkey: roomContent.hostPubkey,
-      });
-
-      const joinContent: JoinEventContent = { type: 'join', playerPubkey: nostr.publicKey };
-      await nostr.publish({
-        kind: NOSTR_EVENT_KINDS.EPHEMERAL,
-        tags: [['d', createRoomTag(roomId)]],
-        content: JSON.stringify(joinContent),
-      });
-
-      subscribeToRoom(roomId);
-    },
-    [nostr, persistence, subscribeToRoom]
-  );
-
-  // Leave the current room
-  const leaveRoom = useCallback(() => {
-    unsubscribeRef.current?.();
-    unsubscribeRef.current = null;
-    persistence.clearRoom();
-    setRoomState(INITIAL_ROOM_STATE);
-    setOpponent(null);
-  }, [persistence]);
-
-  // Send state update (throttled)
-  const sendState = useCallback(
-    (state: SassoGameState) => {
-      const now = Date.now();
-      if (now - lastStateUpdateRef.current < NOSTR_TIMEOUTS.STATE_THROTTLE) return;
-      lastStateUpdateRef.current = now;
-
-      if (roomState.roomId) {
-        publishToRoom(nostr, roomState.roomId, {
-          type: 'state',
-          gameState: state,
-        });
-      }
-    },
-    [nostr, roomState.roomId]
-  );
-
-  // Send attack event
-  const sendAttack = useCallback(
-    (power: number) => {
-      if (roomState.roomId) {
-        publishToRoom(nostr, roomState.roomId, { type: 'attack', power, timestamp: Date.now() });
-      }
-    },
-    [nostr, roomState.roomId]
-  );
-
-  // Send game over event
-  const sendGameOver = useCallback(
-    (reason: 'overflow' | 'surrender' | 'disconnect', finalScore: number) => {
-      if (roomState.roomId) {
-        publishToRoom(nostr, roomState.roomId, {
-          type: 'gameover',
+      },
+      onOpponentGameOver: (reason: string, finalScore?: number) => {
+        dispatchBattleEvent(BATTLE_EVENTS.OPPONENT_GAMEOVER, {
           reason,
           finalScore,
-          winner: opponent?.publicKey || '',
         });
-        setRoomState((prev) => ({ ...prev, status: 'finished' }));
-      }
-    },
-    [nostr, roomState.roomId, opponent]
+      },
+      onOpponentDisconnect: () => {
+        dispatchBattleEvent(BATTLE_EVENTS.OPPONENT_DISCONNECT, {
+          timestamp: Date.now(),
+        });
+      },
+      onRematchRequested: () => {
+        dispatchBattleEvent(BATTLE_EVENTS.REMATCH_REQUESTED);
+      },
+      onRematchStart: (newSeed: number) => {
+        dispatchBattleEvent(BATTLE_EVENTS.REMATCH_START, { seed: newSeed });
+      },
+      onError: (error: Error) => {
+        console.error('BattleRoom error:', error.message);
+      },
+    }),
+    []
   );
 
-  // Request rematch
-  const requestRematch = useCallback(() => {
-    if (!roomState.roomId || roomState.status !== 'finished') return;
+  // Use the package hook
+  const room = usePackageBattleRoom<SassoGameState>(config, callbacks);
 
-    setRoomState((prev) => ({ ...prev, rematchRequested: true }));
-    publishToRoom(nostr, roomState.roomId, { type: 'rematch', action: 'request' });
+  // Ref to track last sent state for attack injection
+  const lastSentStateRef = useRef<SassoGameState | null>(null);
+  const pendingAttackRef = useRef<{ power: number; timestamp: number } | null>(null);
 
-    // If opponent already requested, accept immediately
-    if (opponent?.rematchRequested) {
-      acceptRematch();
-    }
-  }, [nostr, roomState.roomId, roomState.status, opponent?.rematchRequested]);
+  // Send state with attack injection
+  const sendState = useCallback(
+    (state: SassoGameState) => {
+      // Inject pending attack into state
+      const stateWithAttack: SassoGameState = pendingAttackRef.current
+        ? { ...state, attack: pendingAttackRef.current }
+        : state;
 
-  // Accept rematch
-  const acceptRematch = useCallback(() => {
-    if (!roomState.roomId) return;
+      room.sendState(stateWithAttack);
+      lastSentStateRef.current = stateWithAttack;
 
-    const newSeed = generateSeed();
-    publishToRoom(nostr, roomState.roomId, { type: 'rematch', action: 'accept', newSeed });
-    resetForRematch(newSeed);
-  }, [nostr, roomState.roomId, resetForRematch]);
+      // Clear pending attack after sending
+      if (pendingAttackRef.current) {
+        pendingAttackRef.current = null;
+      }
+    },
+    [room]
+  );
 
-  // Attempt reconnection on mount
+  // Queue attack to be sent with next state
+  const sendAttack = useCallback((power: number) => {
+    pendingAttackRef.current = { power, timestamp: Date.now() };
+  }, []);
+
+  // Wrapped sendGameOver with proper typing
+  const sendGameOver = useCallback(
+    (reason: 'overflow' | 'surrender' | 'disconnect', finalScore: number) => {
+      room.sendGameOver(reason, finalScore);
+    },
+    [room]
+  );
+
+  // Map opponent to Sasso's OpponentState type
+  const opponent: OpponentState | null = room.opponent
+    ? {
+        publicKey: room.opponent.publicKey,
+        gameState: room.opponent.gameState,
+        isConnected: room.opponent.isConnected,
+        lastHeartbeat: room.opponent.lastHeartbeat,
+        rematchRequested: room.opponent.rematchRequested,
+      }
+    : null;
+
+  // Try to reconnect on mount
   useEffect(() => {
-    if (!nostr.isConnected) return;
-
-    const storedRoom = persistence.loadRoom();
-    if (!storedRoom) return;
-
-    setRoomState({
-      roomId: storedRoom.roomId,
-      status: 'joining',
-      isHost: storedRoom.isHost,
-      seed: storedRoom.seed,
-      createdAt: storedRoom.createdAt,
+    room.reconnect().catch(() => {
+      // Reconnect failed, ignore
     });
-
-    if (storedRoom.opponentPubkey) {
-      setOpponent({
-        ...createInitialOpponent(storedRoom.opponentPubkey),
-        isConnected: false,
-        lastHeartbeat: 0,
-      });
-    }
-
-    subscribeToRoom(storedRoom.roomId);
-
-    // Announce reconnection
-    nostr.publish({
-      kind: NOSTR_EVENT_KINDS.EPHEMERAL,
-      tags: [['d', createRoomTag(storedRoom.roomId)]],
-      content: JSON.stringify({ type: 'join', playerPubkey: nostr.publicKey }),
-    });
-
-    // Set final status after brief delay
-    setTimeout(() => {
-      setRoomState((prev) => ({
-        ...prev,
-        status: storedRoom.opponentPubkey ? 'ready' : 'waiting',
-      }));
-    }, 1000);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [nostr.isConnected]);
-
-  // Cleanup on unmount
-  useEffect(() => {
-    return () => {
-      unsubscribeRef.current?.();
-    };
   }, []);
 
   return {
-    ...roomState,
+    // Room state
+    roomId: room.roomState.roomId,
+    status: room.roomState.status,
+    isHost: room.roomState.isHost,
+    seed: room.roomState.seed,
+    createdAt: room.roomState.createdAt,
+    rematchRequested: room.roomState.rematchRequested,
+
+    // Opponent
     opponent,
-    createRoom,
-    joinRoom,
-    leaveRoom,
+
+    // Actions
+    createRoom: room.createRoom,
+    joinRoom: room.joinRoom,
+    leaveRoom: room.leaveRoom,
     sendState,
     sendAttack,
     sendGameOver,
-    requestRematch,
-    acceptRematch,
+    requestRematch: room.requestRematch,
+    acceptRematch: room.acceptRematch,
   };
 }

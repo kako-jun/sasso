@@ -60,6 +60,7 @@ interface SassoGameState {
   score: number; // スコア
   chains: number; // 現在のチェーン数
   calculationHistory: string; // 直前の計算式
+  attack?: { power: number; timestamp: number }; // 攻撃イベント
 }
 ```
 

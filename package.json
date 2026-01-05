@@ -22,6 +22,7 @@
     ]
   },
   "dependencies": {
+    "nostr-battle-room": "file:packages/nostr-battle-room",
     "nostr-tools": "^2.19.4",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"
