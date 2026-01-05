@@ -1,0 +1,38 @@
+/* Prediction Area */
+.predictionArea {
+  position: absolute;
+  bottom: calc(50% + 237px);
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  background: #fff;
+  border: 2px solid #000;
+  padding: 8px 16px;
+  box-shadow: 3px 3px 0 #000;
+  z-index: 5;
+  max-width: calc(100vw - 32px);
+  overflow: hidden;
+}
+
+.predictionClock {
+  width: 40px;
+  height: 40px;
+}
+
+.countdownClock {
+  width: 100%;
+  height: 100%;
+}
+
+.predictionOperation {
+  font-size: 24px;
+  font-weight: bold;
+}
+
+/* Prediction Wrapper (for battle mode attack overlay) */
+.predictionWrapper {
+  position: relative;
+}

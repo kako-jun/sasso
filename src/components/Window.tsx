@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import styles from './Window.module.css';
 
 interface WindowProps {
   title: string;
@@ -8,12 +9,12 @@ interface WindowProps {
 
 export function Window({ title, onClose, children }: WindowProps) {
   return (
-    <main className="window">
-      <div className="title-bar">
-        <div className="close-box" onClick={onClose} />
-        <span className="title">{title}</span>
+    <main className={styles.window}>
+      <div className={styles.titleBar}>
+        <div className={styles.closeBox} onClick={onClose} />
+        <span className={styles.title}>{title}</span>
       </div>
-      <div className="window-content">{children}</div>
+      <div className={styles.windowContent}>{children}</div>
     </main>
   );
 }

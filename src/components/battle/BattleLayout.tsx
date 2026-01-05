@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 import type { OpponentState } from '../../types/battle';
 import { OpponentScore } from './OpponentScore';
 import { OpponentCalculator } from './OpponentCalculator';
+import styles from './BattleLayout.module.css';
 
 interface BattleLayoutProps {
   children: ReactNode;
@@ -30,9 +31,9 @@ export function BattleLayout({ children, opponent, isDesktop }: BattleLayoutProp
   if (isDesktop) {
     // Side-by-side layout for desktop
     return (
-      <div className="battle-layout-desktop">
-        <div className="battle-player-side">{children}</div>
-        <div className="battle-opponent-side">
+      <div className={styles.battleLayoutDesktop}>
+        <div className={styles.battlePlayerSide}>{children}</div>
+        <div className={styles.battleOpponentSide}>
           <OpponentCalculator
             display={gameState.display}
             score={gameState.score}
@@ -47,7 +48,7 @@ export function BattleLayout({ children, opponent, isDesktop }: BattleLayoutProp
 
   // Mobile layout: opponent score below player's score area
   return (
-    <div className="battle-layout-mobile">
+    <div className={styles.battleLayoutMobile}>
       {children}
       <OpponentScore
         display={gameState.display}

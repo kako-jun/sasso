@@ -1,0 +1,43 @@
+/* Display */
+.display {
+  border: 2px solid #000;
+  background: #fff;
+  padding: 4px 6px 4px 8px;
+  text-align: right;
+  font-size: 20px;
+  width: 150px;
+  min-height: 28px;
+  box-shadow: inset 2px 2px 0 #888;
+  overflow: hidden;
+  white-space: nowrap;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.digit {
+  display: inline-block;
+}
+
+.eliminating {
+  animation: flashEliminate 0.4s ease-out;
+}
+
+@keyframes flashEliminate {
+  0%,
+  20%,
+  40%,
+  60%,
+  80% {
+    background: #000;
+    color: #fff;
+  }
+  10%,
+  30%,
+  50%,
+  70%,
+  90%,
+  100% {
+    background: transparent;
+    color: #000;
+  }
+}

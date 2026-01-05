@@ -1,6 +1,8 @@
 import { useState, useRef, useEffect } from 'react';
 import type { GameMode } from '../types';
 import { GITHUB_URL } from '../constants';
+import { AboutModal } from './AboutModal';
+import styles from './MenuBar.module.css';
 
 interface MenuBarProps {
   gameMode: GameMode;
@@ -32,6 +34,7 @@ export function MenuBar({
   gameStarted,
 }: MenuBarProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const [isAboutOpen, setIsAboutOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
   const showScore = gameMode !== 'calculator';
@@ -56,47 +59,55 @@ export function MenuBar({
   const isGameMode = gameMode !== 'calculator';
 
   return (
-    <header className="menu-bar">
+    <header className={styles.menuBar}>
       <a href={GITHUB_URL} target="_blank" rel="noopener noreferrer">
-        <span className="github-logo"></span>
+        <span className={styles.githubLogo}></span>
       </a>
 
       <span
-        className={`menu-item ${gameMode === 'calculator' ? 'active' : ''}`}
+        className={`${styles.menuItem} ${gameMode === 'calculator' ? styles.active : ''}`}
         onClick={() => onChangeMode('calculator')}
       >
         Calculator
       </span>
 
-      <div className="menu-dropdown" ref={menuRef}>
+      <div className={styles.menuDropdown} ref={menuRef}>
         <span
-          className={`menu-item ${isOpen || isGameMode ? 'active' : ''}`}
+          className={`${styles.menuItem} ${isOpen || isGameMode ? styles.active : ''}`}
           onClick={() => setIsOpen(!isOpen)}
         >
           Game
         </span>
         {isOpen && (
-          <div className="menu-dropdown-content">
+          <div className={styles.menuDropdownContent}>
             {GAME_MODES.map(({ mode, label }) => (
               <div
                 key={mode}
-                className={`menu-dropdown-item ${gameMode === mode ? 'selected' : ''}`}
+                className={`${styles.menuDropdownItem} ${gameMode === mode ? styles.selected : ''}`}
                 onClick={() => handleModeSelect(mode)}
               >
                 {label}
-                {gameMode === mode && <span className="checkmark">✓</span>}
+                {gameMode === mode && <span className={styles.checkmark}>✓</span>}
               </div>
             ))}
           </div>
         )}
       </div>
 
-      <div className="menu-spacer" />
+      <span className={styles.menuItem} onClick={() => setIsAboutOpen(true)}>
+        About
+      </span>
+
+      <div className={styles.menuSpacer} />
 
       {showSprintTimer && (
-        <span className="status-item timer">{formatTime(sprintTimeRemaining)}</span>
+        <span className={`${styles.statusItem} ${styles.timer}`}>
+          {formatTime(sprintTimeRemaining)}
+        </span>
       )}
-      {showScore && <span className="status-item">{(score ?? 0).toLocaleString()}</span>}
+      {showScore && <span className={styles.statusItem}>{(score ?? 0).toLocaleString()}</span>}
+
+      <AboutModal isOpen={isAboutOpen} onClose={() => setIsAboutOpen(false)} />
     </header>
   );
 }

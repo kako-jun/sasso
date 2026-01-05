@@ -1,3 +1,5 @@
+import styles from './OpponentScore.module.css';
+
 interface OpponentScoreProps {
   display: string;
   score: number;
@@ -18,19 +20,19 @@ export function OpponentScore({
   isConnected,
 }: OpponentScoreProps) {
   return (
-    <div className={`opponent-score ${!isConnected ? 'disconnected' : ''}`}>
-      <div className="opponent-score-header">
-        <span className="opponent-label">Opponent</span>
-        {!isConnected && <span className="disconnected-badge">Disconnected</span>}
+    <div className={`${styles.opponentScore} ${!isConnected ? styles.disconnected : ''}`}>
+      <div className={styles.opponentScoreHeader}>
+        <span className={styles.opponentLabel}>Opponent</span>
+        {!isConnected && <span className={styles.disconnectedBadge}>Disconnected</span>}
       </div>
-      <div className="opponent-score-content">
-        <div className="opponent-display">{display}</div>
-        <div className="opponent-stats">
-          <span className="opponent-score-value">Score: {score}</span>
-          {chains > 0 && <span className="opponent-chains">Chains: {chains}</span>}
+      <div className={styles.opponentScoreContent}>
+        <div className={styles.opponentDisplay}>{display}</div>
+        <div className={styles.opponentStats}>
+          <span>Score: {score}</span>
+          {chains > 0 && <span>Chains: {chains}</span>}
         </div>
       </div>
-      {calculationHistory && <div className="opponent-history">{calculationHistory}</div>}
+      {calculationHistory && <div className={styles.opponentHistory}>{calculationHistory}</div>}
     </div>
   );
 }

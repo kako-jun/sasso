@@ -1,6 +1,7 @@
 import type { Prediction } from '../types';
 import { COUNTDOWN_TIME } from '../constants';
 import { operatorToSymbol } from '../utils';
+import styles from './PredictionArea.module.css';
 
 interface PredictionAreaProps {
   prediction: Prediction;
@@ -11,9 +12,9 @@ export function PredictionArea({ prediction, countdown }: PredictionAreaProps) {
   const countdownProgress = countdown / COUNTDOWN_TIME;
 
   return (
-    <div className="prediction-area">
-      <div className="prediction-clock">
-        <svg viewBox="0 0 40 40" className="countdown-clock">
+    <div className={styles.predictionArea}>
+      <div className={styles.predictionClock}>
+        <svg viewBox="0 0 40 40" className={styles.countdownClock}>
           <circle cx="20" cy="20" r="18" fill="none" stroke="#000" strokeWidth="2" />
           <circle
             cx="20"
@@ -27,7 +28,7 @@ export function PredictionArea({ prediction, countdown }: PredictionAreaProps) {
           />
         </svg>
       </div>
-      <div className="prediction-operation">
+      <div className={styles.predictionOperation}>
         {operatorToSymbol(prediction.operator)}
         {prediction.operand}
       </div>

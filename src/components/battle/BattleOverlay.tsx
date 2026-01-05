@@ -1,4 +1,5 @@
 import type { RoomStatus } from '../../types/battle';
+import styles from './BattleOverlay.module.css';
 
 interface BattleOverlayProps {
   status: RoomStatus;
@@ -17,8 +18,8 @@ interface BattleOverlayProps {
 // Shared overlay wrapper
 function OverlayWrapper({ children }: { children: React.ReactNode }) {
   return (
-    <div className="battle-overlay">
-      <div className="battle-overlay-content">{children}</div>
+    <div className={styles.battleOverlay}>
+      <div className={styles.battleOverlayContent}>{children}</div>
     </div>
   );
 }
@@ -27,23 +28,26 @@ function OverlayWrapper({ children }: { children: React.ReactNode }) {
 function WaitingOverlay({ roomUrl, onLeave }: { roomUrl?: string; onLeave?: () => void }) {
   return (
     <OverlayWrapper>
-      <div className="battle-status">Waiting for opponent...</div>
+      <div className={styles.battleStatus}>Waiting for opponent...</div>
       {roomUrl && (
-        <div className="room-url-display">
-          <div className="room-url-label">Share this URL:</div>
+        <div className={styles.roomUrlDisplay}>
+          <div className={styles.roomUrlLabel}>Share this URL:</div>
           <input
             type="text"
-            className="room-url-input"
+            className={styles.roomUrlInput}
             value={roomUrl}
             readOnly
             onClick={(e) => (e.target as HTMLInputElement).select()}
           />
-          <button className="copy-button" onClick={() => navigator.clipboard.writeText(roomUrl)}>
+          <button
+            className={styles.copyButton}
+            onClick={() => navigator.clipboard.writeText(roomUrl)}
+          >
             Copy
           </button>
         </div>
       )}
-      <button className="leave-button" onClick={onLeave}>
+      <button className={styles.leaveButton} onClick={onLeave}>
         Cancel
       </button>
     </OverlayWrapper>
@@ -54,8 +58,8 @@ function WaitingOverlay({ roomUrl, onLeave }: { roomUrl?: string; onLeave?: () =
 function ReadyOverlay() {
   return (
     <OverlayWrapper>
-      <div className="battle-status">Opponent found!</div>
-      <div className="battle-start-hint">Press any button to start</div>
+      <div className={styles.battleStatus}>Opponent found!</div>
+      <div className={styles.battleStartHint}>Press any button to start</div>
     </OverlayWrapper>
   );
 }
@@ -64,7 +68,7 @@ function ReadyOverlay() {
 function JoiningOverlay() {
   return (
     <OverlayWrapper>
-      <div className="battle-status">Joining room...</div>
+      <div className={styles.battleStatus}>Joining room...</div>
     </OverlayWrapper>
   );
 }
@@ -104,31 +108,33 @@ function FinishedOverlay({
 
   return (
     <OverlayWrapper>
-      <div className={`battle-result ${isWinner ? 'victory' : 'defeat'}`}>{resultMessage}</div>
-      <div className="battle-scores">
-        <div className="battle-score-row">
+      <div className={`${styles.battleResult} ${isWinner ? styles.victory : styles.defeat}`}>
+        {resultMessage}
+      </div>
+      <div className={styles.battleScores}>
+        <div className={styles.battleScoreRow}>
           <span>You:</span>
           <span>{playerScore ?? 0}</span>
         </div>
-        <div className="battle-score-row">
+        <div className={styles.battleScoreRow}>
           <span>Opponent:</span>
           <span>{opponentScore ?? 0}</span>
         </div>
       </div>
       {showRematchHighlight && (
-        <div className="rematch-notification">Opponent wants a rematch!</div>
+        <div className={styles.rematchNotification}>Opponent wants a rematch!</div>
       )}
-      <div className="battle-buttons">
+      <div className={styles.battleButtons}>
         {onRetry && (
           <button
-            className={`retry-button ${showRematchHighlight ? 'highlight' : ''}`}
+            className={`${styles.retryButton} ${showRematchHighlight ? styles.highlight : ''}`}
             onClick={onRetry}
             disabled={isRematchDisabled}
           >
             {getRematchButtonLabel()}
           </button>
         )}
-        <button className="leave-button" onClick={onLeave}>
+        <button className={styles.leaveButton} onClick={onLeave}>
           Leave
         </button>
       </div>

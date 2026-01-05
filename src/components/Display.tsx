@@ -1,3 +1,5 @@
+import styles from './Display.module.css';
+
 interface DisplayProps {
   value: string;
   eliminatingIndices: number[];
@@ -5,11 +7,11 @@ interface DisplayProps {
 
 export function Display({ value, eliminatingIndices }: DisplayProps) {
   return (
-    <div className="display">
+    <div className={styles.display}>
       {value.split('').map((char, idx) => (
         <span
           key={idx}
-          className={eliminatingIndices.includes(idx) ? 'digit eliminating' : 'digit'}
+          className={`${styles.digit} ${eliminatingIndices.includes(idx) ? styles.eliminating : ''}`}
         >
           {char}
         </span>

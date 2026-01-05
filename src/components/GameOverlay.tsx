@@ -1,3 +1,5 @@
+import styles from './GameOverlay.module.css';
+
 interface GameOverOverlayProps {
   isSurrender: boolean;
   onRetry: () => void;
@@ -5,9 +7,9 @@ interface GameOverOverlayProps {
 
 export function GameOverOverlay({ isSurrender, onRetry }: GameOverOverlayProps) {
   return (
-    <div className="game-over-overlay">
-      <div className="game-over-message">{isSurrender ? 'SURRENDER' : 'GAME OVER'}</div>
-      <button className="retry-button" onClick={onRetry}>
+    <div className={styles.gameOverOverlay}>
+      <div className={styles.gameOverMessage}>{isSurrender ? 'SURRENDER' : 'GAME OVER'}</div>
+      <button className={styles.retryButton} onClick={onRetry}>
         Retry
       </button>
     </div>
@@ -15,5 +17,5 @@ export function GameOverOverlay({ isSurrender, onRetry }: GameOverOverlayProps) 
 }
 
 export function StartPrompt() {
-  return <div className="start-prompt">Press any button to start</div>;
+  return <div className={styles.startPrompt}>Press any button to start</div>;
 }

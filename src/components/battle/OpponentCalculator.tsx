@@ -1,3 +1,5 @@
+import styles from './OpponentCalculator.module.css';
+
 interface OpponentCalculatorProps {
   display: string;
   score: number;
@@ -18,16 +20,16 @@ export function OpponentCalculator({
   isConnected,
 }: OpponentCalculatorProps) {
   return (
-    <div className={`opponent-calculator ${!isConnected ? 'disconnected' : ''}`}>
-      <div className="opponent-window">
-        <div className="opponent-title-bar">
-          <span className="opponent-title">Opponent</span>
-          {!isConnected && <span className="disconnected-indicator" />}
+    <div className={`${styles.opponentCalculator} ${!isConnected ? styles.disconnected : ''}`}>
+      <div className={styles.opponentWindow}>
+        <div className={styles.opponentTitleBar}>
+          <span className={styles.opponentTitle}>Opponent</span>
+          {!isConnected && <span className={styles.disconnectedIndicator} />}
         </div>
-        <div className="opponent-window-content">
-          <div className="opponent-main-display">
+        <div className={styles.opponentWindowContent}>
+          <div className={styles.opponentMainDisplay}>
             {display.split('').map((char, idx) => (
-              <span key={idx} className="digit">
+              <span key={idx} className={styles.digit}>
                 {char}
               </span>
             ))}
@@ -35,14 +37,14 @@ export function OpponentCalculator({
         </div>
       </div>
 
-      <div className="opponent-score-panel">
-        <div className="opponent-score-row">
+      <div className={styles.opponentScorePanel}>
+        <div className={styles.opponentScoreRow}>
           <span>Score: {score}</span>
           {chains > 0 && <span>Chains: {chains}</span>}
         </div>
       </div>
 
-      {calculationHistory && <div className="opponent-calc-history">{calculationHistory}</div>}
+      {calculationHistory && <div className={styles.opponentCalcHistory}>{calculationHistory}</div>}
     </div>
   );
 }

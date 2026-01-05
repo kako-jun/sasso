@@ -1,0 +1,112 @@
+/* Room Creation */
+.roomCreation {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: #fff;
+  border: 3px solid #000;
+  padding: 24px 32px;
+  box-shadow: 5px 5px 0 #000;
+  text-align: center;
+  z-index: 100;
+  min-width: 280px;
+}
+
+.roomCreationTitle {
+  font-size: 18px;
+  font-weight: bold;
+  margin-bottom: 20px;
+}
+
+.roomCreationButtons {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.roomButton {
+  padding: 12px 24px;
+  font-size: 14px;
+  background: #fff;
+  border: 2px solid #000;
+  box-shadow: 2px 2px 0 #000;
+  cursor: pointer;
+}
+
+.roomButton:hover {
+  background: #f0f0f0;
+}
+
+.roomButton:active {
+  box-shadow: none;
+  transform: translate(2px, 2px);
+}
+
+.roomButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.roomInput {
+  width: 100%;
+  padding: 8px 12px;
+  font-size: 14px;
+  border: 2px solid #000;
+  margin-bottom: 12px;
+  box-sizing: border-box;
+}
+
+.roomUrlContainer {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.roomUrlInput {
+  flex: 1;
+  padding: 8px;
+  font-size: 12px;
+  border: 2px solid #000;
+  border-right: none;
+  min-width: 0;
+}
+
+.copyButton {
+  padding: 8px 12px;
+  font-size: 12px;
+  background: #fff;
+  border: 2px solid #000;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.copyButton:active {
+  background: #000;
+  color: #fff;
+}
+
+.cancelButton {
+  padding: 8px 16px;
+  font-size: 12px;
+  background: #e8e8e8;
+  border: 2px solid #000;
+  cursor: pointer;
+}
+
+.cancelButton:hover {
+  background: #d0d0d0;
+}
+
+.roomHint {
+  font-size: 12px;
+  color: #666;
+  margin-bottom: 16px;
+}
+
+.roomError {
+  color: #c00;
+  font-size: 12px;
+  margin-top: 12px;
+}

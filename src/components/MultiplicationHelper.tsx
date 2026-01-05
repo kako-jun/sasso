@@ -1,3 +1,5 @@
+import styles from './MultiplicationHelper.module.css';
+
 // Constants
 const ANGLE_TAN = 0.577; // tan(30°) for 30-degree lines from horizontal
 const GROUP_GAP = 20;
@@ -120,17 +122,17 @@ export function MultiplicationHelper({ displayValue, multiplier }: Multiplicatio
   const zoneW = groupWidth / 2;
 
   return (
-    <div className="multiplication-helper">
+    <div className={styles.multiplicationHelper}>
       <div
-        className="mult-zone-bg"
+        className={styles.multZoneBg}
         style={{ left: centerX - zoneSpacing - zoneW / 2 + 8, width: zoneW }}
       />
-      <div className="mult-zone-bg" style={{ left: centerX - zoneW / 2 + 8, width: zoneW }} />
+      <div className={styles.multZoneBg} style={{ left: centerX - zoneW / 2 + 8, width: zoneW }} />
       <div
-        className="mult-zone-bg"
+        className={styles.multZoneBg}
         style={{ left: centerX + zoneSpacing - zoneW / 2 + 8, width: zoneW }}
       />
-      <svg width={width} height={height} className="mult-svg">
+      <svg width={width} height={height} className={styles.multSvg}>
         {topLines.map((line, i) => (
           <line key={`top-${i}`} {...line} stroke="rgba(0,0,0,0.5)" strokeWidth="2" />
         ))}
@@ -138,7 +140,7 @@ export function MultiplicationHelper({ displayValue, multiplier }: Multiplicatio
           <line key={`bottom-${i}`} {...line} stroke="rgba(0,0,0,0.5)" strokeWidth="2" />
         ))}
       </svg>
-      <div className="mult-digits">
+      <div className={styles.multDigits}>
         <span>{display.tens}</span>
         <span>{display.ones}</span>
         <span>{mult.tens}</span>

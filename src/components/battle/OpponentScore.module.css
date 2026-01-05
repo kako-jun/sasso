@@ -1,0 +1,70 @@
+/* Opponent Score (mobile compact view) */
+.opponentScore {
+  position: absolute;
+  bottom: calc(50% + 120px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: #e8e8e8;
+  border: 2px solid #000;
+  padding: 6px 12px;
+  box-shadow: 3px 3px 0 #000;
+  min-width: 160px;
+  z-index: 4;
+}
+
+.disconnected {
+  opacity: 0.6;
+}
+
+.opponentScoreHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 4px;
+}
+
+.opponentLabel {
+  font-size: 10px;
+  font-weight: bold;
+  text-transform: uppercase;
+  color: #666;
+}
+
+.disconnectedBadge {
+  font-size: 8px;
+  background: #c00;
+  color: #fff;
+  padding: 1px 4px;
+  border-radius: 2px;
+}
+
+.opponentScoreContent {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.opponentDisplay {
+  font-size: 14px;
+  font-weight: bold;
+  background: #fff;
+  border: 1px solid #000;
+  padding: 2px 6px;
+  min-width: 60px;
+  text-align: right;
+}
+
+.opponentStats {
+  font-size: 11px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.opponentHistory {
+  font-size: 10px;
+  color: #666;
+  margin-top: 4px;
+  text-align: center;
+}

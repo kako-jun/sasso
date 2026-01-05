@@ -1,0 +1,20 @@
+/* Calculation History */
+.calculationHistory {
+  position: absolute;
+  top: calc(50% + 175px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: #fff;
+  border: 2px solid #000;
+  padding: 4px 12px;
+  font-size: 12px;
+  max-width: calc(100vw - 32px);
+  white-space: nowrap;
+  overflow: hidden;
+  text-align: center;
+  box-shadow: 3px 3px 0 #000;
+}
+
+.opBold {
+  font-weight: bold;
+}

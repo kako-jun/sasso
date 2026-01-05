@@ -1,4 +1,5 @@
 export { MenuBar } from './MenuBar';
+export { AboutModal } from './AboutModal';
 export { Window } from './Window';
 export { Display } from './Display';
 export { Keypad } from './Keypad';
