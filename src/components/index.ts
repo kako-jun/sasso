@@ -11,8 +11,8 @@ export { MultiplicationHelper } from './MultiplicationHelper';
 
 // Battle components
 export {
-  OpponentScore,
-  OpponentCalculator,
+  MobileOpponentScore,
+  OpponentHeader,
   AttackIndicator,
   BattleOverlay,
   RoomCreation,
