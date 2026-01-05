@@ -13,10 +13,17 @@
 
 ## Phase 2: Stabilization
 
-- [ ] ユニットテスト追加
-  - MockBattleRoom を使ったテスト
-  - NostrClient のモック
-  - 状態遷移のテスト
+- [x] プロキシ対応
+  - 環境変数（HTTPS_PROXY, HTTP_PROXY, ALL_PROXY）からプロキシ設定
+  - `configureProxy()` ユーティリティ関数
+  - Node.js用ws設定
+- [x] ユニットテスト追加
+  - 仕様書ベースのテスト (57件)
+  - config.test.ts: BattleRoomConfig デフォルト値
+  - protocol.test.ts: Event Kinds, Tag Format, Event Content
+  - state-flow.test.ts: 状態遷移図
+  - callbacks.test.ts: 7種のコールバック
+  - timing.test.ts: タイミング定数
 - [ ] エラーハンドリング強化
   - リレー接続失敗時のリトライ
   - タイムアウト処理

@@ -135,6 +135,33 @@ interface BattleRoomConfig {
 | rematchStart       | (newSeed: number)                | Rematch starting           |
 | error              | (error: Error)                   | Error occurred             |
 
+## Node.js / Proxy Support
+
+For Node.js environments or when you need proxy support, call `configureProxy()` before creating any rooms:
+
+```typescript
+import { configureProxy, BattleRoom } from 'nostr-battle-room';
+
+// Call once at startup
+configureProxy();
+
+// Now create rooms as usual
+const room = new BattleRoom({ gameId: 'my-game' });
+```
+
+This function:
+
+- Configures the `ws` package for Node.js WebSocket support
+- Reads proxy URL from environment variables: `HTTPS_PROXY`, `HTTP_PROXY`, or `ALL_PROXY`
+- No-op in browser environments (browsers handle proxies at OS level)
+
+**Required packages for Node.js:**
+
+```bash
+npm install ws                    # Required for Node.js
+npm install https-proxy-agent     # Required for proxy support
+```
+
 ## Testing
 
 ```typescript

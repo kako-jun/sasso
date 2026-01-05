@@ -35,8 +35,7 @@ export class MockBattleRoom<TGameState = Record<string, unknown>> {
   private _opponent: MockOpponentState<TGameState> | null = null;
   private callbacks: BattleRoomCallbacks<TGameState> = {};
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  constructor(config: { gameId: string }) {
+  constructor(_config: { gameId: string }) {
     // Config is accepted but not used in mock
   }
 
@@ -101,13 +100,11 @@ export class MockBattleRoom<TGameState = Record<string, unknown>> {
     this._opponent = null;
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  sendState(state: TGameState): void {
+  sendState(_state: TGameState): void {
     // No-op in mock
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  sendGameOver(reason: string, finalScore?: number): void {
+  sendGameOver(_reason: string, _finalScore?: number): void {
     this._roomState = { ...this._roomState, status: 'finished' };
   }
 

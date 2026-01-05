@@ -62,3 +62,6 @@ export {
   generateSeed,
   generateRoomId,
 } from './types';
+
+// Proxy support (Node.js)
+export { configureProxy, resetProxyConfiguration } from './proxy';

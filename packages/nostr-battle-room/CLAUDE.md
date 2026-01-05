@@ -25,6 +25,7 @@ npm run dev   # Watch mode
 src/
 ├── index.ts              # Main entry, exports
 ├── types.ts              # All TypeScript types
+├── proxy.ts              # Proxy/Node.js WebSocket setup
 ├── core/
 │   ├── NostrClient.ts    # Low-level Nostr connection
 │   └── BattleRoom.ts     # Main room management class
@@ -47,6 +48,8 @@ src/
 
 - `nostr-tools` - Nostr protocol implementation (peer dependency)
 - `react` - For React hooks (optional peer dependency)
+- `ws` - WebSocket for Node.js (optional peer dependency)
+- `https-proxy-agent` - Proxy support (optional peer dependency)
 
 ## Design Principles
 
@@ -120,3 +123,16 @@ Edit `DEFAULT_CONFIG` in `types.ts`
 
 1. Update `useBattleRoom.ts`
 2. Export new return values in `UseBattleRoomReturn`
+
+### Node.js / Proxy setup
+
+Call `configureProxy()` before creating rooms:
+
+```typescript
+import { configureProxy } from 'nostr-battle-room';
+configureProxy(); // Reads HTTPS_PROXY, HTTP_PROXY, ALL_PROXY env vars
+```
+
+Related files:
+
+- `src/proxy.ts` - Proxy configuration utility
