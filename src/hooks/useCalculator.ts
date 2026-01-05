@@ -194,6 +194,14 @@ export function useCalculator(): UseCalculatorReturn {
 
     if (state.operator === null || state.accumulator === null) return null;
 
+    // Real calculator behavior: only *= works as square, other op= have no effect
+    if (state.waitingForOperand && state.operator !== '*') {
+      dispatch({ type: 'SET_ACCUMULATOR', payload: null });
+      dispatch({ type: 'SET_OPERATOR', payload: null });
+      dispatch({ type: 'SET_WAITING', payload: false });
+      return null;
+    }
+
     const result = calculate(state.accumulator, currentValue, state.operator);
     const newDisplay = formatDisplay(result);
     const calcInfo: CalculationResult = {
