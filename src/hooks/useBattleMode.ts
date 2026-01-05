@@ -63,6 +63,11 @@ export function useBattleMode(): UseBattleModeReturn {
   const [pendingAttackPower, setPendingAttackPower] = useState(0);
   const [gameStarted, setGameStarted] = useState(false);
   const [lastKey, setLastKey] = useState<string | null>(null);
+  // Outgoing attack - sent with next state update, then cleared
+  const [attackToSend, setAttackToSend] = useState<{
+    power: number;
+    timestamp: number;
+  } | null>(null);
 
   // Refs
   const displayRef = useRef(calculator.display);
@@ -93,6 +98,7 @@ export function useBattleMode(): UseBattleModeReturn {
       setPendingAttackPower(0);
       setIsUnderAttack(false);
       setLastKey(null);
+      setAttackToSend(null);
     },
     [prediction, calculator, elimination]
   );
@@ -166,7 +172,7 @@ export function useBattleMode(): UseBattleModeReturn {
   // Send state updates when display/score changes
   useEffect(() => {
     if (room.status === 'playing' || room.status === 'ready') {
-      room.sendState({
+      const state = {
         display: calculator.display,
         score: elimination.score,
         chains: elimination.chains,
@@ -176,7 +182,13 @@ export function useBattleMode(): UseBattleModeReturn {
         lastScoreBreakdown: elimination.lastScoreBreakdown,
         isUnderAttack,
         lastKey,
-      });
+        attack: attackToSend ?? undefined,
+      };
+      room.sendState(state);
+      // Clear attack after sending
+      if (attackToSend) {
+        setAttackToSend(null);
+      }
     }
   }, [
     calculator.display,
@@ -188,6 +200,7 @@ export function useBattleMode(): UseBattleModeReturn {
     elimination.lastScoreBreakdown,
     isUnderAttack,
     lastKey,
+    attackToSend,
     room,
   ]);
 
@@ -198,7 +211,7 @@ export function useBattleMode(): UseBattleModeReturn {
         calculator.setDisplay(display);
       },
       onOverflow: () => handleGameOverRef.current('overflow'),
-      onAttack: (power: number) => room.sendAttack(power),
+      onAttack: (power: number) => setAttackToSend({ power, timestamp: Date.now() }),
       onCalculationHistory: setCalculationHistory,
       generateNextPrediction: (attackPower?: number) =>
         prediction.generateNextPrediction(attackPower),
@@ -215,7 +228,7 @@ export function useBattleMode(): UseBattleModeReturn {
         return null;
       },
     }),
-    [calculator, room, prediction]
+    [calculator, prediction]
   );
 
   // Use shared prediction timer
