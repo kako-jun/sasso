@@ -27,6 +27,7 @@ export interface UseArenaReturn {
   createRoom: () => Promise<string>;
   joinRoom: (roomId: string) => Promise<void>;
   leaveRoom: () => void;
+  reconnect: () => Promise<boolean>;
   sendState: (state: SassoGameState) => void;
   sendAttack: (power: number) => void;
   sendGameOver: (reason: 'overflow' | 'surrender' | 'disconnect', finalScore: number) => void;
@@ -132,9 +133,6 @@ export function useArena(): UseArenaReturn {
       }
     : null;
 
-  // Note: Reconnect is disabled to prevent stale state issues
-  // If reconnect is needed, it should be explicitly called by the app
-
   return {
     // Room state
     roomId: room.roomState.roomId,
@@ -151,6 +149,7 @@ export function useArena(): UseArenaReturn {
     createRoom: room.createRoom,
     joinRoom: room.joinRoom,
     leaveRoom: room.leaveRoom,
+    reconnect: room.reconnect,
     sendState,
     sendAttack,
     sendGameOver,

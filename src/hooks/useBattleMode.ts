@@ -23,6 +23,7 @@ export interface UseBattleModeReturn {
   createRoom: () => Promise<string>;
   joinRoom: (roomId: string) => Promise<void>;
   leaveRoom: () => void;
+  reconnect: () => Promise<boolean>;
 
   // Game state (self)
   display: string;
@@ -202,7 +203,7 @@ export function useBattleMode(): UseBattleModeReturn {
   useEffect(() => {
     if (!gameStarted || isGameOver) return;
 
-    prediction.countdownRef.current = window.setInterval(() => {
+    const intervalId = window.setInterval(() => {
       prediction.setCountdown((prev) => {
         if (prev <= 100) {
           applyPredictionRef.current();
@@ -212,8 +213,9 @@ export function useBattleMode(): UseBattleModeReturn {
       });
     }, 100);
 
-    return () => prediction.clearCountdown();
-  }, [gameStarted, isGameOver, prediction]);
+    return () => clearInterval(intervalId);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [gameStarted, isGameOver]);
 
   // Process elimination result and handle scoring/attack
   const processEliminationResult = useCallback(
@@ -428,6 +430,7 @@ export function useBattleMode(): UseBattleModeReturn {
     createRoom: room.createRoom,
     joinRoom: room.joinRoom,
     leaveRoom,
+    reconnect: room.reconnect,
 
     display: calculator.display,
     score: elimination.score,

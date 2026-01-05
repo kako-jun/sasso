@@ -36,16 +36,24 @@ export function BattleApp({ initialRoomId, onChangeMode }: BattleAppProps) {
   // Handle keyboard input
   useKeyboard(battle.handleKey);
 
-  // Auto-join room if roomId provided
+  // Auto-reconnect or join room if roomId provided
   useEffect(() => {
     if (!initialRoomId) return;
     if (battle.roomState.status !== 'idle') return;
 
-    // Hide room creation UI and attempt to join
     setShowRoomCreation(false);
-    battle.joinRoom(initialRoomId).catch(() => {
-      setShowRoomCreation(true);
-    });
+
+    // Try reconnect first (for page reload), then join if that fails
+    battle
+      .reconnect()
+      .then((success) => {
+        if (!success) {
+          return battle.joinRoom(initialRoomId);
+        }
+      })
+      .catch(() => {
+        setShowRoomCreation(true);
+      });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [initialRoomId, battle.roomState.status]);
 
