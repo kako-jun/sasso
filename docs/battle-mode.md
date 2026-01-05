@@ -90,38 +90,49 @@ Difficulty scaling uses `predictionCount` (not time) for deterministic sync.
 ### Mobile (Portrait)
 
 ```
-┌─────────────────────┐
-│ [Prediction ×7]     │
-├─────────────────────┤
-│ Score: 150          │
-│ Opponent: 89        │  ← Compact opponent display
-├─────────────────────┤
-│ ┌─────────────────┐ │
-│ │     12345       │ │
-│ │    [Keypad]     │ │
-│ └─────────────────┘ │
-├─────────────────────┤
-│ 12 + 3 = 15         │
-└─────────────────────┘
+┌─────────────────────────┐
+│ Menu  Game  About   150 │  ← MenuBar with player score
+│                   vs 89 │  ← Opponent score (right-aligned)
+├─────────────────────────┤
+│ [Prediction ×7]         │
+├─────────────────────────┤
+│ Score: +30 = ...        │
+├─────────────────────────┤
+│ ┌─────────────────────┐ │
+│ │       12345         │ │
+│ │      [Keypad]       │ │
+│ └─────────────────────┘ │
+├─────────────────────────┤
+│ 12 + 3 = 15             │
+└─────────────────────────┘
 ```
 
-### Desktop (Wide)
+### Desktop (Wide) - 50/50 Split
 
 ```
-┌─────────────────────────────────────────────────┐
-│ [Prediction ×7]                                 │
-├────────────────────────┬────────────────────────┤
-│ Score: 150             │        Opponent        │
-├────────────────────────┤ ┌────────────────────┐ │
-│ ┌────────────────────┐ │ │       6789         │ │
-│ │       12345        │ │ │   Score: 89        │ │
-│ │      [Keypad]      │ │ │   Chains: 1        │ │
-│ └────────────────────┘ │ │   67 × 2 = 134     │ │
-├────────────────────────┤ └────────────────────┘ │
-│ 12 + 3 = 15            │                        │
-└────────────────────────┴────────────────────────┘
-        YOU                      OPPONENT
+┌─────────────────────────┬─────────────────────────┐
+│ Menu Game About     150 │                      89 │  ← Player MenuBar / Opponent score bar
+├─────────────────────────┼─────────────────────────┤
+│                         │                         │
+│ [Prediction ×7]         │                         │
+│                         │                         │
+│ Score: +30 = ...        │ Score: ...              │
+│                         │                         │
+│ ┌─────────────────────┐ │ ┌─────────────────────┐ │
+│ │       12345         │ │ │        6789         │ │
+│ │      [Keypad]       │ │ │    (display only)   │ │
+│ └─────────────────────┘ │ └─────────────────────┘ │
+│                         │                         │
+│ 12 + 3 = 15             │ 67 × 2 = 134            │
+│                         │                         │
+├─────────────────────────┼─────────────────────────┤
+│          YOU            │        OPPONENT         │
+└─────────────────────────┴─────────────────────────┘
 ```
+
+- Player side: Full MenuBar with all menus
+- Opponent side: Simple score bar (score + Disconnected status if applicable)
+- Opponent's calculator shows display only (no keypad)
 
 ---
 
@@ -144,11 +155,15 @@ Attack power = score from that elimination.
 
 ## Implementation Files
 
-| File                                      | Purpose                                    |
-| ----------------------------------------- | ------------------------------------------ |
-| `src/hooks/useBattleMode.ts`              | Main battle mode orchestrator              |
-| `src/hooks/useArena.ts`                   | Room management (uses nostr-arena pattern) |
-| `src/hooks/useSeededPrediction.ts`        | Deterministic prediction with shared seed  |
-| `src/components/battle/BattleApp.tsx`     | Battle mode UI                             |
-| `src/components/battle/BattleOverlay.tsx` | Waiting/Victory/Defeat overlays            |
-| `src/components/battle/OpponentPanel.tsx` | Opponent display                           |
+| File                                            | Purpose                                    |
+| ----------------------------------------------- | ------------------------------------------ |
+| `src/hooks/useBattleMode.ts`                    | Main battle mode orchestrator              |
+| `src/hooks/useArena.ts`                         | Room management (uses nostr-arena pattern) |
+| `src/hooks/useSeededPrediction.ts`              | Deterministic prediction with shared seed  |
+| `src/components/battle/BattleApp.tsx`           | Battle mode UI and layout orchestration    |
+| `src/components/battle/BattleLayout.tsx`        | Desktop/Mobile responsive layout           |
+| `src/components/battle/BattleOverlay.tsx`       | Waiting/Victory/Defeat overlays            |
+| `src/components/battle/MobileOpponentScore.tsx` | Mobile opponent score display              |
+| `src/components/battle/OpponentHeader.tsx`      | Desktop opponent header bar                |
+| `src/components/battle/RoomCreation.tsx`        | Room creation/join UI                      |
+| `src/components/battle/AttackIndicator.tsx`     | Attack visual indicator                    |

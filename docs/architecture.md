@@ -111,6 +111,18 @@ src/
 | GameOverlay          | Game over message and retry button                |
 | MultiplicationHelper | Indian/Vedic multiplication visualization         |
 
+### Battle Components (`src/components/battle/`)
+
+| Component           | Responsibility                            |
+| ------------------- | ----------------------------------------- |
+| BattleApp           | Battle mode UI orchestration              |
+| BattleLayout        | Desktop (50/50 split) / Mobile responsive |
+| BattleOverlay       | Waiting/Ready/Finished overlays           |
+| RoomCreation        | Create/Join room UI with QR code          |
+| MobileOpponentScore | Simple opponent score for mobile          |
+| OpponentHeader      | Opponent score bar for desktop            |
+| AttackIndicator     | Visual indicator when under attack        |
+
 ## Design Patterns
 
 ### useReducer Pattern (useCalculator)
