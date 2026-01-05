@@ -68,24 +68,6 @@
   justify-content: center;
 }
 
-.rematchNotification {
-  color: #000;
-  font-size: 14px;
-  font-weight: bold;
-  margin-bottom: 12px;
-  animation: pulse 1.5s infinite;
-}
-
-@keyframes pulse {
-  0%,
-  100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.6;
-  }
-}
-
 .retryButton {
   padding: 8px 24px;
   font-size: 14px;

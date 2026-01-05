@@ -118,9 +118,6 @@ export function BattleFinishedOverlay({
   return (
     <div className={styles.finishedOverlay}>
       <div className={styles.finishedMessage}>{resultMessage}</div>
-      {showRematchHighlight && (
-        <div className={styles.rematchNotification}>Opponent wants a rematch!</div>
-      )}
       <div className={styles.finishedButtons}>
         {onRetry && (
           <button
