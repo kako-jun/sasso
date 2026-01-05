@@ -13,7 +13,6 @@ export { MultiplicationHelper } from './MultiplicationHelper';
 export {
   MobileOpponentScore,
   OpponentHeader,
-  AttackIndicator,
   BattleOverlay,
   RoomCreation,
   BattleLayout,

@@ -13,7 +13,6 @@ import {
 import { BattleLayout } from './BattleLayout';
 import { BattleOverlay, BattleFinishedOverlay } from './BattleOverlay';
 import { RoomCreation } from './RoomCreation';
-import { AttackIndicator } from './AttackIndicator';
 import { MobileOpponentScore } from './MobileOpponentScore';
 import { OpponentHeader } from './OpponentHeader';
 import type { GameMode } from '../../types';
@@ -131,10 +130,11 @@ export function BattleApp({ initialRoomId, onChangeMode }: BattleAppProps) {
       <>
         {/* Opponent Prediction Area */}
         {opponentIsPredictionMode && (
-          <div className="prediction-wrapper">
-            <PredictionArea prediction={opponentPrediction} countdown={opponentCountdown} />
-            {opponentIsUnderAttack && <AttackIndicator isUnderAttack={true} />}
-          </div>
+          <PredictionArea
+            prediction={opponentPrediction}
+            countdown={opponentCountdown}
+            isUnderAttack={opponentIsUnderAttack}
+          />
         )}
 
         {/* Opponent Score Area */}
@@ -173,12 +173,13 @@ export function BattleApp({ initialRoomId, onChangeMode }: BattleAppProps) {
         opponentContent={opponentContent}
         isDesktop={isDesktop}
       >
-        {/* Prediction Area with Attack Indicator */}
+        {/* Prediction Area */}
         {isPredictionMode && battle.prediction && (
-          <div className="prediction-wrapper">
-            <PredictionArea prediction={battle.prediction} countdown={battle.countdown} />
-            {battle.isUnderAttack && <AttackIndicator isUnderAttack={true} />}
-          </div>
+          <PredictionArea
+            prediction={battle.prediction}
+            countdown={battle.countdown}
+            isUnderAttack={battle.isUnderAttack}
+          />
         )}
 
         {/* Score Area */}

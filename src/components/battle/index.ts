@@ -1,4 +1,3 @@
-export { AttackIndicator } from './AttackIndicator';
 export { BattleOverlay } from './BattleOverlay';
 export { RoomCreation } from './RoomCreation';
 export { BattleLayout } from './BattleLayout';

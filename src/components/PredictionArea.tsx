@@ -6,13 +6,14 @@ import styles from './PredictionArea.module.css';
 interface PredictionAreaProps {
   prediction: Prediction;
   countdown: number;
+  isUnderAttack?: boolean;
 }
 
-export function PredictionArea({ prediction, countdown }: PredictionAreaProps) {
+export function PredictionArea({ prediction, countdown, isUnderAttack }: PredictionAreaProps) {
   const countdownProgress = countdown / COUNTDOWN_TIME;
 
   return (
-    <div className={styles.predictionArea}>
+    <div className={`${styles.predictionArea} ${isUnderAttack ? styles.underAttack : ''}`}>
       <div className={styles.predictionClock}>
         <svg viewBox="0 0 40 40" className={styles.countdownClock}>
           <circle cx="20" cy="20" r="18" fill="none" stroke="#000" strokeWidth="2" />

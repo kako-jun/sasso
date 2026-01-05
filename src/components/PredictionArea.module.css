@@ -32,6 +32,21 @@
   font-weight: bold;
 }
 
+/* Under attack state - pulse animation */
+.underAttack {
+  animation: attackPulse 1s infinite;
+}
+
+@keyframes attackPulse {
+  0%,
+  100% {
+    background: #fff;
+  }
+  50% {
+    background: #999;
+  }
+}
+
 /* Prediction Wrapper (for battle mode attack overlay) */
 .predictionWrapper {
   position: relative;
