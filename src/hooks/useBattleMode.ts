@@ -393,6 +393,12 @@ export function useBattleMode(): UseBattleModeReturn {
             `${result.left} ${operatorToSymbol(result.op ?? '')} ${result.right} = ${result.newDisplay}`
           );
           setJustPressedEqual(true);
+
+          // Check overflow immediately after calculation
+          if (checkOverflow(result.newDisplay)) {
+            handleGameOverRef.current('overflow');
+            return;
+          }
         }
         return;
       }
@@ -402,6 +408,12 @@ export function useBattleMode(): UseBattleModeReturn {
         const result = calculator.performOperation(key as '+' | '-' | '*' | '/');
         if (result) {
           elimination.incrementCalculationCount();
+
+          // Check overflow immediately after calculation
+          if (checkOverflow(result.newDisplay)) {
+            handleGameOverRef.current('overflow');
+            return;
+          }
         }
       }
     },
