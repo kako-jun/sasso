@@ -22,7 +22,7 @@ export function BattleLayout({
   isDesktop,
 }: BattleLayoutProps) {
   if (isDesktop && opponentContent) {
-    // Side-by-side layout for desktop
+    // Side-by-side layout for desktop with opponent
     return (
       <div className={styles.battleLayoutDesktop}>
         <div className={styles.battlePlayerSide}>
@@ -37,6 +37,11 @@ export function BattleLayout({
     );
   }
 
-  // Mobile layout or no opponent: just player content
-  return <>{children}</>;
+  // Desktop without opponent or mobile: player content with optional header
+  return (
+    <>
+      {playerHeader}
+      {children}
+    </>
+  );
 }
