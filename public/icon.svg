@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Gray background (matches theme color) -->
+  <rect width="512" height="512" fill="#808080"/>
+
+  <!-- White square (inset) -->
+  <rect x="128" y="128" width="256" height="256" fill="#fff"/>
+
+  <!-- Top dark line (inside, creates sunken effect) -->
+  <rect x="128" y="128" width="256" height="8" fill="#505050"/>
+
+  <!-- Left dark line (inside, creates sunken effect) -->
+  <rect x="128" y="128" width="8" height="256" fill="#505050"/>
+</svg>

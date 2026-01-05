@@ -47,6 +47,11 @@ Score → Opponent's next prediction difficulty
 ## Architecture
 
 ```
+public/
+├── manifest.json        # PWA manifest
+├── icon.svg             # App icon (SVG)
+└── icon-*.png           # PWA icons (various sizes)
+
 src/
 ├── App.tsx              # Layout component (63 lines)
 ├── components/          # UI components (Window, Display, Keypad, etc.)

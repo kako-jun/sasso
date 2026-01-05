@@ -3,6 +3,15 @@
 ## Project Structure
 
 ```
+public/
+├── manifest.json           # PWA manifest
+├── icon.svg                # App icon (SVG source)
+├── icon-192.png            # PWA icon 192x192
+├── icon-512.png            # PWA icon 512x512
+├── apple-touch-icon.png    # iOS home screen icon
+├── favicon-16.png          # Favicon 16x16
+└── favicon-32.png          # Favicon 32x32
+
 src/
 ├── App.tsx                 # Main component (layout only, 63 lines)
 ├── App.css                 # Style definitions

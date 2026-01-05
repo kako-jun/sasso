@@ -20,7 +20,8 @@ Sasso is a calculator-based puzzle game with Classic Macintosh System 7 inspired
 ### Menu Bar
 
 - White background with black bottom border
-- Items: GitHub logo, Calculator, Practice, Endless (mode selection)
+- Items: GitHub logo, Calculator, Practice, Sprint, Endless, Battle, About (mode selection)
+- Sprint timer displayed after About when in Sprint mode
 - Height: 20px
 
 ### Window
