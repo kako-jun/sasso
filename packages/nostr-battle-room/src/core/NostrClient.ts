@@ -94,6 +94,25 @@ export class NostrClient {
   }
 
   /**
+   * Get the connection status of each relay
+   * @returns Map of relay URL to connection status (true = connected)
+   */
+  getRelayStatus(): Map<string, boolean> {
+    if (!this.pool) {
+      return new Map();
+    }
+    return this.pool.listConnectionStatus();
+  }
+
+  /**
+   * Check if at least one relay is connected
+   */
+  get hasConnectedRelay(): boolean {
+    const status = this.getRelayStatus();
+    return Array.from(status.values()).some((connected) => connected);
+  }
+
+  /**
    * Connect to Nostr relays
    * Generates or retrieves a key pair from storage
    */
@@ -102,24 +121,41 @@ export class NostrClient {
 
     // Generate or retrieve key pair
     const storageKey = `${this.storageKeyPrefix}-key`;
-    const storedKey = this.storage.getItem(storageKey);
 
-    if (storedKey) {
-      try {
-        this.secretKey = new Uint8Array(JSON.parse(storedKey));
-      } catch {
-        // Invalid stored key, generate new one
+    try {
+      const storedKey = this.storage.getItem(storageKey);
+
+      if (storedKey) {
+        try {
+          this.secretKey = new Uint8Array(JSON.parse(storedKey));
+        } catch {
+          // Invalid stored key, generate new one
+          this.secretKey = generateSecretKey();
+          this.safeStorageSet(storageKey, JSON.stringify(Array.from(this.secretKey)));
+        }
+      } else {
         this.secretKey = generateSecretKey();
-        this.storage.setItem(storageKey, JSON.stringify(Array.from(this.secretKey)));
+        this.safeStorageSet(storageKey, JSON.stringify(Array.from(this.secretKey)));
       }
-    } else {
+    } catch {
+      // Storage not available, generate ephemeral key
       this.secretKey = generateSecretKey();
-      this.storage.setItem(storageKey, JSON.stringify(Array.from(this.secretKey)));
     }
 
     this._publicKey = getPublicKey(this.secretKey);
     this.pool = new SimplePool();
     this._isConnected = true;
+  }
+
+  /**
+   * Safely set storage item, ignoring quota errors
+   */
+  private safeStorageSet(key: string, value: string): void {
+    try {
+      this.storage.setItem(key, value);
+    } catch {
+      // Ignore storage errors (quota exceeded, etc.)
+    }
   }
 
   /**
@@ -169,16 +205,21 @@ export class NostrClient {
       return () => {};
     }
 
-    // nostr-tools types show Filter (singular) but implementation accepts Filter[]
-    const sub = this.pool.subscribeMany(this.relays, filters as unknown as Filter, {
-      onevent(event) {
-        onEvent(event as NostrEvent);
-      },
-    });
+    try {
+      // nostr-tools types show Filter (singular) but implementation accepts Filter[]
+      const sub = this.pool.subscribeMany(this.relays, filters as unknown as Filter, {
+        onevent(event) {
+          onEvent(event as NostrEvent);
+        },
+      });
 
-    return () => {
-      sub.close();
-    };
+      return () => {
+        sub.close();
+      };
+    } catch (error) {
+      console.error('Failed to subscribe:', error);
+      return () => {};
+    }
   }
 
   /**
@@ -189,15 +230,41 @@ export class NostrClient {
       throw new Error('NostrClient not connected. Call connect() first.');
     }
 
-    return new Promise((resolve) => {
+    return new Promise((resolve, reject) => {
       const events: NostrEvent[] = [];
-      const unsubscribe = this.subscribe([filter], (event) => {
-        events.push(event);
+      let resolved = false;
+
+      const finish = (success: boolean, error?: Error) => {
+        if (resolved) return;
+        resolved = true;
+        sub.close();
+        if (success) {
+          resolve(events);
+        } else {
+          reject(error);
+        }
+      };
+
+      const sub = this.pool!.subscribeManyEose(this.relays, filter as unknown as Filter, {
+        onevent: (event) => {
+          events.push(event as NostrEvent);
+        },
+        onclose: (reasons) => {
+          // Check if at least one relay sent EOSE (successful response)
+          const hasEose = reasons.some((r) => r === 'EOSE');
+          if (hasEose) {
+            // Valid response (may have 0 events, but relay responded)
+            finish(true);
+          } else {
+            // All relays failed without sending EOSE
+            finish(false, new Error('No relay response: ' + reasons.join(', ')));
+          }
+        },
       });
 
+      // Timeout fallback
       setTimeout(() => {
-        unsubscribe();
-        resolve(events);
+        finish(false, new Error('No relay response: timeout'));
       }, timeoutMs);
     });
   }

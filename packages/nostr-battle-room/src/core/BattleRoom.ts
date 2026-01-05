@@ -118,6 +118,20 @@ export class BattleRoom<TGameState = Record<string, unknown>> {
     return this.client.publicKey;
   }
 
+  /**
+   * Get the connection status of each relay
+   */
+  getRelayStatus(): Map<string, boolean> {
+    return this.client.getRelayStatus();
+  }
+
+  /**
+   * Check if at least one relay is connected
+   */
+  get hasConnectedRelay(): boolean {
+    return this.client.hasConnectedRelay;
+  }
+
   // ===========================================================================
   // Event Registration
   // ===========================================================================
@@ -205,9 +219,31 @@ export class BattleRoom<TGameState = Record<string, unknown>> {
 
   /**
    * Create a new room
+   *
+   * Times out after joinTimeout (default: 30 seconds)
    * @returns Room URL (e.g., "https://example.com/battle/abc123")
    */
   async create(baseUrl?: string): Promise<string> {
+    const timeoutMs = this.config.joinTimeout ?? DEFAULT_CONFIG.joinTimeout;
+
+    try {
+      return await withTimeout(
+        () => this.createInternal(baseUrl),
+        timeoutMs,
+        'Create operation timed out'
+      );
+    } catch (error) {
+      // Reset state on any error
+      this._roomState = { ...INITIAL_ROOM_STATE };
+      this.clearRoom();
+      throw error;
+    }
+  }
+
+  /**
+   * Internal create implementation
+   */
+  private async createInternal(baseUrl?: string): Promise<string> {
     if (!this.client.isConnected) {
       this.client.connect();
     }
@@ -218,13 +254,11 @@ export class BattleRoom<TGameState = Record<string, unknown>> {
 
     this._roomState = {
       roomId,
-      status: 'waiting',
+      status: 'creating',
       isHost: true,
       seed,
       createdAt,
     };
-
-    this.saveRoom({ roomId, isHost: true, seed, createdAt });
 
     // Publish room creation event
     await this.client.publish({
@@ -241,6 +275,9 @@ export class BattleRoom<TGameState = Record<string, unknown>> {
       }),
     });
 
+    // Only save and subscribe after successful publish
+    this._roomState = { ...this._roomState, status: 'waiting' };
+    this.saveRoom({ roomId, isHost: true, seed, createdAt });
     this.subscribeToRoom(roomId);
 
     const base = baseUrl ?? (typeof window !== 'undefined' ? window.location.origin : '');
@@ -280,20 +317,37 @@ export class BattleRoom<TGameState = Record<string, unknown>> {
     };
 
     // Fetch room info
-    const roomEvents = await this.client.fetch(
-      {
-        kinds: [NOSTR_KINDS.ROOM],
-        '#d': [createRoomTag(this.config.gameId, roomId)],
-        limit: 1,
-      },
-      2000
-    );
+    let roomEvents: NostrEvent[];
+    try {
+      roomEvents = await this.client.fetch(
+        {
+          kinds: [NOSTR_KINDS.ROOM],
+          '#d': [createRoomTag(this.config.gameId, roomId)],
+          limit: 1,
+        },
+        2000
+      );
+    } catch (error) {
+      // Relay connection failed
+      const message = error instanceof Error ? error.message : String(error);
+      throw new Error(`Failed to connect to relays: ${message}`);
+    }
 
     if (roomEvents.length === 0) {
       throw new Error('Room not found');
     }
 
-    const roomContent = JSON.parse(roomEvents[0].content);
+    let roomContent: { seed: number; hostPubkey: string };
+    try {
+      roomContent = JSON.parse(roomEvents[0].content);
+    } catch {
+      throw new Error('Invalid room data');
+    }
+
+    if (!roomContent.seed || !roomContent.hostPubkey) {
+      throw new Error('Invalid room data: missing required fields');
+    }
+
     const roomCreatedAt = (roomEvents[0].created_at ?? 0) * 1000;
 
     if (this.isExpired(roomCreatedAt)) {
@@ -347,6 +401,28 @@ export class BattleRoom<TGameState = Record<string, unknown>> {
    * Attempt to reconnect to a previously joined room
    */
   async reconnect(): Promise<boolean> {
+    const timeoutMs = this.config.joinTimeout ?? DEFAULT_CONFIG.joinTimeout;
+
+    try {
+      return await withTimeout(
+        () => this.reconnectInternal(),
+        timeoutMs,
+        'Reconnect operation timed out'
+      );
+    } catch {
+      // Reset state on any error
+      this._roomState = { ...INITIAL_ROOM_STATE };
+      this._opponent = null;
+      this.clearRoom();
+      // Don't throw - return false to indicate reconnect failed
+      return false;
+    }
+  }
+
+  /**
+   * Internal reconnection logic
+   */
+  private async reconnectInternal(): Promise<boolean> {
     const stored = this.loadRoom();
     if (!stored) return false;
 
@@ -458,9 +534,20 @@ export class BattleRoom<TGameState = Record<string, unknown>> {
   private subscribeToRoom(roomId: string): void {
     this.unsubscribe?.();
 
+    if (!this.client.isConnected) {
+      this.callbacks.onError?.(new Error('NostrClient not connected. Call connect() first.'));
+      return;
+    }
+
     this.unsubscribe = this.client.subscribe(
       [{ kinds: [NOSTR_KINDS.EPHEMERAL], '#d': [createRoomTag(this.config.gameId, roomId)] }],
-      (event) => this.handleRoomEvent(event)
+      (event) => {
+        try {
+          this.handleRoomEvent(event);
+        } catch (error) {
+          this.callbacks.onError?.(error instanceof Error ? error : new Error(String(error)));
+        }
+      }
     );
 
     this.startHeartbeat();
@@ -636,14 +723,19 @@ export class BattleRoom<TGameState = Record<string, unknown>> {
   }
 
   private saveRoom(data: StoredRoomData): void {
-    this.storage.setItem(this.storageKey, JSON.stringify(data));
+    try {
+      this.storage.setItem(this.storageKey, JSON.stringify(data));
+    } catch (error) {
+      // Storage error (quota exceeded, etc.) - log but don't throw
+      console.warn('Failed to save room data:', error);
+    }
   }
 
   private loadRoom(): StoredRoomData | null {
-    const stored = this.storage.getItem(this.storageKey);
-    if (!stored) return null;
-
     try {
+      const stored = this.storage.getItem(this.storageKey);
+      if (!stored) return null;
+
       const data = JSON.parse(stored) as StoredRoomData;
       if (this.isExpired(data.createdAt)) {
         this.clearRoom();
@@ -651,12 +743,17 @@ export class BattleRoom<TGameState = Record<string, unknown>> {
       }
       return data;
     } catch {
+      // Storage or parse error - treat as no saved room
       return null;
     }
   }
 
   private clearRoom(): void {
-    this.storage.removeItem(this.storageKey);
+    try {
+      this.storage.removeItem(this.storageKey);
+    } catch {
+      // Ignore storage errors
+    }
   }
 
   private isExpired(createdAt: number): boolean {
