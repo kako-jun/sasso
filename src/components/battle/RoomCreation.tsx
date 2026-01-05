@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
+import QrScanner from 'qr-scanner';
 import styles from './RoomCreation.module.css';
 
 interface RoomCreationProps {
@@ -17,6 +18,67 @@ export function RoomCreation({ onCreateRoom, onJoinRoom, onCancel }: RoomCreatio
   const [joinInput, setJoinInput] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [scannerError, setScannerError] = useState('');
+
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const scannerRef = useRef<QrScanner | null>(null);
+
+  // Start QR scanner when entering join mode
+  useEffect(() => {
+    if (mode !== 'join' || !videoRef.current) return;
+
+    const scanner = new QrScanner(
+      videoRef.current,
+      (result) => {
+        // Extract room ID from scanned URL
+        let roomId = result.data.trim();
+        if (roomId.includes('/battle/')) {
+          roomId = roomId.split('/battle/')[1];
+        } else if (roomId.startsWith('battle/')) {
+          roomId = roomId.slice(7);
+        }
+        roomId = roomId.split(/[?#/]/)[0];
+
+        // Stop scanner and trigger join
+        scanner.stop();
+        setJoinInput(roomId);
+        handleJoinWithId(roomId);
+      },
+      {
+        highlightScanRegion: true,
+        highlightCodeOutline: true,
+      }
+    );
+
+    scannerRef.current = scanner;
+    scanner.start().catch((err) => {
+      console.warn('QR Scanner failed to start:', err);
+      setScannerError('カメラを起動できません');
+    });
+
+    return () => {
+      scanner.stop();
+      scannerRef.current = null;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mode]);
+
+  const handleJoinWithId = async (roomId: string) => {
+    if (!roomId.trim()) {
+      setError('Please enter a room URL or ID');
+      return;
+    }
+
+    setIsLoading(true);
+    setError('');
+    try {
+      await onJoinRoom(roomId);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Failed to join room';
+      setError(message);
+      setIsLoading(false);
+    }
+  };
 
   const handleCreate = async () => {
     setIsLoading(true);
@@ -33,32 +95,15 @@ export function RoomCreation({ onCreateRoom, onJoinRoom, onCancel }: RoomCreatio
   };
 
   const handleJoin = async () => {
-    if (!joinInput.trim()) {
-      setError('Please enter a room URL or ID');
-      return;
+    // Extract room ID from various formats
+    let roomId = joinInput.trim();
+    if (roomId.includes('/battle/')) {
+      roomId = roomId.split('/battle/')[1];
+    } else if (roomId.startsWith('battle/')) {
+      roomId = roomId.slice(7);
     }
-
-    setIsLoading(true);
-    setError('');
-    try {
-      // Extract room ID from various formats:
-      // - Full URL: https://example.com/battle/abc123
-      // - Partial: /battle/abc123 or battle/abc123
-      // - Just ID: abc123
-      let roomId = joinInput.trim();
-      if (roomId.includes('/battle/')) {
-        roomId = roomId.split('/battle/')[1];
-      } else if (roomId.startsWith('battle/')) {
-        roomId = roomId.slice(7); // Remove 'battle/' prefix
-      }
-      // Remove any trailing slashes or query params
-      roomId = roomId.split(/[?#/]/)[0];
-      await onJoinRoom(roomId);
-    } catch (err) {
-      const message = err instanceof Error ? err.message : 'Failed to join room';
-      setError(message);
-      setIsLoading(false);
-    }
+    roomId = roomId.split(/[?#/]/)[0];
+    await handleJoinWithId(roomId);
   };
 
   if (mode === 'select') {
@@ -89,10 +134,14 @@ export function RoomCreation({ onCreateRoom, onJoinRoom, onCancel }: RoomCreatio
     return (
       <div className={styles.roomCreation}>
         <div className={styles.roomCreationTitle}>Join Room</div>
+        <div className={styles.scannerContainer}>
+          <video ref={videoRef} className={styles.scannerVideo} />
+          {scannerError && <div className={styles.scannerError}>{scannerError}</div>}
+        </div>
         <input
           type="text"
           className={styles.roomInput}
-          placeholder="Enter room URL or ID"
+          placeholder="Room ID"
           value={joinInput}
           onChange={(e) => setJoinInput(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && handleJoin()}
