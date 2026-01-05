@@ -98,13 +98,12 @@ export function MenuBar({
         About
       </span>
 
+      {showSprintTimer && (
+        <span className={styles.timerItem}>{formatTime(sprintTimeRemaining)}</span>
+      )}
+
       <div className={styles.menuSpacer} />
 
-      {showSprintTimer && (
-        <span className={`${styles.statusItem} ${styles.timer}`}>
-          {formatTime(sprintTimeRemaining)}
-        </span>
-      )}
       {showScore && <span className={styles.statusItem}>{(score ?? 0).toLocaleString()}</span>}
 
       <AboutModal isOpen={isAboutOpen} onClose={() => setIsAboutOpen(false)} />
