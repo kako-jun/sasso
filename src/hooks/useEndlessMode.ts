@@ -13,6 +13,7 @@ interface UseEndlessModeOptions {
   isGameOver: boolean;
   setIsGameOver: (value: boolean) => void;
   setCalculationHistory: (value: string) => void;
+  finalizePendingCalculation?: () => string | null;
 }
 
 export function useEndlessMode({
@@ -25,6 +26,7 @@ export function useEndlessMode({
   isGameOver,
   setIsGameOver,
   setCalculationHistory,
+  finalizePendingCalculation,
 }: UseEndlessModeOptions) {
   const isActive = (gameMode === 'endless' || gameMode === 'sprint') && gameStarted && !isGameOver;
 
@@ -40,8 +42,15 @@ export function useEndlessMode({
       },
       onCalculationHistory: setCalculationHistory,
       generateNextPrediction: () => predictionHook.generateNextPrediction(),
+      finalizePendingCalculation,
     }),
-    [predictionHook, setIsGameOver, setCalculationHistory, externalDisplayUpdateRef]
+    [
+      predictionHook,
+      setIsGameOver,
+      setCalculationHistory,
+      externalDisplayUpdateRef,
+      finalizePendingCalculation,
+    ]
   );
 
   // Use shared prediction timer

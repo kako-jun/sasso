@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useRef } from 'react';
 import type { GameMode } from '../types';
 import { operatorToSymbol } from '../utils';
 import { useCalculator } from './useCalculator';
@@ -25,11 +25,44 @@ export interface UseGameControllerReturn {
 
 export function useGameController(): UseGameControllerReturn {
   const calculator = useCalculator();
+
+  // Refs for game functions (needed for finalizePendingCalculation callback)
+  const gameActionsRef = useRef<{
+    incrementCalculationCount: () => void;
+    setCalculationHistory: (value: string) => void;
+  } | null>(null);
+
+  // Create finalizePendingCalculation callback for prediction timer
+  const finalizePendingCalculation = useCallback((): string | null => {
+    if (calculator.operator !== null && calculator.accumulator !== null) {
+      const result = calculator.handleEqual();
+      if (result) {
+        gameActionsRef.current?.incrementCalculationCount();
+        gameActionsRef.current?.setCalculationHistory(
+          `${result.left} ${operatorToSymbol(result.op ?? '')} ${result.right} = ${result.newDisplay}`
+        );
+        return result.newDisplay;
+      }
+    }
+    return null;
+  }, [calculator]);
+
   const gameOptions = useMemo(
-    () => ({ onDisplayUpdate: calculator.setDisplay }),
-    [calculator.setDisplay]
+    () => ({
+      onDisplayUpdate: calculator.setDisplay,
+      finalizePendingCalculation,
+    }),
+    [calculator.setDisplay, finalizePendingCalculation]
   );
   const game = useGame(gameOptions);
+
+  // Keep game actions ref updated
+  useEffect(() => {
+    gameActionsRef.current = {
+      incrementCalculationCount: game.incrementCalculationCount,
+      setCalculationHistory: game.setCalculationHistory,
+    };
+  }, [game.incrementCalculationCount, game.setCalculationHistory]);
 
   // Sync display with game
   useEffect(() => {

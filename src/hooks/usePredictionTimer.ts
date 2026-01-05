@@ -11,6 +11,8 @@ export interface PredictionTimerCallbacks {
   onAttack?: (power: number) => void;
   onCalculationHistory: (history: string) => void;
   generateNextPrediction: (attackPower?: number) => void;
+  // Called before prediction to finalize any pending calculation (e.g., 100 + 1 → 101)
+  finalizePendingCalculation?: () => string | null;
 }
 
 interface PredictionHookLike {
@@ -45,7 +47,9 @@ export function usePredictionTimer({
   const applyPrediction = useCallback(() => {
     if (!predictionHook.prediction) return;
 
-    const currentDisplay = displayRef.current;
+    // Finalize any pending calculation first (e.g., 100 + 1 → 101)
+    const finalizedDisplay = callbacks.finalizePendingCalculation?.();
+    const currentDisplay = finalizedDisplay ?? displayRef.current;
     const currentValue = parseFloat(currentDisplay);
     const result = calculate(
       currentValue,

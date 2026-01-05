@@ -9,6 +9,7 @@ import { useEndlessMode } from './useEndlessMode';
 
 export interface UseGameOptions {
   onDisplayUpdate?: (newDisplay: string) => void;
+  finalizePendingCalculation?: () => string | null;
 }
 
 export interface UseGameReturn {
@@ -50,7 +51,7 @@ export interface UseGameReturn {
 }
 
 export function useGame(options: UseGameOptions = {}): UseGameReturn {
-  const { onDisplayUpdate: externalDisplayUpdate } = options;
+  const { onDisplayUpdate: externalDisplayUpdate, finalizePendingCalculation } = options;
 
   // Game state
   const [gameMode, setGameMode] = useState<GameMode>('calculator');
@@ -81,6 +82,7 @@ export function useGame(options: UseGameOptions = {}): UseGameReturn {
     isGameOver,
     setIsGameOver,
     setCalculationHistory,
+    finalizePendingCalculation,
   });
 
   useEffect(() => {
