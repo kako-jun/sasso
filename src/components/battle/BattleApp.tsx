@@ -47,7 +47,10 @@ export function BattleApp({ initialRoomId, onChangeMode }: BattleAppProps) {
     battle
       .reconnect()
       .then((success) => {
-        if (!success) {
+        if (success && battle.roomState.isHost) {
+          // Restore roomUrl for host after reconnect
+          setRoomUrl(`${window.location.origin}/battle/${initialRoomId}`);
+        } else if (!success) {
           return battle.joinRoom(initialRoomId);
         }
       })
