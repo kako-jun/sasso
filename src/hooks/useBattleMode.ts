@@ -332,8 +332,8 @@ export function useBattleMode(): UseBattleModeReturn {
         startGame();
       }
 
-      // Surrender on digit after =
-      if (justPressedEqual && /^\d$/.test(key)) {
+      // Surrender on digit after = (only during gameplay)
+      if (gameStarted && justPressedEqual && /^\d$/.test(key)) {
         surrender();
         return;
       }
@@ -346,9 +346,11 @@ export function useBattleMode(): UseBattleModeReturn {
         return;
       }
 
-      // Special keys
+      // Special keys - C/E only surrenders during gameplay
       if (key === 'C' || key === 'E') {
-        surrender();
+        if (gameStarted) {
+          surrender();
+        }
         return;
       }
 
