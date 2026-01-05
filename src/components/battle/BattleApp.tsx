@@ -36,15 +36,17 @@ export function BattleApp({ initialRoomId, onChangeMode }: BattleAppProps) {
 
   // Auto-join room if roomId provided
   useEffect(() => {
-    if (initialRoomId && battle.roomState.status === 'idle') {
-      // Hide room creation UI and attempt to join
-      setShowRoomCreation(false);
-      battle.joinRoom(initialRoomId).catch(() => {
-        setShowRoomCreation(true);
-      });
-    }
+    if (!initialRoomId) return;
+    if (battle.roomState.status !== 'idle') return;
+
+    // Hide room creation UI and attempt to join
+    setShowRoomCreation(false);
+    battle.joinRoom(initialRoomId).catch((err) => {
+      console.error('Auto-join failed:', err);
+      setShowRoomCreation(true);
+    });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [initialRoomId]);
+  }, [initialRoomId, battle.roomState.status]);
 
   // Handle room creation
   const handleCreateRoom = async () => {

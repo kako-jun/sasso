@@ -54,8 +54,9 @@ export function RoomCreation({ onCreateRoom, onJoinRoom, onCancel }: RoomCreatio
       // Remove any trailing slashes or query params
       roomId = roomId.split(/[?#/]/)[0];
       await onJoinRoom(roomId);
-    } catch {
-      setError('Room not found');
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Failed to join room';
+      setError(message);
       setIsLoading(false);
     }
   };

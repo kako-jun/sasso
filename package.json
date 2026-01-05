@@ -22,7 +22,7 @@
     ]
   },
   "dependencies": {
-    "nostr-arena": "github:kako-jun/nostr-arena",
+    "nostr-arena": "^0.1.1",
     "nostr-tools": "^2.19.4",
     "qrcode.react": "^4.2.0",
     "react": "^18.3.1",
