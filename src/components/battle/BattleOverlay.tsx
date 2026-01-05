@@ -12,6 +12,7 @@ interface BattleOverlayProps {
   playerScore?: number;
   rematchRequested?: boolean;
   opponentRematchRequested?: boolean;
+  onStart?: () => void;
   onRetry?: () => void;
   onLeave?: () => void;
 }
@@ -60,12 +61,14 @@ function WaitingOverlay({ roomUrl, onLeave }: { roomUrl?: string; onLeave?: () =
 }
 
 // Ready to start overlay
-function ReadyOverlay() {
+function ReadyOverlay({ onStart }: { onStart?: () => void }) {
   return (
-    <OverlayWrapper>
-      <div className={styles.battleStatus}>Opponent found!</div>
-      <div className={styles.battleStartHint}>Press any button to start</div>
-    </OverlayWrapper>
+    <div className={styles.battleOverlay} onClick={onStart}>
+      <div className={styles.battleOverlayContent}>
+        <div className={styles.battleStatus}>Opponent found!</div>
+        <div className={styles.battleStartHint}>Tap to start</div>
+      </div>
+    </div>
   );
 }
 
@@ -147,14 +150,15 @@ export function BattleOverlay({
   status,
   roomUrl,
   isGameStarted,
+  onStart,
   onLeave,
-}: Pick<BattleOverlayProps, 'status' | 'roomUrl' | 'isGameStarted' | 'onLeave'>) {
+}: Pick<BattleOverlayProps, 'status' | 'roomUrl' | 'isGameStarted' | 'onStart' | 'onLeave'>) {
   switch (status) {
     case 'waiting':
       return <WaitingOverlay roomUrl={roomUrl} onLeave={onLeave} />;
 
     case 'ready':
-      if (!isGameStarted) return <ReadyOverlay />;
+      if (!isGameStarted) return <ReadyOverlay onStart={onStart} />;
       return null;
 
     case 'joining':

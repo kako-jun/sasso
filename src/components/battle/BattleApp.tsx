@@ -181,6 +181,7 @@ export function BattleApp({ initialRoomId, onChangeMode }: BattleAppProps) {
         status={battle.roomState.status}
         roomUrl={roomUrl}
         isGameStarted={battle.gameStarted}
+        onStart={() => battle.handleKey('1')}
         onLeave={handleLeave}
       />
     </div>
