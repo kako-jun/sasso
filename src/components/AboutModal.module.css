@@ -69,7 +69,10 @@
 }
 
 .sponsorButton {
-  display: inline-block;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
   padding: 8px 16px;
   background: #fff;
   color: #000;
@@ -78,6 +81,7 @@
   font-size: 12px;
   cursor: pointer;
   margin-bottom: 12px;
+  box-sizing: border-box;
 }
 
 .sponsorButton:hover {

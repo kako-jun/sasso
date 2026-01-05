@@ -21,11 +21,7 @@ export function AboutModal({ isOpen, onClose }: AboutModalProps) {
         <div className={styles.aboutTitle}>About</div>
         <div className={styles.aboutName}>Sasso</div>
         <div className={styles.aboutVersion}>Version {VERSION}</div>
-        <div className={styles.aboutDescription}>
-          A calculator-based puzzle game
-          <br />
-          with Classic Macintosh design.
-        </div>
+        <div className={styles.aboutDescription}>Figuring out the rules is part of the game.</div>
         <div className={styles.aboutAuthor}>
           by <strong>kako-jun</strong>
         </div>
