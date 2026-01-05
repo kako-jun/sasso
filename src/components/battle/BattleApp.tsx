@@ -36,10 +36,22 @@ export function BattleApp({ initialRoomId, onChangeMode }: BattleAppProps) {
 
   // Auto-join room if roomId provided
   useEffect(() => {
-    if (!initialRoomId) return;
-    if (battle.roomState.status !== 'idle') return;
+    console.log('Auto-join effect:', {
+      initialRoomId,
+      status: battle.roomState.status,
+      showRoomCreation,
+    });
+    if (!initialRoomId) {
+      console.log('No initialRoomId, skipping auto-join');
+      return;
+    }
+    if (battle.roomState.status !== 'idle') {
+      console.log('Status not idle, skipping auto-join');
+      return;
+    }
 
     // Hide room creation UI and attempt to join
+    console.log('Attempting to join room:', initialRoomId);
     setShowRoomCreation(false);
     battle.joinRoom(initialRoomId).catch((err) => {
       console.error('Auto-join failed:', err);
