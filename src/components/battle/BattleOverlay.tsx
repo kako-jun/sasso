@@ -66,7 +66,7 @@ function ReadyOverlay({ onStart }: { onStart?: () => void }) {
     <div className={styles.battleOverlay} onClick={onStart}>
       <div className={styles.battleOverlayContent}>
         <div className={styles.battleStatus}>Opponent found!</div>
-        <div className={styles.battleStartHint}>Tap to start</div>
+        <div className={styles.battleStartHint}>Press any button to start</div>
       </div>
     </div>
   );
