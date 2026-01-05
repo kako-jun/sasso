@@ -81,8 +81,6 @@ function JoiningOverlay() {
 interface BattleFinishedOverlayProps {
   isWinner: boolean | null;
   isSurrender: boolean;
-  playerScore?: number;
-  opponentScore?: number;
   rematchRequested?: boolean;
   opponentRematchRequested?: boolean;
   onRetry?: () => void;
@@ -96,8 +94,6 @@ interface BattleFinishedOverlayProps {
 export function BattleFinishedOverlay({
   isWinner,
   isSurrender,
-  playerScore,
-  opponentScore,
   rematchRequested,
   opponentRematchRequested,
   onRetry,
@@ -119,9 +115,6 @@ export function BattleFinishedOverlay({
   return (
     <div className={styles.finishedOverlay}>
       <div className={styles.finishedMessage}>{resultMessage}</div>
-      <div className={styles.finishedScores}>
-        You: {playerScore ?? 0} / Opponent: {opponentScore ?? 0}
-      </div>
       {showRematchHighlight && (
         <div className={styles.rematchNotification}>Opponent wants a rematch!</div>
       )}

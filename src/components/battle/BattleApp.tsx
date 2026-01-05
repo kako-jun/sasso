@@ -14,6 +14,8 @@ import { BattleLayout } from './BattleLayout';
 import { BattleOverlay, BattleFinishedOverlay } from './BattleOverlay';
 import { RoomCreation } from './RoomCreation';
 import { AttackIndicator } from './AttackIndicator';
+import { MobileOpponentScore } from './MobileOpponentScore';
+import { OpponentHeader } from './OpponentHeader';
 import type { GameMode } from '../../types';
 
 interface BattleAppProps {
@@ -36,25 +38,12 @@ export function BattleApp({ initialRoomId, onChangeMode }: BattleAppProps) {
 
   // Auto-join room if roomId provided
   useEffect(() => {
-    console.log('Auto-join effect:', {
-      initialRoomId,
-      status: battle.roomState.status,
-      showRoomCreation,
-    });
-    if (!initialRoomId) {
-      console.log('No initialRoomId, skipping auto-join');
-      return;
-    }
-    if (battle.roomState.status !== 'idle') {
-      console.log('Status not idle, skipping auto-join');
-      return;
-    }
+    if (!initialRoomId) return;
+    if (battle.roomState.status !== 'idle') return;
 
     // Hide room creation UI and attempt to join
-    console.log('Attempting to join room:', initialRoomId);
     setShowRoomCreation(false);
-    battle.joinRoom(initialRoomId).catch((err) => {
-      console.error('Auto-join failed:', err);
+    battle.joinRoom(initialRoomId).catch(() => {
       setShowRoomCreation(true);
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -101,11 +90,53 @@ export function BattleApp({ initialRoomId, onChangeMode }: BattleAppProps) {
 
   const isPredictionMode = battle.gameStarted && !battle.isGameOver;
 
+  // Get opponent state for display
+  const opponentState = battle.opponent?.gameState;
+  const opponentScore = opponentState?.score ?? 0;
+  const opponentDisplay = opponentState?.display ?? '0';
+  const opponentHistory = opponentState?.calculationHistory ?? '';
+  const opponentConnected = battle.opponent?.isConnected ?? true;
+
+  // Build headers and content for desktop layout
+  const playerHeader = isDesktop ? (
+    <MenuBar gameMode="battle" onChangeMode={onChangeMode} score={battle.score} />
+  ) : undefined;
+
+  const opponentHeader =
+    battle.opponent && isDesktop ? (
+      <OpponentHeader score={opponentScore} isConnected={opponentConnected} />
+    ) : undefined;
+
+  const opponentContent =
+    battle.opponent && isDesktop ? (
+      <>
+        {/* Opponent Score Area */}
+        <ScoreArea lastScoreBreakdown={null} />
+
+        {/* Opponent Calculator Window */}
+        <Window title="Opponent">
+          <Display value={opponentDisplay} eliminatingIndices={[]} />
+        </Window>
+
+        {/* Opponent Calculation History */}
+        <CalculationHistory text={opponentHistory} />
+      </>
+    ) : undefined;
+
   return (
     <div className="desktop">
-      <MenuBar gameMode="battle" onChangeMode={onChangeMode} score={battle.score} />
+      {/* Mobile: MenuBar at top */}
+      {!isDesktop && <MenuBar gameMode="battle" onChangeMode={onChangeMode} score={battle.score} />}
+      {!isDesktop && battle.opponent && (
+        <MobileOpponentScore score={opponentScore} isConnected={opponentConnected} />
+      )}
 
-      <BattleLayout opponent={battle.opponent} isDesktop={isDesktop}>
+      <BattleLayout
+        playerHeader={playerHeader}
+        opponentHeader={opponentHeader}
+        opponentContent={opponentContent}
+        isDesktop={isDesktop}
+      >
         {/* Prediction Area with Attack Indicator */}
         {isPredictionMode && battle.prediction && (
           <div className="prediction-wrapper">
@@ -123,8 +154,6 @@ export function BattleApp({ initialRoomId, onChangeMode }: BattleAppProps) {
             <BattleFinishedOverlay
               isWinner={battle.isWinner}
               isSurrender={battle.isSurrender}
-              playerScore={battle.score}
-              opponentScore={battle.opponent?.score}
               rematchRequested={battle.rematchRequested}
               opponentRematchRequested={battle.opponentRematchRequested}
               onRetry={battle.requestRematch}

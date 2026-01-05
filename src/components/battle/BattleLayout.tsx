@@ -1,62 +1,42 @@
 import type { ReactNode } from 'react';
-import type { OpponentState } from '../../types/battle';
-import { OpponentScore } from './OpponentScore';
-import { OpponentCalculator } from './OpponentCalculator';
 import styles from './BattleLayout.module.css';
 
 interface BattleLayoutProps {
   children: ReactNode;
-  opponent: OpponentState | null;
+  playerHeader?: ReactNode;
+  opponentHeader?: ReactNode;
+  opponentContent?: ReactNode;
   isDesktop: boolean;
 }
 
 /**
  * Responsive battle layout.
- * - Desktop: Side-by-side calculators
- * - Mobile: Stacked with compact opponent score
+ * - Desktop: Side-by-side with player on left, opponent on right
+ * - Mobile: Just player content (opponent score shown in bar above)
  */
-export function BattleLayout({ children, opponent, isDesktop }: BattleLayoutProps) {
-  if (!opponent) {
-    return <>{children}</>;
-  }
-
-  // Extract game state with defaults for when no state received yet
-  const gameState = opponent.gameState ?? {
-    display: '0',
-    score: 0,
-    chains: 0,
-    calculationHistory: '',
-  };
-
-  if (isDesktop) {
+export function BattleLayout({
+  children,
+  playerHeader,
+  opponentHeader,
+  opponentContent,
+  isDesktop,
+}: BattleLayoutProps) {
+  if (isDesktop && opponentContent) {
     // Side-by-side layout for desktop
     return (
       <div className={styles.battleLayoutDesktop}>
-        <div className={styles.battlePlayerSide}>{children}</div>
+        <div className={styles.battlePlayerSide}>
+          {playerHeader}
+          <div className={styles.sideContent}>{children}</div>
+        </div>
         <div className={styles.battleOpponentSide}>
-          <OpponentCalculator
-            display={gameState.display}
-            score={gameState.score}
-            chains={gameState.chains}
-            calculationHistory={gameState.calculationHistory}
-            isConnected={opponent.isConnected}
-          />
+          {opponentHeader}
+          <div className={styles.sideContent}>{opponentContent}</div>
         </div>
       </div>
     );
   }
 
-  // Mobile layout: opponent score below player's score area
-  return (
-    <div className={styles.battleLayoutMobile}>
-      {children}
-      <OpponentScore
-        display={gameState.display}
-        score={gameState.score}
-        chains={gameState.chains}
-        calculationHistory={gameState.calculationHistory}
-        isConnected={opponent.isConnected}
-      />
-    </div>
-  );
+  // Mobile layout or no opponent: just player content
+  return <>{children}</>;
 }

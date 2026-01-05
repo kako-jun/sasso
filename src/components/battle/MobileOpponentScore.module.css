@@ -1,0 +1,23 @@
+/* Opponent Score - below MenuBar on mobile */
+.opponentScoreBar {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 4px;
+  padding: 2px 8px;
+  font-size: 12px;
+  height: 20px;
+}
+
+.label {
+  color: #666;
+}
+
+.score {
+  /* Same as MenuBar statusItem */
+}
+
+.disconnected {
+  color: #666;
+  font-size: 10px;
+}
