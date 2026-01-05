@@ -21,6 +21,7 @@ import {
   generateSeed,
   generateRoomId,
 } from '../types';
+import { withTimeout } from '../retry';
 
 /**
  * Internal opponent state (mutable)
@@ -248,8 +249,25 @@ export class BattleRoom<TGameState = Record<string, unknown>> {
 
   /**
    * Join an existing room
+   *
+   * Times out after joinTimeout (default: 30 seconds)
    */
   async join(roomId: string): Promise<void> {
+    const timeoutMs = this.config.joinTimeout ?? DEFAULT_CONFIG.joinTimeout;
+
+    try {
+      await withTimeout(() => this.joinInternal(roomId), timeoutMs, 'Join operation timed out');
+    } catch (error) {
+      // Reset state on any error
+      this._roomState = { ...INITIAL_ROOM_STATE };
+      throw error;
+    }
+  }
+
+  /**
+   * Internal join implementation
+   */
+  private async joinInternal(roomId: string): Promise<void> {
     if (!this.client.isConnected) {
       this.client.connect();
     }
@@ -272,7 +290,6 @@ export class BattleRoom<TGameState = Record<string, unknown>> {
     );
 
     if (roomEvents.length === 0) {
-      this._roomState = { ...INITIAL_ROOM_STATE };
       throw new Error('Room not found');
     }
 
@@ -280,7 +297,6 @@ export class BattleRoom<TGameState = Record<string, unknown>> {
     const roomCreatedAt = (roomEvents[0].created_at ?? 0) * 1000;
 
     if (this.isExpired(roomCreatedAt)) {
-      this._roomState = { ...INITIAL_ROOM_STATE };
       throw new Error('Room has expired');
     }
 

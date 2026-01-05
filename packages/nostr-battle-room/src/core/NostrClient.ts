@@ -7,6 +7,7 @@ import { SimplePool, finalizeEvent, generateSecretKey, getPublicKey } from 'nost
 import type { Filter } from 'nostr-tools';
 import type { NostrEvent, Unsubscribe } from '../types';
 import { DEFAULT_CONFIG } from '../types';
+import { withRetry, type RetryOptions } from '../retry';
 
 // Re-export Filter type for convenience
 export type { Filter as NostrFilter } from 'nostr-tools';
@@ -24,6 +25,8 @@ export interface NostrClientOptions {
     getItem: (key: string) => string | null;
     setItem: (key: string, value: string) => void;
   };
+  /** Retry options for publish operations */
+  publishRetry?: RetryOptions;
 }
 
 /**
@@ -60,6 +63,7 @@ export class NostrClient {
   private relays: string[];
   private storageKeyPrefix: string;
   private storage: NonNullable<NostrClientOptions['storage']>;
+  private publishRetry: RetryOptions;
 
   constructor(options: NostrClientOptions = {}) {
     this.relays = options.relays ?? DEFAULT_CONFIG.relays;
@@ -67,6 +71,11 @@ export class NostrClient {
     this.storage = options.storage ?? {
       getItem: (key) => localStorage.getItem(key),
       setItem: (key, value) => localStorage.setItem(key, value),
+    };
+    this.publishRetry = options.publishRetry ?? {
+      maxAttempts: 3,
+      initialDelay: 1000,
+      maxDelay: 5000,
     };
   }
 
@@ -125,7 +134,10 @@ export class NostrClient {
   }
 
   /**
-   * Publish an event to all relays
+   * Publish an event to all relays with retry logic
+   *
+   * Retries with exponential backoff if all relays fail.
+   * Succeeds if at least one relay accepts the event.
    */
   async publish(
     eventTemplate: Omit<NostrEvent, 'id' | 'pubkey' | 'created_at' | 'sig'>
@@ -144,7 +156,7 @@ export class NostrClient {
       this.secretKey
     );
 
-    await Promise.any(this.pool.publish(this.relays, event));
+    await withRetry(() => Promise.any(this.pool!.publish(this.relays, event)), this.publishRetry);
   }
 
   /**

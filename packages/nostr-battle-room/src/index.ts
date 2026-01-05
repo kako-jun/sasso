@@ -65,3 +65,6 @@ export {
 
 // Proxy support (Node.js)
 export { configureProxy, resetProxyConfiguration } from './proxy';
+
+// Retry utilities
+export { withRetry, withTimeout, timeout, type RetryOptions } from './retry';

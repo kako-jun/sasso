@@ -3,8 +3,21 @@
  * Testing utilities for battle room
  */
 
-import type { RoomState, OpponentBase, BattleRoomCallbacks } from '../types';
+import type { RoomState, OpponentBase, BattleRoomCallbacks, BattleRoomEventName } from '../types';
 import { INITIAL_ROOM_STATE, generateSeed, generateRoomId } from '../types';
+
+/**
+ * Map event names to callback keys
+ */
+type EventToCallback<TGameState> = {
+  opponentJoin: BattleRoomCallbacks<TGameState>['onOpponentJoin'];
+  opponentState: BattleRoomCallbacks<TGameState>['onOpponentState'];
+  opponentDisconnect: BattleRoomCallbacks<TGameState>['onOpponentDisconnect'];
+  opponentGameOver: BattleRoomCallbacks<TGameState>['onOpponentGameOver'];
+  rematchRequested: BattleRoomCallbacks<TGameState>['onRematchRequested'];
+  rematchStart: BattleRoomCallbacks<TGameState>['onRematchStart'];
+  error: BattleRoomCallbacks<TGameState>['onError'];
+};
 
 /**
  * Mock opponent state
@@ -55,9 +68,9 @@ export class MockBattleRoom<TGameState = Record<string, unknown>> {
     return 'mock-public-key';
   }
 
-  on<K extends keyof BattleRoomCallbacks<TGameState>>(
+  on<K extends BattleRoomEventName>(
     event: K,
-    callback: NonNullable<BattleRoomCallbacks<TGameState>[K]>
+    callback: NonNullable<EventToCallback<TGameState>[K]>
   ): this {
     const callbackKey =
       `on${event.charAt(0).toUpperCase()}${event.slice(1)}` as keyof BattleRoomCallbacks<TGameState>;

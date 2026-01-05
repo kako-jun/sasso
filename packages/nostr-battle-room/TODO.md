@@ -24,9 +24,11 @@
   - state-flow.test.ts: 状態遷移図
   - callbacks.test.ts: 7種のコールバック
   - timing.test.ts: タイミング定数
-- [ ] エラーハンドリング強化
-  - リレー接続失敗時のリトライ
-  - タイムアウト処理
+- [x] エラーハンドリング強化
+  - NostrClient.publish: 指数バックオフによるリトライ (デフォルト3回)
+  - BattleRoom.join: タイムアウト処理 (デフォルト30秒)
+  - retry.ts: withRetry, withTimeout ユーティリティ
+  - error-handling.test.ts: エラーハンドリングのテスト追加
 
 ## Phase 3: Release
 
