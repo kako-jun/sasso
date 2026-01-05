@@ -1,7 +1,7 @@
 /* Battle Overlay */
 .battleOverlay {
   position: fixed;
-  top: 0;
+  top: 21px; /* Below MenuBar (20px height + 1px border) */
   left: 0;
   right: 0;
   bottom: 0;
