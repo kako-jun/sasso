@@ -2,12 +2,12 @@
 
 ## Overview
 
-2-player online battle mode using [nostr-battle-room](../packages/nostr-battle-room/) for real-time P2P communication.
+2-player online battle mode using [nostr-arena](../packages/nostr-arena/) for real-time P2P communication.
 
 For generic battle room documentation, see:
 
-- [packages/nostr-battle-room/docs/architecture.md](../packages/nostr-battle-room/docs/architecture.md)
-- [packages/nostr-battle-room/docs/protocol.md](../packages/nostr-battle-room/docs/protocol.md)
+- [packages/nostr-arena/docs/architecture.md](../packages/nostr-arena/docs/architecture.md)
+- [packages/nostr-arena/docs/protocol.md](../packages/nostr-arena/docs/protocol.md)
 
 ---
 
@@ -144,11 +144,11 @@ Attack power = score from that elimination.
 
 ## Implementation Files
 
-| File                                      | Purpose                                          |
-| ----------------------------------------- | ------------------------------------------------ |
-| `src/hooks/useBattleMode.ts`              | Main battle mode orchestrator                    |
-| `src/hooks/useBattleRoom.ts`              | Room management (uses nostr-battle-room pattern) |
-| `src/hooks/useSeededPrediction.ts`        | Deterministic prediction with shared seed        |
-| `src/components/battle/BattleApp.tsx`     | Battle mode UI                                   |
-| `src/components/battle/BattleOverlay.tsx` | Waiting/Victory/Defeat overlays                  |
-| `src/components/battle/OpponentPanel.tsx` | Opponent display                                 |
+| File                                      | Purpose                                    |
+| ----------------------------------------- | ------------------------------------------ |
+| `src/hooks/useBattleMode.ts`              | Main battle mode orchestrator              |
+| `src/hooks/useBattleRoom.ts`              | Room management (uses nostr-arena pattern) |
+| `src/hooks/useSeededPrediction.ts`        | Deterministic prediction with shared seed  |
+| `src/components/battle/BattleApp.tsx`     | Battle mode UI                             |
+| `src/components/battle/BattleOverlay.tsx` | Waiting/Victory/Defeat overlays            |
+| `src/components/battle/OpponentPanel.tsx` | Opponent display                           |

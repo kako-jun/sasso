@@ -1,13 +1,13 @@
 /**
- * useBattleRoom - Wrapper around nostr-battle-room package
+ * useBattleRoom - Wrapper around nostr-arena package
  *
- * Uses the generic nostr-battle-room package with Sasso-specific types.
+ * Uses the generic nostr-arena package with Sasso-specific types.
  * Attack handling is done through game state (attack field with timestamp).
  */
 
 import { useCallback, useRef, useEffect, useMemo } from 'react';
-import { useBattleRoom as usePackageBattleRoom } from 'nostr-battle-room/react';
-import type { BattleRoomCallbacks } from 'nostr-battle-room';
+import { useBattleRoom as usePackageBattleRoom } from 'nostr-arena/react';
+import type { BattleRoomCallbacks } from 'nostr-arena';
 import type { SassoGameState, OpponentState, RoomState } from '../types/battle';
 import { dispatchBattleEvent, BATTLE_EVENTS } from '../utils/battleEvents';
 
@@ -37,7 +37,7 @@ export interface UseBattleRoomReturn {
 export function useBattleRoom(): UseBattleRoomReturn {
   const lastAttackTimestampRef = useRef<number>(0);
 
-  // Config for nostr-battle-room
+  // Config for nostr-arena
   const config = useMemo(
     () => ({
       gameId: 'sasso',
@@ -45,7 +45,7 @@ export function useBattleRoom(): UseBattleRoomReturn {
     []
   );
 
-  // Callbacks for nostr-battle-room
+  // Callbacks for nostr-arena
   const callbacks = useMemo<BattleRoomCallbacks<SassoGameState>>(
     () => ({
       onOpponentState: (state: SassoGameState) => {

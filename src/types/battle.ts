@@ -1,4 +1,4 @@
-// Sasso-specific game state (matches nostr-battle-room TGameState)
+// Sasso-specific game state (matches nostr-arena TGameState)
 export interface SassoGameState {
   display: string;
   score: number;
@@ -27,7 +27,7 @@ export interface RoomState {
   rematchRequested?: boolean;
 }
 
-// Opponent State (matches nostr-battle-room OpponentState<TGameState>)
+// Opponent State (matches nostr-arena OpponentState<TGameState>)
 export interface OpponentState {
   publicKey: string;
   gameState: SassoGameState | null;
