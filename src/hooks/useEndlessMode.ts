@@ -1,13 +1,5 @@
-import { useCallback, useEffect } from 'react';
-import {
-  processElimination,
-  checkOverflow,
-  findEliminationIndices,
-  calculateScore,
-  getDigitCount,
-} from '../game';
-import { COUNTDOWN_TIME, ELIMINATION_ANIMATION_MS, CHAIN_CHECK_DELAY_MS } from '../constants';
-import { calculate, formatDisplay, operatorToSymbol } from '../utils';
+import { useMemo } from 'react';
+import { usePredictionTimer } from './usePredictionTimer';
 import type { UsePredictionReturn } from './usePrediction';
 import type { UseEliminationReturn } from './useElimination';
 
@@ -34,114 +26,30 @@ export function useEndlessMode({
   setIsGameOver,
   setCalculationHistory,
 }: UseEndlessModeOptions) {
-  const applyPrediction = useCallback(
-    (currentDisplay: string, onDisplayUpdate: (newDisplay: string) => void) => {
-      if (!predictionHook.prediction) return;
+  const isActive = (gameMode === 'endless' || gameMode === 'sprint') && gameStarted && !isGameOver;
 
-      const currentValue = parseFloat(currentDisplay);
-      const result = calculate(
-        currentValue,
-        predictionHook.prediction.operand,
-        predictionHook.prediction.operator
-      );
-      const newDisplay = formatDisplay(result);
-
-      setCalculationHistory(
-        `${currentDisplay} ${operatorToSymbol(predictionHook.prediction.operator)} ${predictionHook.prediction.operand} = ${newDisplay}`
-      );
-
-      onDisplayUpdate(newDisplay);
-
-      const indices = findEliminationIndices(newDisplay);
-      if (indices.length > 0) {
-        const digitCountBeforeElimination = getDigitCount(newDisplay);
-        const currentCalcCount = eliminationHook.calculationCountRef.current;
-
-        eliminationHook.setEliminatingIndices(indices);
-
-        setTimeout(() => {
-          const eliminationResult = processElimination(newDisplay);
-          const finalDisplay = eliminationResult.result;
-
-          onDisplayUpdate(finalDisplay);
-          eliminationHook.setEliminatingIndices([]);
-          eliminationHook.setChains(eliminationResult.chains);
-
-          const scoreResult = calculateScore({
-            eliminated: eliminationResult.eliminated,
-            chains: eliminationResult.chains,
-            calculationsSinceLastElimination: currentCalcCount,
-            digitCountBeforeElimination,
-          });
-          eliminationHook.setScore((prev) => prev + scoreResult.totalScore);
-          eliminationHook.setLastScoreBreakdown(scoreResult);
-          eliminationHook.setCalculationCount(0);
-          eliminationHook.calculationCountRef.current = 0;
-
-          if (checkOverflow(finalDisplay)) {
-            setIsGameOver(true);
-            predictionHook.clearCountdown();
-            return;
-          }
-
-          // Check for chain
-          setTimeout(() => {
-            const nextIndices = findEliminationIndices(finalDisplay);
-            if (nextIndices.length > 0) {
-              eliminationHook.applyEliminationWithAnimation(
-                finalDisplay,
-                eliminationResult.chains,
-                digitCountBeforeElimination,
-                currentCalcCount,
-                onDisplayUpdate
-              );
-            }
-          }, CHAIN_CHECK_DELAY_MS);
-        }, ELIMINATION_ANIMATION_MS);
-      } else {
-        if (checkOverflow(newDisplay)) {
-          setIsGameOver(true);
-          predictionHook.clearCountdown();
-          return;
-        }
-      }
-
-      predictionHook.generateNextPrediction();
-    },
-    [predictionHook, eliminationHook, setIsGameOver, setCalculationHistory]
+  // Prediction timer callbacks
+  const callbacks = useMemo(
+    () => ({
+      onDisplayUpdate: (display: string) => {
+        externalDisplayUpdateRef.current?.(display);
+      },
+      onOverflow: () => {
+        setIsGameOver(true);
+        predictionHook.clearCountdown();
+      },
+      onCalculationHistory: setCalculationHistory,
+      generateNextPrediction: () => predictionHook.generateNextPrediction(),
+    }),
+    [predictionHook, setIsGameOver, setCalculationHistory, externalDisplayUpdateRef]
   );
 
-  // Countdown timer for endless and sprint modes
-  useEffect(() => {
-    if ((gameMode !== 'endless' && gameMode !== 'sprint') || !gameStarted || isGameOver) {
-      return;
-    }
-
-    predictionHook.countdownRef.current = window.setInterval(() => {
-      predictionHook.setCountdown((prev) => {
-        if (prev <= 100) {
-          applyPrediction(displayRef.current, (newDisplay) => {
-            displayRef.current = newDisplay;
-            externalDisplayUpdateRef.current?.(newDisplay);
-          });
-          return COUNTDOWN_TIME;
-        }
-        return prev - 100;
-      });
-    }, 100);
-
-    return () => {
-      predictionHook.clearCountdown();
-    };
-  }, [
-    gameMode,
-    gameStarted,
-    isGameOver,
-    applyPrediction,
+  // Use shared prediction timer
+  usePredictionTimer({
     predictionHook,
+    eliminationHook,
     displayRef,
-    externalDisplayUpdateRef,
-  ]);
-
-  return { applyPrediction };
+    isActive,
+    callbacks,
+  });
 }

@@ -1,20 +1,13 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { Prediction, ScoreResult } from '../types';
 import type { RoomState, OpponentState } from '../types/battle';
 import { useArena } from './useArena';
 import { useSeededPrediction } from './useSeededPrediction';
 import { useCalculator } from './useCalculator';
 import { useElimination } from './useElimination';
-import {
-  processElimination,
-  checkOverflow,
-  findEliminationIndices,
-  calculateScore,
-  shouldTriggerAttack,
-  getDigitCount,
-} from '../game';
-import { calculate, formatDisplay, operatorToSymbol, BATTLE_EVENTS } from '../utils';
-import { COUNTDOWN_TIME, ELIMINATION_ANIMATION_MS, CHAIN_CHECK_DELAY_MS } from '../constants';
+import { usePredictionTimer } from './usePredictionTimer';
+import { checkOverflow } from '../game';
+import { operatorToSymbol, BATTLE_EVENTS } from '../utils';
 
 export interface UseBattleModeReturn {
   // Room state
@@ -73,7 +66,6 @@ export function useBattleMode(): UseBattleModeReturn {
 
   // Refs
   const displayRef = useRef(calculator.display);
-  const applyPredictionRef = useRef<() => void>(() => {});
   const handleGameOverRef = useRef<(reason: 'overflow' | 'surrender' | 'disconnect') => void>(
     () => {}
   );
@@ -199,122 +191,34 @@ export function useBattleMode(): UseBattleModeReturn {
     room,
   ]);
 
-  // Prediction timer - starts when game is started
-  useEffect(() => {
-    if (!gameStarted || isGameOver) return;
-
-    const intervalId = window.setInterval(() => {
-      prediction.setCountdown((prev) => {
-        if (prev <= 100) {
-          applyPredictionRef.current();
-          return COUNTDOWN_TIME;
-        }
-        return prev - 100;
-      });
-    }, 100);
-
-    return () => clearInterval(intervalId);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [gameStarted, isGameOver]);
-
-  // Process elimination result and handle scoring/attack
-  const processEliminationResult = useCallback(
-    (newDisplay: string, digitCountBefore: number, calcCount: number) => {
-      const eliminationResult = processElimination(newDisplay);
-      const finalDisplay = eliminationResult.result;
-
-      calculator.setDisplay(finalDisplay);
-      displayRef.current = finalDisplay;
-      elimination.setEliminatingIndices([]);
-      elimination.setChains(eliminationResult.chains);
-
-      const scoreResult = calculateScore({
-        eliminated: eliminationResult.eliminated,
-        chains: eliminationResult.chains,
-        calculationsSinceLastElimination: calcCount,
-        digitCountBeforeElimination: digitCountBefore,
-      });
-
-      elimination.setScore((prev) => prev + scoreResult.totalScore);
-      elimination.setLastScoreBreakdown(scoreResult);
-      elimination.setCalculationCount(0);
-      elimination.calculationCountRef.current = 0;
-
-      if (shouldTriggerAttack(eliminationResult)) {
-        room.sendAttack(scoreResult.attackPower);
-      }
-
-      if (checkOverflow(finalDisplay)) {
-        handleGameOverRef.current('overflow');
-        return;
-      }
-
-      // Check for chain
-      setTimeout(() => {
-        const nextIndices = findEliminationIndices(finalDisplay);
-        if (nextIndices.length > 0) {
-          elimination.applyEliminationWithAnimation(
-            finalDisplay,
-            eliminationResult.chains,
-            digitCountBefore,
-            calcCount,
-            (newDisp) => {
-              calculator.setDisplay(newDisp);
-              displayRef.current = newDisp;
-            }
-          );
-        }
-      }, CHAIN_CHECK_DELAY_MS);
-    },
-    [calculator, elimination, room]
+  // Prediction timer callbacks
+  const predictionCallbacks = useMemo(
+    () => ({
+      onDisplayUpdate: (display: string) => {
+        calculator.setDisplay(display);
+      },
+      onOverflow: () => handleGameOverRef.current('overflow'),
+      onAttack: (power: number) => room.sendAttack(power),
+      onCalculationHistory: setCalculationHistory,
+      generateNextPrediction: (attackPower?: number) =>
+        prediction.generateNextPrediction(attackPower),
+    }),
+    [calculator, room, prediction]
   );
 
-  // Apply prediction (auto-execute when countdown reaches 0)
-  const applyPrediction = useCallback(() => {
-    if (!prediction.prediction) return;
-
-    const currentValue = parseFloat(displayRef.current);
-    const result = calculate(
-      currentValue,
-      prediction.prediction.operand,
-      prediction.prediction.operator
-    );
-    const newDisplay = formatDisplay(result);
-
-    setCalculationHistory(
-      `${displayRef.current} ${operatorToSymbol(prediction.prediction.operator)} ${prediction.prediction.operand} = ${newDisplay}`
-    );
-
-    calculator.setDisplay(newDisplay);
-    displayRef.current = newDisplay;
-
-    const indices = findEliminationIndices(newDisplay);
-    if (indices.length > 0) {
-      const digitCountBefore = getDigitCount(newDisplay);
-      const calcCount = elimination.calculationCountRef.current;
-
-      elimination.setEliminatingIndices(indices);
-      setTimeout(
-        () => processEliminationResult(newDisplay, digitCountBefore, calcCount),
-        ELIMINATION_ANIMATION_MS
-      );
-    } else if (checkOverflow(newDisplay)) {
-      handleGameOverRef.current('overflow');
-      return;
-    }
-
-    // Generate next prediction (with attack power if under attack)
-    prediction.generateNextPrediction(pendingAttackPower);
-    if (pendingAttackPower > 0) {
+  // Use shared prediction timer
+  usePredictionTimer({
+    predictionHook: prediction,
+    eliminationHook: elimination,
+    displayRef,
+    isActive: gameStarted && !isGameOver,
+    callbacks: predictionCallbacks,
+    pendingAttackPower,
+    onAttackApplied: () => {
       setPendingAttackPower(0);
       setIsUnderAttack(false);
-    }
-  }, [prediction, calculator, elimination, pendingAttackPower, processEliminationResult]);
-
-  // Keep ref updated with latest applyPrediction
-  useEffect(() => {
-    applyPredictionRef.current = applyPrediction;
-  }, [applyPrediction]);
+    },
+  });
 
   // Start the game
   const startGame = useCallback(() => {

@@ -56,8 +56,10 @@ export function useGameController(): UseGameControllerReturn {
   const applyPracticeElimination = useCallback(
     (newDisplay: string) => {
       if (game.gameMode === 'practice' && game.gameStarted) {
-        const afterElimination = game.applyElimination(newDisplay, calculator.setDisplay);
-        game.checkGameOverState(afterElimination);
+        game.startEliminationChain(newDisplay, {
+          onDisplayUpdate: calculator.setDisplay,
+          onOverflow: () => game.checkGameOverState(newDisplay),
+        });
       }
     },
     [calculator.setDisplay, game]

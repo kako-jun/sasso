@@ -1,7 +1,20 @@
 import { useState, useCallback, useRef } from 'react';
 import type { ScoreResult } from '../types';
-import { processElimination, findEliminationIndices, calculateScore, getDigitCount } from '../game';
+import {
+  eliminateMatches,
+  findEliminationIndices,
+  checkOverflow,
+  calculateScore,
+  shouldTriggerAttack,
+  getDigitCount,
+} from '../game';
 import { ELIMINATION_ANIMATION_MS, CHAIN_CHECK_DELAY_MS } from '../constants';
+
+export interface EliminationCallbacks {
+  onDisplayUpdate?: (newDisplay: string) => void;
+  onOverflow?: () => void;
+  onAttack?: (power: number) => void;
+}
 
 export interface UseEliminationReturn {
   eliminatingIndices: number[];
@@ -17,14 +30,7 @@ export interface UseEliminationReturn {
   setLastScoreBreakdown: React.Dispatch<React.SetStateAction<ScoreResult | null>>;
   incrementCalculationCount: () => void;
   resetElimination: () => void;
-  applyEliminationWithAnimation: (
-    displayStr: string,
-    chainCount?: number,
-    initialDigitCount?: number,
-    initialCalcCount?: number,
-    onDisplayUpdate?: (newDisplay: string) => void
-  ) => string;
-  applyElimination: (displayStr: string, onDisplayUpdate?: (newDisplay: string) => void) => string;
+  startEliminationChain: (displayStr: string, callbacks?: EliminationCallbacks) => void;
 }
 
 export function useElimination(): UseEliminationReturn {
@@ -53,25 +59,28 @@ export function useElimination(): UseEliminationReturn {
     calculationCountRef.current = 0;
   }, []);
 
-  const applyEliminationWithAnimation = useCallback(
-    (
-      displayStr: string,
-      chainCount = 0,
-      initialDigitCount?: number,
-      initialCalcCount?: number,
-      onDisplayUpdate?: (newDisplay: string) => void
-    ): string => {
+  // Main elimination function - processes one chain step at a time with animation
+  const startEliminationChain = useCallback(
+    (displayStr: string, callbacks?: EliminationCallbacks) => {
       const indices = findEliminationIndices(displayStr);
+      if (indices.length === 0) return;
 
-      if (indices.length > 0) {
-        const digitCountBeforeElimination = initialDigitCount ?? getDigitCount(displayStr);
-        const calcCount = initialCalcCount ?? calculationCountRef.current;
+      const digitCountBeforeElimination = getDigitCount(displayStr);
+      const calcCount = calculationCountRef.current;
 
-        setEliminatingIndices(indices);
+      // Process one step recursively
+      const processStep = (currentDisplay: string, chainCount: number) => {
+        const stepIndices = findEliminationIndices(currentDisplay);
+        if (stepIndices.length === 0) return;
+
+        setEliminatingIndices(stepIndices);
 
         setTimeout(() => {
-          const result = processElimination(displayStr);
-          onDisplayUpdate?.(result.result);
+          // One elimination step
+          const result = eliminateMatches(currentDisplay);
+          const newDisplay = result.result;
+
+          callbacks?.onDisplayUpdate?.(newDisplay);
           setEliminatingIndices([]);
 
           const newChainCount = chainCount + 1;
@@ -89,41 +98,36 @@ export function useElimination(): UseEliminationReturn {
           setCalculationCount(0);
           calculationCountRef.current = 0;
 
-          // Check for chain
+          // Check for attack trigger
+          if (
+            shouldTriggerAttack({
+              eliminated: result.eliminated,
+              chains: newChainCount,
+              result: newDisplay,
+            })
+          ) {
+            callbacks?.onAttack?.(scoreResult.attackPower);
+          }
+
+          // Check for overflow
+          if (checkOverflow(newDisplay)) {
+            callbacks?.onOverflow?.();
+            return;
+          }
+
+          // Check for next chain
           setTimeout(() => {
-            const nextIndices = findEliminationIndices(result.result);
+            const nextIndices = findEliminationIndices(newDisplay);
             if (nextIndices.length > 0) {
-              applyEliminationWithAnimation(
-                result.result,
-                newChainCount,
-                digitCountBeforeElimination,
-                calcCount,
-                onDisplayUpdate
-              );
+              processStep(newDisplay, newChainCount);
             }
           }, CHAIN_CHECK_DELAY_MS);
         }, ELIMINATION_ANIMATION_MS);
+      };
 
-        return displayStr;
-      }
-
-      return displayStr;
+      processStep(displayStr, 0);
     },
     []
-  );
-
-  const applyElimination = useCallback(
-    (displayStr: string, onDisplayUpdate?: (newDisplay: string) => void): string => {
-      const result = processElimination(displayStr);
-
-      if (result.eliminated > 0) {
-        applyEliminationWithAnimation(displayStr, 0, undefined, undefined, onDisplayUpdate);
-        return result.result;
-      }
-
-      return displayStr;
-    },
-    [applyEliminationWithAnimation]
   );
 
   return {
@@ -140,7 +144,6 @@ export function useElimination(): UseEliminationReturn {
     setLastScoreBreakdown,
     incrementCalculationCount,
     resetElimination,
-    applyEliminationWithAnimation,
-    applyElimination,
+    startEliminationChain,
   };
 }

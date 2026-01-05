@@ -1,5 +1,6 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
 import type { GameMode, Prediction, ScoreResult } from '../types';
+import type { EliminationCallbacks } from './useElimination';
 import { checkOverflow, generateInitialState } from '../game';
 import { SPRINT_TIME_LIMIT } from '../constants';
 import { usePrediction } from './usePrediction';
@@ -43,7 +44,7 @@ export interface UseGameReturn {
   setJustPressedEqual: (value: boolean) => void;
   incrementCalculationCount: () => void;
   setCalculationHistory: (value: string) => void;
-  applyElimination: (displayStr: string, onDisplayUpdate?: (newDisplay: string) => void) => string;
+  startEliminationChain: (displayStr: string, callbacks?: EliminationCallbacks) => void;
   checkGameOverState: (displayStr: string) => boolean;
   syncDisplay: (display: string) => void;
 }
@@ -201,7 +202,7 @@ export function useGame(options: UseGameOptions = {}): UseGameReturn {
     setJustPressedEqual,
     incrementCalculationCount: eliminationHook.incrementCalculationCount,
     setCalculationHistory,
-    applyElimination: eliminationHook.applyElimination,
+    startEliminationChain: eliminationHook.startEliminationChain,
     checkGameOverState,
     syncDisplay,
   };
