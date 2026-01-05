@@ -6,7 +6,7 @@ import { useSeededPrediction } from './useSeededPrediction';
 import { useCalculator } from './useCalculator';
 import { useElimination } from './useElimination';
 import { usePredictionTimer } from './usePredictionTimer';
-import { checkOverflow } from '../game';
+import { checkOverflow, findEliminationIndices } from '../game';
 import { operatorToSymbol, BATTLE_EVENTS } from '../utils';
 
 export interface UseBattleModeReturn {
@@ -259,6 +259,24 @@ export function useBattleMode(): UseBattleModeReturn {
     resetGameState();
   }, [room, resetGameState]);
 
+  // Start elimination chain for manual calculations (= or operator)
+  const startManualElimination = useCallback(
+    (newDisplay: string) => {
+      const indices = findEliminationIndices(newDisplay);
+      if (indices.length > 0) {
+        elimination.startEliminationChain(newDisplay, {
+          onDisplayUpdate: (display) => {
+            calculator.setDisplay(display);
+            displayRef.current = display;
+          },
+          onOverflow: () => handleGameOverRef.current('overflow'),
+          onAttack: (power) => room.sendAttack(power),
+        });
+      }
+    },
+    [elimination, calculator, room]
+  );
+
   // Handle key input
   const handleKey = useCallback(
     (key: string) => {
@@ -315,6 +333,9 @@ export function useBattleMode(): UseBattleModeReturn {
             handleGameOverRef.current('overflow');
             return;
           }
+
+          // Start elimination chain for manual calculation
+          startManualElimination(result.newDisplay);
         }
         return;
       }
@@ -330,6 +351,9 @@ export function useBattleMode(): UseBattleModeReturn {
             handleGameOverRef.current('overflow');
             return;
           }
+
+          // Start elimination chain for manual calculation
+          startManualElimination(result.newDisplay);
         }
       }
     },
@@ -342,6 +366,7 @@ export function useBattleMode(): UseBattleModeReturn {
       elimination,
       startGame,
       surrender,
+      startManualElimination,
     ]
   );
 
