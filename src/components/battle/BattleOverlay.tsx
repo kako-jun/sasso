@@ -78,17 +78,7 @@ function JoiningOverlay() {
   );
 }
 
-// Game finished overlay
-function FinishedOverlay({
-  isWinner,
-  isSurrender,
-  playerScore,
-  opponentScore,
-  rematchRequested,
-  opponentRematchRequested,
-  onRetry,
-  onLeave,
-}: {
+interface BattleFinishedOverlayProps {
   isWinner: boolean | null;
   isSurrender: boolean;
   playerScore?: number;
@@ -97,9 +87,24 @@ function FinishedOverlay({
   opponentRematchRequested?: boolean;
   onRetry?: () => void;
   onLeave?: () => void;
-}) {
+}
+
+/**
+ * Battle finished overlay - displayed inside the calculator window
+ * Similar to single-player GameOverOverlay
+ */
+export function BattleFinishedOverlay({
+  isWinner,
+  isSurrender,
+  playerScore,
+  opponentScore,
+  rematchRequested,
+  opponentRematchRequested,
+  onRetry,
+  onLeave,
+}: BattleFinishedOverlayProps) {
   const resultMessage =
-    isWinner === null ? 'DRAW' : isWinner ? 'VICTORY!' : isSurrender ? 'SURRENDER' : 'DEFEAT';
+    isWinner === null ? 'DRAW' : isWinner ? 'VICTORY' : isSurrender ? 'SURRENDER' : 'DEFEAT';
 
   const getRematchButtonLabel = () => {
     if (rematchRequested && opponentRematchRequested) return 'Starting...';
@@ -112,24 +117,15 @@ function FinishedOverlay({
   const showRematchHighlight = opponentRematchRequested && !rematchRequested;
 
   return (
-    <OverlayWrapper>
-      <div className={`${styles.battleResult} ${isWinner ? styles.victory : styles.defeat}`}>
-        {resultMessage}
-      </div>
-      <div className={styles.battleScores}>
-        <div className={styles.battleScoreRow}>
-          <span>You:</span>
-          <span>{playerScore ?? 0}</span>
-        </div>
-        <div className={styles.battleScoreRow}>
-          <span>Opponent:</span>
-          <span>{opponentScore ?? 0}</span>
-        </div>
+    <div className={styles.finishedOverlay}>
+      <div className={styles.finishedMessage}>{resultMessage}</div>
+      <div className={styles.finishedScores}>
+        You: {playerScore ?? 0} / Opponent: {opponentScore ?? 0}
       </div>
       {showRematchHighlight && (
         <div className={styles.rematchNotification}>Opponent wants a rematch!</div>
       )}
-      <div className={styles.battleButtons}>
+      <div className={styles.finishedButtons}>
         {onRetry && (
           <button
             className={`${styles.retryButton} ${showRematchHighlight ? styles.highlight : ''}`}
@@ -143,7 +139,7 @@ function FinishedOverlay({
           Leave
         </button>
       </div>
-    </OverlayWrapper>
+    </div>
   );
 }
 
@@ -152,21 +148,14 @@ function FinishedOverlay({
  * - Waiting for opponent
  * - Ready to start
  * - Joining room
- * - Game finished (Victory/Defeat)
+ * Note: Finished state is handled by BattleFinishedOverlay inside Window
  */
 export function BattleOverlay({
   status,
   roomUrl,
-  isWinner,
-  isSurrender,
   isGameStarted,
-  opponentScore,
-  playerScore,
-  rematchRequested,
-  opponentRematchRequested,
-  onRetry,
   onLeave,
-}: BattleOverlayProps) {
+}: Pick<BattleOverlayProps, 'status' | 'roomUrl' | 'isGameStarted' | 'onLeave'>) {
   switch (status) {
     case 'waiting':
       return <WaitingOverlay roomUrl={roomUrl} onLeave={onLeave} />;
@@ -177,20 +166,6 @@ export function BattleOverlay({
 
     case 'joining':
       return <JoiningOverlay />;
-
-    case 'finished':
-      return (
-        <FinishedOverlay
-          isWinner={isWinner}
-          isSurrender={isSurrender}
-          playerScore={playerScore}
-          opponentScore={opponentScore}
-          rematchRequested={rematchRequested}
-          opponentRematchRequested={opponentRematchRequested}
-          onRetry={onRetry}
-          onLeave={onLeave}
-        />
-      );
 
     default:
       return null;

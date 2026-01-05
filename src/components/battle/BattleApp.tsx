@@ -11,7 +11,7 @@ import {
   MultiplicationHelper,
 } from '../';
 import { BattleLayout } from './BattleLayout';
-import { BattleOverlay } from './BattleOverlay';
+import { BattleOverlay, BattleFinishedOverlay } from './BattleOverlay';
 import { RoomCreation } from './RoomCreation';
 import { AttackIndicator } from './AttackIndicator';
 import type { GameMode } from '../../types';
@@ -105,6 +105,18 @@ export function BattleApp({ initialRoomId, onChangeMode }: BattleAppProps) {
 
         {/* Calculator Window */}
         <Window title="Sasso" onClose={handleLeave}>
+          {battle.roomState.status === 'finished' && (
+            <BattleFinishedOverlay
+              isWinner={battle.isWinner}
+              isSurrender={battle.isSurrender}
+              playerScore={battle.score}
+              opponentScore={battle.opponent?.score}
+              rematchRequested={battle.rematchRequested}
+              opponentRematchRequested={battle.opponentRematchRequested}
+              onRetry={battle.requestRematch}
+              onLeave={handleLeave}
+            />
+          )}
           <Display value={battle.display} eliminatingIndices={battle.eliminatingIndices} />
           <Keypad onKey={battle.handleKey} />
         </Window>
@@ -121,18 +133,11 @@ export function BattleApp({ initialRoomId, onChangeMode }: BattleAppProps) {
         )}
       </BattleLayout>
 
-      {/* Battle Overlays */}
+      {/* Battle Overlays (waiting, ready, joining) */}
       <BattleOverlay
         status={battle.roomState.status}
         roomUrl={roomUrl}
-        isWinner={battle.isWinner}
-        isSurrender={battle.isSurrender}
         isGameStarted={battle.gameStarted}
-        playerScore={battle.score}
-        opponentScore={battle.opponent?.score}
-        rematchRequested={battle.rematchRequested}
-        opponentRematchRequested={battle.opponentRematchRequested}
-        onRetry={battle.requestRematch}
         onLeave={handleLeave}
       />
     </div>
