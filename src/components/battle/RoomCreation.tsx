@@ -75,10 +75,10 @@ export function RoomCreation({ onCreateRoom, onJoinRoom, onCancel }: RoomCreatio
           >
             Join Room
           </button>
+          <button className={styles.cancelButton} onClick={onCancel}>
+            Cancel
+          </button>
         </div>
-        <button className={styles.cancelButton} onClick={onCancel}>
-          Cancel
-        </button>
         {error && <div className={styles.roomError}>{error}</div>}
       </div>
     );
