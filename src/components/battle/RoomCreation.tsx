@@ -41,8 +41,18 @@ export function RoomCreation({ onCreateRoom, onJoinRoom, onCancel }: RoomCreatio
     setIsLoading(true);
     setError('');
     try {
-      // Extract room ID from URL or use as-is
-      const roomId = joinInput.includes('/battle/') ? joinInput.split('/battle/')[1] : joinInput;
+      // Extract room ID from various formats:
+      // - Full URL: https://example.com/battle/abc123
+      // - Partial: /battle/abc123 or battle/abc123
+      // - Just ID: abc123
+      let roomId = joinInput.trim();
+      if (roomId.includes('/battle/')) {
+        roomId = roomId.split('/battle/')[1];
+      } else if (roomId.startsWith('battle/')) {
+        roomId = roomId.slice(7); // Remove 'battle/' prefix
+      }
+      // Remove any trailing slashes or query params
+      roomId = roomId.split(/[?#/]/)[0];
       await onJoinRoom(roomId);
     } catch {
       setError('Room not found');
@@ -67,7 +77,7 @@ export function RoomCreation({ onCreateRoom, onJoinRoom, onCancel }: RoomCreatio
           </button>
         </div>
         <button className={styles.cancelButton} onClick={onCancel}>
-          Back
+          Cancel
         </button>
         {error && <div className={styles.roomError}>{error}</div>}
       </div>
@@ -91,11 +101,11 @@ export function RoomCreation({ onCreateRoom, onJoinRoom, onCancel }: RoomCreatio
             {isLoading ? 'Joining...' : 'Join'}
           </button>
           <button
-            className={styles.cancelButton}
+            className={styles.roomButton}
             onClick={() => setMode('select')}
             disabled={isLoading}
           >
-            Back
+            Cancel
           </button>
         </div>
         {error && <div className={styles.roomError}>{error}</div>}
