@@ -310,11 +310,12 @@ export function useBattleMode(): UseBattleModeReturn {
     }
   }, [room.seed, gameStarted, prediction, calculator, elimination]);
 
-  // Surrender
+  // Surrender - only works if game has actually started
   const surrender = useCallback(() => {
+    if (!gameStarted) return; // Safety check: can't surrender before game starts
     setIsSurrender(true);
     handleGameOver('surrender');
-  }, [handleGameOver]);
+  }, [gameStarted, handleGameOver]);
 
   // Leave room
   const leaveRoom = useCallback(() => {

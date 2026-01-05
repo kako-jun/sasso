@@ -5,7 +5,7 @@
  * Attack handling is done through game state (attack field with timestamp).
  */
 
-import { useCallback, useRef, useEffect, useMemo } from 'react';
+import { useCallback, useRef, useMemo } from 'react';
 import { useArena as usePackageArena } from 'nostr-arena/react';
 import type { ArenaCallbacks } from 'nostr-arena';
 import type { SassoGameState, OpponentState, RoomState } from '../types/battle';
@@ -132,13 +132,8 @@ export function useArena(): UseArenaReturn {
       }
     : null;
 
-  // Try to reconnect on mount
-  useEffect(() => {
-    room.reconnect().catch(() => {
-      // Reconnect failed, ignore
-    });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  // Note: Reconnect is disabled to prevent stale state issues
+  // If reconnect is needed, it should be explicitly called by the app
 
   return {
     // Room state
