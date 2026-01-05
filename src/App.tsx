@@ -103,6 +103,7 @@ function App() {
   useEffect(() => {
     const roomId = getRoomIdFromUrl();
     if (roomId) {
+      setBattleRoomId(roomId);
       controller.handleModeChange('battle');
     }
   }, []);

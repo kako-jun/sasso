@@ -34,9 +34,11 @@ export function BattleApp({ initialRoomId, onChangeMode }: BattleAppProps) {
   // Handle keyboard input
   useKeyboard(battle.handleKey);
 
-  // Auto-join room if roomId provided (only once on mount)
+  // Auto-join room if roomId provided
   useEffect(() => {
     if (initialRoomId && battle.roomState.status === 'idle') {
+      // Hide room creation UI and attempt to join
+      setShowRoomCreation(false);
       battle.joinRoom(initialRoomId).catch(() => {
         setShowRoomCreation(true);
       });
