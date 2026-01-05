@@ -1,17 +1,17 @@
 /**
- * useBattleRoom - Wrapper around nostr-arena package
+ * useArena - Wrapper around nostr-arena package
  *
  * Uses the generic nostr-arena package with Sasso-specific types.
  * Attack handling is done through game state (attack field with timestamp).
  */
 
 import { useCallback, useRef, useEffect, useMemo } from 'react';
-import { useBattleRoom as usePackageBattleRoom } from 'nostr-arena/react';
-import type { BattleRoomCallbacks } from 'nostr-arena';
+import { useArena as usePackageArena } from 'nostr-arena/react';
+import type { ArenaCallbacks } from 'nostr-arena';
 import type { SassoGameState, OpponentState, RoomState } from '../types/battle';
 import { dispatchBattleEvent, BATTLE_EVENTS } from '../utils/battleEvents';
 
-export interface UseBattleRoomReturn {
+export interface UseArenaReturn {
   // Room state
   roomId: string | null;
   status: RoomState['status'];
@@ -34,7 +34,7 @@ export interface UseBattleRoomReturn {
   acceptRematch: () => void;
 }
 
-export function useBattleRoom(): UseBattleRoomReturn {
+export function useArena(): UseArenaReturn {
   const lastAttackTimestampRef = useRef<number>(0);
 
   // Config for nostr-arena
@@ -46,7 +46,7 @@ export function useBattleRoom(): UseBattleRoomReturn {
   );
 
   // Callbacks for nostr-arena
-  const callbacks = useMemo<BattleRoomCallbacks<SassoGameState>>(
+  const callbacks = useMemo<ArenaCallbacks<SassoGameState>>(
     () => ({
       onOpponentState: (state: SassoGameState) => {
         // Detect new attack from state
@@ -76,14 +76,14 @@ export function useBattleRoom(): UseBattleRoomReturn {
         dispatchBattleEvent(BATTLE_EVENTS.REMATCH_START, { seed: newSeed });
       },
       onError: (error: Error) => {
-        console.error('BattleRoom error:', error.message);
+        console.error('Arena error:', error.message);
       },
     }),
     []
   );
 
   // Use the package hook
-  const room = usePackageBattleRoom<SassoGameState>(config, callbacks);
+  const room = usePackageArena<SassoGameState>(config, callbacks);
 
   // Ref to track last sent state for attack injection
   const lastSentStateRef = useRef<SassoGameState | null>(null);

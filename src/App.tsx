@@ -83,7 +83,7 @@ function SinglePlayerApp({
 
 function App() {
   const controller = useGameController();
-  const [battleRoomId, setBattleRoomId] = useState<string | undefined>(getRoomIdFromUrl);
+  const [arenaRoomId, setBattleRoomId] = useState<string | undefined>(getRoomIdFromUrl);
 
   // Handle URL changes (browser back/forward)
   useEffect(() => {
@@ -126,7 +126,7 @@ function App() {
 
   // Render battle mode
   if (controller.gameMode === 'battle') {
-    return <BattleApp initialRoomId={battleRoomId} onChangeMode={handleModeChange} />;
+    return <BattleApp initialRoomId={arenaRoomId} onChangeMode={handleModeChange} />;
   }
 
   // Render single-player modes

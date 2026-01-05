@@ -797,13 +797,18 @@
   padding: 8px;
   font-size: 12px;
   border: 2px solid #000;
+  border-right: none;
+  min-width: 0;
 }
 
 .room-url-display {
+  display: flex;
+  flex-wrap: wrap;
   margin-bottom: 16px;
 }
 
 .room-url-label {
+  width: 100%;
   font-size: 12px;
   margin-bottom: 8px;
   color: #666;
@@ -815,6 +820,7 @@
   background: #fff;
   border: 2px solid #000;
   cursor: pointer;
+  flex-shrink: 0;
 }
 
 .copy-button:active {

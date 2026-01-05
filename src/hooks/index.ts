@@ -11,8 +11,8 @@ export type { UseEliminationReturn } from './useElimination';
 export { useEndlessMode } from './useEndlessMode';
 
 // Battle hooks
-export { useBattleRoom } from './useBattleRoom';
-export type { UseBattleRoomReturn } from './useBattleRoom';
+export { useArena } from './useArena';
+export type { UseArenaReturn } from './useArena';
 export { useSeededPrediction } from './useSeededPrediction';
 export type { UseSeededPredictionReturn } from './useSeededPrediction';
 export { useBattleMode } from './useBattleMode';

@@ -147,7 +147,7 @@ Attack power = score from that elimination.
 | File                                      | Purpose                                    |
 | ----------------------------------------- | ------------------------------------------ |
 | `src/hooks/useBattleMode.ts`              | Main battle mode orchestrator              |
-| `src/hooks/useBattleRoom.ts`              | Room management (uses nostr-arena pattern) |
+| `src/hooks/useArena.ts`                   | Room management (uses nostr-arena pattern) |
 | `src/hooks/useSeededPrediction.ts`        | Deterministic prediction with shared seed  |
 | `src/components/battle/BattleApp.tsx`     | Battle mode UI                             |
 | `src/components/battle/BattleOverlay.tsx` | Waiting/Victory/Defeat overlays            |
