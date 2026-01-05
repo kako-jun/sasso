@@ -68,6 +68,7 @@ export function useBattleMode(): UseBattleModeReturn {
   const [isUnderAttack, setIsUnderAttack] = useState(false);
   const [pendingAttackPower, setPendingAttackPower] = useState(0);
   const [gameStarted, setGameStarted] = useState(false);
+  const [lastKey, setLastKey] = useState<string | null>(null);
 
   // Refs
   const displayRef = useRef(calculator.display);
@@ -98,6 +99,7 @@ export function useBattleMode(): UseBattleModeReturn {
       setGameStarted(false);
       setPendingAttackPower(0);
       setIsUnderAttack(false);
+      setLastKey(null);
     },
     [prediction, calculator, elimination]
   );
@@ -176,9 +178,25 @@ export function useBattleMode(): UseBattleModeReturn {
         score: elimination.score,
         chains: elimination.chains,
         calculationHistory,
+        prediction: prediction.prediction,
+        countdown: prediction.countdown,
+        lastScoreBreakdown: elimination.lastScoreBreakdown,
+        isUnderAttack,
+        lastKey,
       });
     }
-  }, [calculator.display, elimination.score, elimination.chains, calculationHistory, room]);
+  }, [
+    calculator.display,
+    elimination.score,
+    elimination.chains,
+    calculationHistory,
+    prediction.prediction,
+    prediction.countdown,
+    elimination.lastScoreBreakdown,
+    isUnderAttack,
+    lastKey,
+    room,
+  ]);
 
   // Prediction timer - starts when game is started
   useEffect(() => {
@@ -327,6 +345,10 @@ export function useBattleMode(): UseBattleModeReturn {
   const handleKey = useCallback(
     (key: string) => {
       if (isGameOver) return;
+
+      // Track last key for opponent display (brief animation)
+      setLastKey(key);
+      setTimeout(() => setLastKey(null), 150);
 
       // Start game on first key press
       if (room.status === 'ready' && !gameStarted) {

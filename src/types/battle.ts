@@ -1,3 +1,5 @@
+import type { ScoreResult, Prediction } from './index';
+
 // Sasso-specific game state (matches nostr-arena TGameState)
 export interface SassoGameState {
   display: string;
@@ -6,6 +8,16 @@ export interface SassoGameState {
   calculationHistory: string;
   /** Attack event (timestamp used to detect new attacks) */
   attack?: { power: number; timestamp: number };
+  /** Current prediction challenge */
+  prediction?: Prediction | null;
+  /** Countdown timer (ms remaining) */
+  countdown?: number;
+  /** Last score breakdown for popup */
+  lastScoreBreakdown?: ScoreResult | null;
+  /** Whether currently under attack effect */
+  isUnderAttack?: boolean;
+  /** Last pressed key for button animation */
+  lastKey?: string | null;
 }
 
 // Room States

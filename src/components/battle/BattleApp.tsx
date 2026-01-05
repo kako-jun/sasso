@@ -96,6 +96,11 @@ export function BattleApp({ initialRoomId, onChangeMode }: BattleAppProps) {
   const opponentDisplay = opponentState?.display ?? '0';
   const opponentHistory = opponentState?.calculationHistory ?? '';
   const opponentConnected = battle.opponent?.isConnected ?? true;
+  const opponentPrediction = opponentState?.prediction ?? null;
+  const opponentCountdown = opponentState?.countdown ?? 0;
+  const opponentLastScoreBreakdown = opponentState?.lastScoreBreakdown ?? null;
+  const opponentIsUnderAttack = opponentState?.isUnderAttack ?? false;
+  const opponentLastKey = opponentState?.lastKey ?? null;
 
   // Build headers and content for desktop layout
   const playerHeader = isDesktop ? (
@@ -107,19 +112,39 @@ export function BattleApp({ initialRoomId, onChangeMode }: BattleAppProps) {
       <OpponentHeader score={opponentScore} isConnected={opponentConnected} />
     ) : undefined;
 
+  // Opponent is in prediction mode when game started (their prediction is available)
+  const opponentIsPredictionMode = isPredictionMode && opponentPrediction;
+
   const opponentContent =
     battle.opponent && isDesktop ? (
       <>
+        {/* Opponent Prediction Area */}
+        {opponentIsPredictionMode && (
+          <div className="prediction-wrapper">
+            <PredictionArea prediction={opponentPrediction} countdown={opponentCountdown} />
+            {opponentIsUnderAttack && <AttackIndicator isUnderAttack={true} />}
+          </div>
+        )}
+
         {/* Opponent Score Area */}
-        <ScoreArea lastScoreBreakdown={null} />
+        <ScoreArea lastScoreBreakdown={opponentLastScoreBreakdown} />
 
         {/* Opponent Calculator Window */}
         <Window title="Opponent">
           <Display value={opponentDisplay} eliminatingIndices={[]} />
+          <Keypad readOnly activeKey={opponentLastKey} />
         </Window>
 
         {/* Opponent Calculation History */}
         <CalculationHistory text={opponentHistory} />
+
+        {/* Opponent Multiplication Helper */}
+        {opponentIsPredictionMode && opponentPrediction?.operator === '*' && (
+          <MultiplicationHelper
+            displayValue={opponentDisplay}
+            multiplier={opponentPrediction.operand}
+          />
+        )}
       </>
     ) : undefined;
 

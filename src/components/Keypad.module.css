@@ -21,11 +21,16 @@
   justify-content: center;
 }
 
-.key:active {
+.key:active,
+.key.active {
   box-shadow: none;
   transform: translate(2px, 2px);
   background: #000;
   color: #fff;
+}
+
+.key:disabled {
+  cursor: default;
 }
 
 .wide {

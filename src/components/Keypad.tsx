@@ -1,7 +1,9 @@
 import styles from './Keypad.module.css';
 
 interface KeypadProps {
-  onKey: (key: string) => void;
+  onKey?: (key: string) => void;
+  activeKey?: string | null;
+  readOnly?: boolean;
 }
 
 interface KeyConfig {
@@ -41,23 +43,25 @@ const KEYPAD_LAYOUT: KeyConfig[][] = [
   ],
 ];
 
-function getKeyClassName(modifiers: KeyConfig['modifiers']): string {
+function getKeyClassName(modifiers: KeyConfig['modifiers'], isActive: boolean): string {
   const classes = [styles.key];
   if (modifiers.includes('wide')) classes.push(styles.wide);
   if (modifiers.includes('tall')) classes.push(styles.tall);
   if (modifiers.includes('op')) classes.push(styles.op);
+  if (isActive) classes.push(styles.active);
   return classes.join(' ');
 }
 
-export function Keypad({ onKey }: KeypadProps) {
+export function Keypad({ onKey, activeKey, readOnly }: KeypadProps) {
   return (
     <div className={styles.keypad}>
       {KEYPAD_LAYOUT.flat().map(({ key, label, modifiers }) => (
         <button
           key={key}
-          className={getKeyClassName(modifiers)}
-          onClick={() => onKey(key)}
+          className={getKeyClassName(modifiers, activeKey === key)}
+          onClick={readOnly ? undefined : () => onKey?.(key)}
           type="button"
+          disabled={readOnly}
         >
           {label}
         </button>

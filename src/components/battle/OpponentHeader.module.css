@@ -20,4 +20,9 @@
 
 .disconnected {
   color: #666;
+  font-size: 10px;
+}
+
+.label {
+  color: #666;
 }

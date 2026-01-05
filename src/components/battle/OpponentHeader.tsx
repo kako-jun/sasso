@@ -12,9 +12,10 @@ interface OpponentHeaderProps {
 export function OpponentHeader({ score, isConnected }: OpponentHeaderProps) {
   return (
     <header className={styles.opponentHeader}>
+      {!isConnected && <span className={styles.disconnected}>(Disconnected)</span>}
+      <span className={styles.label}>vs</span>
       <span className={styles.spacer} />
       <span className={styles.score}>{score.toLocaleString()}</span>
-      {!isConnected && <span className={styles.disconnected}>(Disconnected)</span>}
     </header>
   );
 }
