@@ -11,9 +11,9 @@ interface MobileOpponentScoreProps {
 export function MobileOpponentScore({ score, isConnected }: MobileOpponentScoreProps) {
   return (
     <div className={styles.opponentScoreBar}>
+      <span className={styles.spacer} />
       {!isConnected && <span className={styles.disconnected}>(Disconnected)</span>}
       <span className={styles.label}>vs</span>
-      <span className={styles.spacer} />
       <span className={styles.score}>{score.toLocaleString()}</span>
     </div>
   );
