@@ -29,10 +29,6 @@
 
 .qrCode {
   margin-bottom: 16px;
-  padding: 12px;
-  background: #fff;
-  border: 2px solid #000;
-  display: inline-block;
 }
 
 .battleStartHint {
@@ -47,11 +43,11 @@
 }
 
 .victory {
-  color: #080;
+  color: #000;
 }
 
 .defeat {
-  color: #c00;
+  color: #000;
 }
 
 .battleScores {
@@ -73,7 +69,7 @@
 }
 
 .rematchNotification {
-  color: #007700;
+  color: #000;
   font-size: 14px;
   font-weight: bold;
   margin-bottom: 12px;
@@ -105,17 +101,17 @@
 }
 
 .highlight {
-  background: #90ee90;
+  background: #ccc;
   animation: highlightPulse 1s infinite;
 }
 
 @keyframes highlightPulse {
   0%,
   100% {
-    background: #90ee90;
+    background: #ccc;
   }
   50% {
-    background: #7cfc00;
+    background: #999;
   }
 }
 
