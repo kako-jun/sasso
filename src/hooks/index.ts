@@ -17,4 +17,4 @@ export { useSeededPrediction } from './useSeededPrediction';
 export type { UseSeededPredictionReturn } from './useSeededPrediction';
 export { useBattleMode } from './useBattleMode';
 export type { UseBattleModeReturn } from './useBattleMode';
-export { useMediaQuery, useIsDesktop } from './useMediaQuery';
+export { useIsDesktop } from './useMediaQuery';

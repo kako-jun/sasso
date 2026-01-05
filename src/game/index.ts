@@ -2,7 +2,6 @@
 export {
   findEliminationIndices,
   eliminateMatches,
-  processElimination,
   checkOverflow,
   getDigitCount,
   generateInitialState,
@@ -15,11 +14,11 @@ export { calculateScore, shouldTriggerAttack } from './scoring';
 export { calculateAttackEffect } from './attack';
 
 // Prediction
-export { generatePrediction, generateAttackPredictions } from './prediction';
+export { generatePrediction } from './prediction';
 
 // Battle Prediction (seeded)
 export { createBattlePredictionGenerator } from './battlePrediction';
 export type { BattlePredictionGenerator } from './battlePrediction';
 
 // Seeded Random
-export { createSeededRandom, generateSeed } from './seededRandom';
+export { createSeededRandom } from './seededRandom';

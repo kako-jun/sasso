@@ -1,4 +1,4 @@
-import type { Prediction, AttackEffect, Operator } from '../types';
+import type { Prediction, Operator } from '../types';
 import { MAX_TIME_FACTOR, OPERATOR_PROB, OPERAND_RANGE } from '../constants';
 import { calculateAttackEffect } from './attack';
 
@@ -47,23 +47,4 @@ export function generatePrediction(elapsedTime: number, attackPower = 0): Predic
   const operand = Math.floor(Math.random() * maxOperand) + OPERAND_RANGE.min;
 
   return { operator, operand };
-}
-
-/**
- * Generate predictions after receiving an attack (supports multiple predictions)
- */
-export function generateAttackPredictions(elapsedTime: number, attackPower: number): AttackEffect {
-  const effect = calculateAttackEffect(attackPower);
-
-  const predictions: Prediction[] = [];
-  for (let i = 0; i < effect.stackCount; i++) {
-    predictions.push(generatePrediction(elapsedTime, attackPower));
-  }
-
-  return {
-    predictions,
-    difficultyLevel: effect.difficultyLevel,
-    operatorBias: effect.operatorBias,
-    operandMultiplier: effect.operandMultiplier,
-  };
 }

@@ -13,10 +13,3 @@ export function createSeededRandom(seed: number): () => number {
     return state / 0x7fffffff;
   };
 }
-
-/**
- * Generate a random seed from current time and random entropy
- */
-export function generateSeed(): number {
-  return Math.floor(Date.now() * Math.random()) & 0x7fffffff;
-}

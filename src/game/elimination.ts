@@ -1,4 +1,3 @@
-import type { EliminationResult } from '../types';
 import { MAX_DISPLAY_DIGITS } from '../constants';
 
 interface RunInfo {
@@ -119,33 +118,6 @@ export function eliminateMatches(displayStr: string): { result: string; eliminat
   }
 
   return { result: resultStr, eliminated: totalEliminated };
-}
-
-/**
- * Process elimination chains until no more matches
- */
-export function processElimination(displayStr: string): EliminationResult {
-  let current = displayStr;
-  let totalEliminated = 0;
-  let chains = 0;
-
-  let eliminated = 1;
-  while (eliminated > 0) {
-    const matchResult = eliminateMatches(current);
-    eliminated = matchResult.eliminated;
-
-    if (eliminated > 0) {
-      totalEliminated += eliminated;
-      chains++;
-      current = matchResult.result;
-    }
-  }
-
-  return {
-    result: current,
-    eliminated: totalEliminated,
-    chains,
-  };
 }
 
 /**
