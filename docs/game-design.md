@@ -94,21 +94,20 @@ Score = Base × Chain × Prep × Risk
 
 ## Attack Effect Algorithm
 
-Attack power affects opponent's next prediction difficulty:
+Any elimination triggers an attack. Attack power (= score) affects opponent's next prediction difficulty:
 
-| Attack Power | Difficulty  | Multiply Prob | Number Scale | Predictions |
-| ------------ | ----------- | ------------- | ------------ | ----------- |
-| 0-50         | Normal      | +0%           | 1.0x         | 1           |
-| 51-150       | Mild        | +10%          | 1.2x         | 1           |
-| 151-300      | Medium      | +20%          | 1.5x         | 1           |
-| 301-500      | Strong      | +30%          | 1.8x         | 2           |
-| 501+         | Devastating | +40%          | 2.0x         | 3           |
+| Attack Power | Difficulty  | Multiply Prob | Number Scale |
+| ------------ | ----------- | ------------- | ------------ |
+| 0-50         | Mild        | +10%          | 1.2x         |
+| 51-150       | Medium      | +20%          | 1.5x         |
+| 151-300      | Strong      | +30%          | 1.8x         |
+| 301-500      | Devastating | +40%          | 2.0x         |
+| 501+         | Extreme     | +50%          | 2.5x         |
 
 Effects:
 
 - **Multiply Prob**: Increases chance of multiplication (causes digit growth)
 - **Number Scale**: Larger operands
-- **Predictions**: Multiple predictions queued at once
 
 ## Game Modes
 
@@ -159,9 +158,8 @@ Falling puzzle format:
 
 #### Attack System
 
-- Attack trigger conditions:
-  - Eliminate 3+ identical digits simultaneously
-  - Trigger 2+ chain reactions
+- Attack trigger: Any elimination triggers an attack
+- Attack power = score from that elimination
 - Attack effect: Makes opponent's next prediction harder (see Attack Effect Algorithm)
 
 ## Prediction Algorithm (Tile Distribution)

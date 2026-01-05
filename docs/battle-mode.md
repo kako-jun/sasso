@@ -139,16 +139,11 @@ Difficulty scaling uses `predictionCount` (not time) for deterministic sync.
 
 ## Attack System
 
-When attacked, opponent's next prediction becomes harder:
+Any elimination triggers an attack. Opponent's next prediction becomes harder:
 
-- Higher operand values
-- More multiplication/division
-- Visual indicator: Grid overlay + "ATTACK!" label
-
-**Trigger conditions:**
-
-- 3+ digits eliminated simultaneously
-- 2+ chain reactions
+- Higher operand values (1.2x - 2.5x based on attack power)
+- More multiplication/division (+10% - +50% based on attack power)
+- Visual indicator: Prediction area pulses + "!" mark
 
 Attack power = score from that elimination.
 

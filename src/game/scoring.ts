@@ -42,9 +42,8 @@ export function calculateScore(params: ScoreParams): ScoreResult {
 
 /**
  * Check if attack should be triggered
- * - 3+ simultaneous elimination
- * - 2+ chain reactions
+ * Any elimination triggers an attack
  */
 export function shouldTriggerAttack(eliminationResult: EliminationResult): boolean {
-  return eliminationResult.eliminated >= 3 || eliminationResult.chains >= 2;
+  return eliminationResult.eliminated > 0;
 }

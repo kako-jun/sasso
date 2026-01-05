@@ -37,6 +37,12 @@
   animation: attackPulse 1s infinite;
 }
 
+.attackMark {
+  font-size: 24px;
+  font-weight: bold;
+  color: #000;
+}
+
 @keyframes attackPulse {
   0%,
   100% {
