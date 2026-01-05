@@ -140,9 +140,10 @@ Falling puzzle format:
 
 **Pending Calculation Handling:**
 
-- If player has a pending operation when prediction fires (e.g., "100 + 1" before pressing =)
-- The pending calculation is auto-completed first (100 + 1 = 101)
-- Then prediction is applied to the result (101 × 7 = 707)
+- If player has a pending operation when prediction fires (e.g., "100 +" or "100 + 1" before pressing =)
+- The pending operation is discarded and reverted to the value before the operator was pressed
+- Example: "100 + 1" (no =) → reverts to "100" → prediction applied to "100"
+- This is a risk/reward mechanic: commit your calculation with = or lose it
 
 ### 2-Player Battle Mode
 
@@ -265,7 +266,7 @@ Left side:
 - [x] C/E at game start → Doesn't count as surrender (safe start)
 - [x] Score system → Base×Chain×Prep×Risk formula
 - [x] Attack algorithm → Score-based difficulty scaling
-- [x] Pending calculation at prediction → Auto-complete before applying prediction
+- [x] Pending calculation at prediction → Discard and revert to pre-operator value
 
 ## Future Development
 

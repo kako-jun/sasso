@@ -203,22 +203,19 @@ export function useBattleMode(): UseBattleModeReturn {
       generateNextPrediction: (attackPower?: number) =>
         prediction.generateNextPrediction(attackPower),
       finalizePendingCalculation: (): string | null => {
-        // If there's a pending operation (e.g., 100 + 1), complete it first
+        // If there's a pending operation (e.g., 100 + or 100 + 1), discard it
+        // and revert to the accumulator value (the value before operator was pressed)
         if (calculator.operator !== null && calculator.accumulator !== null) {
-          const result = calculator.handleEqual();
-          if (result) {
-            elimination.incrementCalculationCount();
-            setCalculationHistory(
-              `${result.left} ${operatorToSymbol(result.op ?? '')} ${result.right} = ${result.newDisplay}`
-            );
-            displayRef.current = result.newDisplay;
-            return result.newDisplay;
-          }
+          const originalValue = String(calculator.accumulator);
+          calculator.resetCalculator();
+          calculator.setDisplay(originalValue);
+          displayRef.current = originalValue;
+          return originalValue;
         }
         return null;
       },
     }),
-    [calculator, elimination, room, prediction]
+    [calculator, room, prediction]
   );
 
   // Use shared prediction timer
