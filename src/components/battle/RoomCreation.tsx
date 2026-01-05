@@ -101,7 +101,7 @@ export function RoomCreation({ onCreateRoom, onJoinRoom, onCancel }: RoomCreatio
             {isLoading ? 'Joining...' : 'Join'}
           </button>
           <button
-            className={styles.roomButton}
+            className={styles.cancelButton}
             onClick={() => setMode('select')}
             disabled={isLoading}
           >
