@@ -45,6 +45,7 @@ export function VisitorCounter() {
   return (
     <div className={styles.visitorCounter} ref={containerRef}>
       Played <nostalgic-counter id="sasso-5d582992" type="total"></nostalgic-counter> times
+      worldwide.
     </div>
   );
 }
