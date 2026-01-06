@@ -1,5 +1,6 @@
 import { GITHUB_URL } from '../constants';
 import styles from './AboutModal.module.css';
+import { VisitorCounter } from './VisitorCounter';
 
 declare const __APP_VERSION__: string;
 
@@ -21,6 +22,7 @@ export function AboutModal({ isOpen, onClose }: AboutModalProps) {
         <div className={styles.aboutTitle}>About</div>
         <div className={styles.aboutName}>Sasso</div>
         <div className={styles.aboutVersion}>Version {VERSION}</div>
+        <VisitorCounter />
         <div className={styles.aboutDescription}>Figuring out the rules is part of the game.</div>
         <div className={styles.aboutAuthor}>
           by <strong>kako-jun</strong>

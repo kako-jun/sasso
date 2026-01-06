@@ -1,0 +1,6 @@
+.visitorCounter {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  text-align: center;
+  margin-top: 0.5rem;
+}
