@@ -108,6 +108,13 @@ function App() {
     }
   }, []);
 
+  // 訪問者カウントをインクリメント（非表示、1日1回制限あり）
+  useEffect(() => {
+    fetch('https://api.nostalgic.llll-ll.com/visit?action=increment&id=sasso-5d582992').catch(
+      () => {}
+    );
+  }, []);
+
   // Handle mode changes with URL updates
   const handleModeChange = useCallback(
     (mode: GameMode) => {
