@@ -11,16 +11,16 @@ import { useEndlessMode } from './useEndlessMode';
 const ADJECTIVES = [
   'Swift',
   'Clever',
-  'Bold',
-  'Quick',
-  'Sharp',
   'Brave',
-  'Calm',
-  'Keen',
+  'Quick',
+  'Smart',
+  'Fast',
+  'Sharp',
   'Wise',
   'Cool',
+  'Super',
 ];
-const ANIMALS = ['Fox', 'Bear', 'Wolf', 'Eagle', 'Tiger', 'Lion', 'Hawk', 'Owl', 'Deer', 'Lynx'];
+const ANIMALS = ['Fox', 'Eagle', 'Tiger', 'Wolf', 'Lion', 'Hawk', 'Bear', 'Cat', 'Dog', 'Owl'];
 
 function generatePlayerName(): string {
   const adj = ADJECTIVES[Math.floor(Math.random() * ADJECTIVES.length)];
