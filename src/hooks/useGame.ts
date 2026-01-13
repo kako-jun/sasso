@@ -142,10 +142,15 @@ export function useGame(options: UseGameOptions = {}): UseGameReturn {
 
   // Sprint mode ranking submission
   const rankingSubmittedRef = useRef(false);
+  const rankingTimerRef = useRef<number | null>(null);
   useEffect(() => {
     // Reset flag when game resets
     if (!isGameOver) {
       rankingSubmittedRef.current = false;
+      if (rankingTimerRef.current) {
+        clearTimeout(rankingTimerRef.current);
+        rankingTimerRef.current = null;
+      }
       return;
     }
 
@@ -154,16 +159,33 @@ export function useGame(options: UseGameOptions = {}): UseGameReturn {
       return;
     }
 
-    const score = eliminationHook.score;
-    if (score <= 0) return;
+    // Clear previous timer if score updates
+    if (rankingTimerRef.current) {
+      clearTimeout(rankingTimerRef.current);
+    }
 
-    rankingSubmittedRef.current = true;
-    const playerName = generatePlayerName();
-    const rankingId = 'sasso-5d582992';
+    // Wait for score to stabilize before submitting
+    rankingTimerRef.current = window.setTimeout(() => {
+      if (rankingSubmittedRef.current) return;
 
-    fetch(
-      `https://api.nostalgic.llll-ll.com/ranking?action=submit&id=${rankingId}&name=${encodeURIComponent(playerName)}&score=${score}`
-    ).catch(() => {});
+      const score = eliminationHook.score;
+      if (score <= 0) return;
+
+      rankingSubmittedRef.current = true;
+      const playerName = generatePlayerName();
+      const rankingId = 'sasso-5d582992';
+
+      fetch(
+        `https://api.nostalgic.llll-ll.com/ranking?action=submit&id=${rankingId}&name=${encodeURIComponent(playerName)}&score=${score}`
+      ).catch(() => {});
+    }, 1000);
+
+    return () => {
+      if (rankingTimerRef.current) {
+        clearTimeout(rankingTimerRef.current);
+        rankingTimerRef.current = null;
+      }
+    };
   }, [isGameOver, gameMode, isSurrender, eliminationHook.score]);
 
   const syncDisplay = useCallback(
