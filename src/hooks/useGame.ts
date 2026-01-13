@@ -159,7 +159,7 @@ export function useGame(options: UseGameOptions = {}): UseGameReturn {
 
     rankingSubmittedRef.current = true;
     const playerName = generatePlayerName();
-    const rankingId = 'sasso-sprint-a1b2c3d4';
+    const rankingId = 'sasso-5d582992';
 
     fetch(
       `https://api.nostalgic.llll-ll.com/ranking?action=submit&id=${rankingId}&name=${encodeURIComponent(playerName)}&score=${score}`
