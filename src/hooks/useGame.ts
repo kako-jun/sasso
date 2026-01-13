@@ -7,26 +7,35 @@ import { usePrediction } from './usePrediction';
 import { useElimination } from './useElimination';
 import { useEndlessMode } from './useEndlessMode';
 
-// ランキング送信用のプレイヤー名生成
-const ADJECTIVES = [
-  'Swift',
-  'Clever',
-  'Brave',
-  'Quick',
-  'Smart',
-  'Fast',
-  'Sharp',
-  'Wise',
-  'Cool',
-  'Super',
-];
-const ANIMALS = ['Fox', 'Eagle', 'Tiger', 'Wolf', 'Lion', 'Hawk', 'Bear', 'Cat', 'Dog', 'Owl'];
-
+// ランキング送信用のプレイヤー名生成（ブラウザ情報からハッシュ生成で同じPCでは同じ名前）
 function generatePlayerName(): string {
-  const adj = ADJECTIVES[Math.floor(Math.random() * ADJECTIVES.length)];
-  const animal = ANIMALS[Math.floor(Math.random() * ANIMALS.length)];
-  const num = Math.floor(Math.random() * 1000);
-  return `${adj}${animal}${num}`;
+  const adjectives = [
+    'Swift',
+    'Clever',
+    'Brave',
+    'Quick',
+    'Smart',
+    'Fast',
+    'Sharp',
+    'Wise',
+    'Cool',
+    'Super',
+  ];
+  const animals = ['Fox', 'Eagle', 'Tiger', 'Wolf', 'Lion', 'Hawk', 'Bear', 'Cat', 'Dog', 'Owl'];
+
+  const userString = `${navigator.userAgent}-${navigator.language}-${screen.width}x${screen.height}`;
+  let hash = 0;
+  for (let i = 0; i < userString.length; i++) {
+    const char = userString.charCodeAt(i);
+    hash = (hash << 5) - hash + char;
+    hash = hash & hash;
+  }
+
+  const adjIndex = Math.abs(hash) % adjectives.length;
+  const animalIndex = Math.abs(hash >> 8) % animals.length;
+  const number = (Math.abs(hash >> 16) % 999) + 1;
+
+  return `${adjectives[adjIndex]}${animals[animalIndex]}${number}`;
 }
 
 export interface UseGameOptions {
