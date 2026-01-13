@@ -7,6 +7,28 @@ import { usePrediction } from './usePrediction';
 import { useElimination } from './useElimination';
 import { useEndlessMode } from './useEndlessMode';
 
+// ランキング送信用のプレイヤー名生成
+const ADJECTIVES = [
+  'Swift',
+  'Clever',
+  'Bold',
+  'Quick',
+  'Sharp',
+  'Brave',
+  'Calm',
+  'Keen',
+  'Wise',
+  'Cool',
+];
+const ANIMALS = ['Fox', 'Bear', 'Wolf', 'Eagle', 'Tiger', 'Lion', 'Hawk', 'Owl', 'Deer', 'Lynx'];
+
+function generatePlayerName(): string {
+  const adj = ADJECTIVES[Math.floor(Math.random() * ADJECTIVES.length)];
+  const animal = ANIMALS[Math.floor(Math.random() * ANIMALS.length)];
+  const num = Math.floor(Math.random() * 1000);
+  return `${adj}${animal}${num}`;
+}
+
 export interface UseGameOptions {
   onDisplayUpdate?: (newDisplay: string) => void;
   finalizePendingCalculation?: () => string | null;
@@ -117,6 +139,32 @@ export function useGame(options: UseGameOptions = {}): UseGameReturn {
       }
     };
   }, [gameMode, gameStarted, isGameOver, predictionHook]);
+
+  // Sprint mode ranking submission
+  const rankingSubmittedRef = useRef(false);
+  useEffect(() => {
+    // Reset flag when game resets
+    if (!isGameOver) {
+      rankingSubmittedRef.current = false;
+      return;
+    }
+
+    // Only submit for sprint mode, not surrender, and not already submitted
+    if (gameMode !== 'sprint' || isSurrender || rankingSubmittedRef.current) {
+      return;
+    }
+
+    const score = eliminationHook.score;
+    if (score <= 0) return;
+
+    rankingSubmittedRef.current = true;
+    const playerName = generatePlayerName();
+    const rankingId = 'sasso-sprint-a1b2c3d4';
+
+    fetch(
+      `https://api.nostalgic.llll-ll.com/ranking?action=submit&id=${rankingId}&name=${encodeURIComponent(playerName)}&score=${score}`
+    ).catch(() => {});
+  }, [isGameOver, gameMode, isSurrender, eliminationHook.score]);
 
   const syncDisplay = useCallback(
     (display: string) => {
