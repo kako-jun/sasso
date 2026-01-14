@@ -7,49 +7,6 @@ import { usePrediction } from './usePrediction';
 import { useElimination } from './useElimination';
 import { useEndlessMode } from './useEndlessMode';
 
-// ランキング送信用のプレイヤー名生成（ブラウザ情報からハッシュ生成で同じPCでは同じ名前）
-function generatePlayerName(): string {
-  const adjectives = [
-    'Swift',
-    'Clever',
-    'Brave',
-    'Quick',
-    'Smart',
-    'Fast',
-    'Sharp',
-    'Wise',
-    'Cool',
-    'Super',
-  ];
-  const animals = ['Fox', 'Eagle', 'Tiger', 'Wolf', 'Lion', 'Hawk', 'Bear', 'Cat', 'Dog', 'Owl'];
-
-  // より多くのデバイス情報を使って異なる端末を区別する
-  // WebGL renderer情報を取得（GPUの違いで区別）
-  let renderer = '';
-  try {
-    const canvas = document.createElement('canvas');
-    const gl = canvas.getContext('webgl');
-    const debugInfo = gl?.getExtension('WEBGL_debug_renderer_info');
-    renderer = debugInfo ? gl?.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL) || '' : '';
-  } catch {
-    renderer = '';
-  }
-  const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone || '';
-  const userString = `${navigator.userAgent}-${navigator.language}-${screen.width}x${screen.height}-${screen.availWidth}x${screen.availHeight}-${screen.colorDepth}-${navigator.hardwareConcurrency || 0}-${(navigator as Navigator & { deviceMemory?: number }).deviceMemory || 0}-${navigator.maxTouchPoints || 0}-${window.devicePixelRatio || 1}-${renderer}-${timezone}`;
-  let hash = 0;
-  for (let i = 0; i < userString.length; i++) {
-    const char = userString.charCodeAt(i);
-    hash = (hash << 5) - hash + char;
-    hash = hash & hash;
-  }
-
-  const adjIndex = Math.abs(hash) % adjectives.length;
-  const animalIndex = Math.abs(hash >> 8) % animals.length;
-  const number = (Math.abs(hash >> 16) % 999) + 1;
-
-  return `${adjectives[adjIndex]}${animals[animalIndex]}${String(number).padStart(3, '0')}`;
-}
-
 export interface UseGameOptions {
   onDisplayUpdate?: (newDisplay: string) => void;
   finalizePendingCalculation?: () => string | null;
@@ -193,11 +150,11 @@ export function useGame(options: UseGameOptions = {}): UseGameReturn {
       if (score <= 0) return;
 
       rankingSubmittedRef.current = true;
-      const playerName = generatePlayerName();
       const rankingId = 'sasso-5d582992';
 
+      // 名前はサーバー側で自動生成
       fetch(
-        `https://api.nostalgic.llll-ll.com/ranking?action=submit&id=${rankingId}&name=${encodeURIComponent(playerName)}&score=${score}`
+        `https://api.nostalgic.llll-ll.com/ranking?action=submit&id=${rankingId}&score=${score}`
       ).catch(() => {});
     }, 1000);
 
