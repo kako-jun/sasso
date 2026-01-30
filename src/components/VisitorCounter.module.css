@@ -3,4 +3,9 @@
   color: #333;
   text-align: center;
   line-height: 1.5;
+  font-family: inherit;
+}
+
+.visitorCounter :global(nostalgic-counter) {
+  font-family: inherit;
 }
