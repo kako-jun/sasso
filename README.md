@@ -23,7 +23,7 @@ Eliminate digits by making them adjacent and identical. When two or more identic
 
 ### Game Over
 
-- **Overflow**: If your number exceeds 10 digits, you lose
+- **Overflow**: If your number exceeds 13 digits, you lose
 - **Surrender**: Pressing C (Clear) or E (Entry Clear) is immediate surrender
 - **Misoperation**: Pressing a digit after `=` is also surrender (you should press an operator to continue)
 
@@ -45,7 +45,7 @@ Free play with elimination mechanics. No time pressure. Learn the game at your o
 
 ### Endless
 
-The real challenge. Predictions appear every 4.2 seconds showing what operation is coming (e.g., "×7"). Prepare your numbers to survive the incoming operation and eliminate digits before you overflow!
+The real challenge. Predictions appear every 10 seconds showing what operation is coming (e.g., "×7"). Prepare your numbers to survive the incoming operation and eliminate digits before you overflow!
 
 ## Scoring
 
