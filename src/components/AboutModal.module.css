@@ -106,3 +106,11 @@
 .closeButton:hover {
   background: #d0d0d0;
 }
+
+@media (max-width: 360px) {
+  .aboutModal {
+    min-width: auto;
+    max-width: calc(100vw - 24px);
+    padding: 16px 16px;
+  }
+}

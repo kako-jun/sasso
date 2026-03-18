@@ -30,3 +30,14 @@
   font-weight: bold;
   margin-top: 4px;
 }
+
+@media (max-height: 500px) {
+  .multiplicationHelper {
+    position: fixed;
+    top: auto;
+    bottom: 28px;
+    left: 50%;
+    transform: translateX(-50%) scale(0.75);
+    transform-origin: bottom center;
+  }
+}

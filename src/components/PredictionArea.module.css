@@ -57,3 +57,25 @@
 .predictionWrapper {
   position: relative;
 }
+
+@media (max-height: 500px) {
+  .predictionArea {
+    position: fixed;
+    bottom: auto;
+    top: 24px;
+    right: 4px;
+    left: auto;
+    transform: none;
+    max-width: 45vw;
+    padding: 4px 8px;
+  }
+
+  .predictionClock {
+    width: 28px;
+    height: 28px;
+  }
+
+  .predictionOperation {
+    font-size: 18px;
+  }
+}

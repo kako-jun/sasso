@@ -9,6 +9,14 @@
   border-radius: 8px;
   box-shadow: 5px 5px 0 #000;
   overflow: hidden;
+  max-width: calc(100vw - 24px);
+}
+
+@media (max-height: 500px) {
+  .window {
+    top: 12px;
+    transform: translateX(-50%);
+  }
 }
 
 /* Title Bar - solid black with white text */

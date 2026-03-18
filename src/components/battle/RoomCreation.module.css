@@ -150,3 +150,11 @@
   padding: 8px;
   background: rgba(0, 0, 0, 0.7);
 }
+
+@media (max-width: 360px) {
+  .roomCreation {
+    min-width: auto;
+    max-width: calc(100vw - 24px);
+    padding: 16px 16px;
+  }
+}
