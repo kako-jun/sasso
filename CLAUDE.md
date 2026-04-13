@@ -117,3 +117,7 @@ src/
 - Operators: Bold, use × ÷ − symbols
 - Button active: Inverted colors (black bg, white text)
 - Elimination: 400ms flash animation
+
+## デザインシステム
+
+UIの生成・修正時は `DESIGN.md` に定義されたデザインシステムに従うこと。定義外の色・フォント・スペーシングを勝手に使わない。
