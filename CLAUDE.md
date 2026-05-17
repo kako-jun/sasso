@@ -7,9 +7,11 @@ A calculator-based puzzle game with Classic Macintosh System 7 design.
 ## Quick Start
 
 ```bash
-npm run dev   # Start dev server
-npm run build # Build for production
-npm run lint  # Run ESLint
+npm run dev        # Start dev server
+npm run build      # Build for production
+npm run lint       # Run ESLint
+npm run typecheck  # tsc --noEmit (CI gate)
+npm test           # Run vitest (game-logic unit tests)
 ```
 
 ## Documentation
@@ -53,23 +55,32 @@ public/
 └── icon-*.png           # PWA icons (various sizes)
 
 src/
-├── App.tsx              # Layout component (63 lines)
-├── components/          # UI components (Window, Display, Keypad, etc.)
+├── App.tsx              # Top-level layout + battle/single-player routing
+├── components/          # UI components (Window, Display, Keypad, AboutModal, battle/*)
 ├── hooks/               # React hooks
-│   ├── useGameController.ts  # Main controller
-│   ├── useGame.ts            # Game state (composed)
+│   ├── useGameController.ts  # Single-player controller (bridges calculator + game)
+│   ├── useGame.ts            # Single-player game state (composed)
+│   ├── useBattleMode.ts      # Battle mode orchestrator
 │   ├── useCalculator.ts      # Calculator (useReducer)
-│   ├── useElimination.ts     # Scoring/elimination
-│   ├── usePrediction.ts      # Prediction state
-│   └── useEndlessMode.ts     # Endless mode timer
+│   ├── useElimination.ts     # Scoring/elimination chain animation
+│   ├── usePrediction.ts      # Single-player prediction state
+│   ├── useSeededPrediction.ts# Battle deterministic prediction
+│   ├── usePredictionTimer.ts # Shared countdown / apply-prediction logic
+│   ├── useEndlessMode.ts     # Endless/Sprint timer wrapper
+│   ├── useArena.ts           # nostr-arena wrapper (room/state events)
+│   ├── useKeyboard.ts        # Keyboard input mapping
+│   └── useMediaQuery.ts      # Desktop/mobile detection
 ├── game/                # Pure game logic
 │   ├── elimination.ts   # Digit elimination
 │   ├── scoring.ts       # Score calculation
-│   ├── prediction.ts    # Prediction generation
+│   ├── prediction.ts    # Single-player prediction generation
+│   ├── battlePrediction.ts  # Seeded prediction generator
+│   ├── seededRandom.ts  # LCG seeded RNG
 │   └── attack.ts        # Attack effects
-├── types/               # TypeScript types
+├── types/               # TypeScript types (calc/game + battle)
 ├── constants/           # Game constants
-└── utils/               # Utilities
+├── utils/               # Utilities (calculator, format, battleEvents)
+└── global.d.ts          # Ambient declarations (nostalgic-counter)
 ```
 
 ### Key Modules

@@ -5,7 +5,7 @@
  * Attack handling is done through game state (attack field with timestamp).
  */
 
-import { useCallback, useRef, useMemo } from 'react';
+import { useRef, useMemo } from 'react';
 import { useArena as usePackageArena } from 'nostr-arena/react';
 import type { ArenaCallbacks } from 'nostr-arena';
 import type { SassoGameState, OpponentState, RoomState } from '../types/battle';
@@ -29,7 +29,6 @@ export interface UseArenaReturn {
   leaveRoom: () => void;
   reconnect: () => Promise<boolean>;
   sendState: (state: SassoGameState) => void;
-  sendAttack: (power: number) => void;
   sendGameOver: (reason: 'overflow' | 'surrender' | 'disconnect', finalScore: number) => void;
   requestRematch: () => void;
   acceptRematch: () => void;
@@ -53,15 +52,12 @@ export function useArena(): UseArenaReturn {
     []
   );
 
-  // Ref to track last sent state for attack injection
-  const lastSentStateRef = useRef<SassoGameState | null>(null);
-  const pendingAttackRef = useRef<{ power: number; timestamp: number } | null>(null);
-
   // Callbacks for nostr-arena
+  // Attack is embedded into the game state by useBattleMode (see attackToSend).
+  // We only watch the opponent's state to detect new attacks via timestamp.
   const callbacks = useMemo<ArenaCallbacks<SassoGameState>>(
     () => ({
       onOpponentState: (state: SassoGameState) => {
-        // Detect new attack from state
         if (state.attack && state.attack.timestamp > lastAttackTimestampRef.current) {
           lastAttackTimestampRef.current = state.attack.timestamp;
           dispatchBattleEvent(BATTLE_EVENTS.ATTACK, {
@@ -85,9 +81,8 @@ export function useArena(): UseArenaReturn {
         dispatchBattleEvent(BATTLE_EVENTS.REMATCH_REQUESTED);
       },
       onRematchStart: (newSeed: number) => {
-        // Reset attack refs on rematch
+        // Reset attack tracking on rematch
         lastAttackTimestampRef.current = 0;
-        pendingAttackRef.current = null;
         dispatchBattleEvent(BATTLE_EVENTS.REMATCH_START, { seed: newSeed });
       },
       onError: (error: Error) => {
@@ -99,38 +94,6 @@ export function useArena(): UseArenaReturn {
 
   // Use the package hook
   const room = usePackageArena<SassoGameState>(config, callbacks);
-
-  // Send state with attack injection
-  const sendState = useCallback(
-    (state: SassoGameState) => {
-      // Inject pending attack into state
-      const stateWithAttack: SassoGameState = pendingAttackRef.current
-        ? { ...state, attack: pendingAttackRef.current }
-        : state;
-
-      room.sendState(stateWithAttack);
-      lastSentStateRef.current = stateWithAttack;
-
-      // Clear pending attack after sending
-      if (pendingAttackRef.current) {
-        pendingAttackRef.current = null;
-      }
-    },
-    [room]
-  );
-
-  // Queue attack to be sent with next state
-  const sendAttack = useCallback((power: number) => {
-    pendingAttackRef.current = { power, timestamp: Date.now() };
-  }, []);
-
-  // Wrapped sendGameOver with proper typing
-  const sendGameOver = useCallback(
-    (reason: 'overflow' | 'surrender' | 'disconnect', finalScore: number) => {
-      room.sendGameOver(reason, finalScore);
-    },
-    [room]
-  );
 
   // Map opponent to Sasso's OpponentState type
   const opponent: OpponentState | null = room.opponent
@@ -160,9 +123,8 @@ export function useArena(): UseArenaReturn {
     joinRoom: room.joinRoom,
     leaveRoom: room.leaveRoom,
     reconnect: room.reconnect,
-    sendState,
-    sendAttack,
-    sendGameOver,
+    sendState: room.sendState,
+    sendGameOver: room.sendGameOver,
     requestRematch: room.requestRematch,
     acceptRematch: room.acceptRematch,
   };

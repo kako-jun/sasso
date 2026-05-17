@@ -44,6 +44,9 @@ Chicago is the defining System 7 font. Geneva serves as fallback. The base font 
 - Close box: small white square in left corner
 - Border-bottom: included in window border
 
+> Read-only windows (e.g. the opponent's calculator in Battle mode) omit the
+> close box. The title bar still renders, only the close affordance is hidden.
+
 ### Display
 
 - Background: `white`

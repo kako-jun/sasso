@@ -112,8 +112,9 @@ export function eliminateMatches(displayStr: string): { result: string; eliminat
     resultStr = resultStr.replace(/^0+/, '') || '0';
   }
 
-  // Restore negative sign
-  if (isNegative && resultStr !== '0') {
+  // Restore negative sign — but not when result is effectively zero
+  // (e.g. eliminating "-110.0" yields "0.0" which should not become "-0.0")
+  if (isNegative && parseFloat(resultStr) !== 0) {
     resultStr = '-' + resultStr;
   }
 

@@ -20,8 +20,9 @@ Sasso is a calculator-based puzzle game with Classic Macintosh System 7 inspired
 ### Menu Bar
 
 - White background with black bottom border
-- Items: GitHub logo, Calculator, Practice, Sprint, Endless, Battle, About (mode selection)
+- Items (left to right): GitHub logo, Calculator, Game (dropdown: Practice / Sprint / Endless / Battle), About
 - Sprint timer displayed after About when in Sprint mode
+- Current score shown right-aligned during gameplay
 - Height: 20px
 
 ### Window
@@ -156,5 +157,6 @@ Sasso is a calculator-based puzzle game with Classic Macintosh System 7 inspired
 
 ## Display Format
 
-- Maximum 10 digits
-- Numbers exceeding 10 digits shown in exponential notation
+- Manual digit input is capped at `MAX_DISPLAY_DIGITS` (12) — additional digit presses are ignored, like a real calculator
+- Calculation results longer than 10 characters are formatted as 4-digit exponential notation
+- Any exponential notation result, or a digit count exceeding `MAX_DISPLAY_DIGITS`, triggers overflow (game over)

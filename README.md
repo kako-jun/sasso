@@ -43,9 +43,17 @@ Standard calculator. No game mechanics. Practice your arithmetic.
 
 Free play with elimination mechanics. No time pressure. Learn the game at your own pace.
 
+### Sprint
+
+Endless rules with a 3-minute time limit. Compete for the highest score before the clock runs out. Scores are submitted to the global ranking.
+
 ### Endless
 
 The real challenge. Predictions appear every 10 seconds showing what operation is coming (e.g., "×7"). Prepare your numbers to survive the incoming operation and eliminate digits before you overflow!
+
+### Battle
+
+Online 2-player versus mode using [nostr-arena](https://www.npmjs.com/package/nostr-arena). Create a room, share the URL or QR code with an opponent, and try to overflow them first. Chains and high-score eliminations send harder predictions to your opponent.
 
 ## Scoring
 

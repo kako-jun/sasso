@@ -13,21 +13,24 @@ public/
 └── favicon-32.png          # Favicon 32x32
 
 src/
-├── App.tsx                 # Main component (layout only, 63 lines)
+├── App.tsx                 # Top-level layout + battle/single-player routing
 ├── App.css                 # Style definitions
 ├── main.tsx                # Entry point
 ├── index.css               # Global styles (Chicago font)
+├── global.d.ts             # Ambient declarations (nostalgic-counter web component)
 │
 ├── components/             # UI Components
 │   ├── index.ts            # Barrel exports
-│   ├── Window.tsx          # Reusable window component
+│   ├── Window.tsx          # Reusable Mac window (onClose optional for read-only windows)
 │   ├── Display.tsx         # Calculator display with elimination animation
-│   ├── Keypad.tsx          # Data-driven keypad layout
-│   ├── MenuBar.tsx         # Mode selection menu
-│   ├── ScoreArea.tsx       # Score and chain display
-│   ├── PredictionArea.tsx  # Next operation and countdown
+│   ├── Keypad.tsx          # Data-driven keypad layout (read-only mode for opponent)
+│   ├── MenuBar.tsx         # Calculator / Game dropdown / About
+│   ├── ScoreArea.tsx       # Last score breakdown display
+│   ├── PredictionArea.tsx  # Next operation and countdown clock
 │   ├── CalculationHistory.tsx  # Calculation log
-│   ├── GameOverlay.tsx     # Game over and start prompt
+│   ├── GameOverlay.tsx     # GameOverOverlay + StartPrompt
+│   ├── AboutModal.tsx      # About dialog (version, sponsor, links)
+│   ├── VisitorCounter.tsx  # Nostalgic visitor counter (in About modal)
 │   └── MultiplicationHelper.tsx  # Indian/Vedic method visualization
 │
 ├── hooks/                  # React Hooks
@@ -48,11 +51,14 @@ src/
 │   ├── index.ts            # Barrel exports
 │   ├── elimination.ts      # Digit elimination, chains, overflow
 │   ├── scoring.ts          # Score calculation
-│   ├── prediction.ts       # Prediction generation
+│   ├── prediction.ts       # Prediction generation (single-player, Math.random)
+│   ├── battlePrediction.ts # Seeded prediction generator (battle, deterministic)
+│   ├── seededRandom.ts     # LCG seeded RNG (matches glibc constants)
 │   └── attack.ts           # Attack effect calculation
 │
 ├── types/                  # TypeScript Types
-│   └── index.ts            # All type definitions
+│   ├── index.ts            # Calculator / game / scoring / prediction / attack types
+│   └── battle.ts           # SassoGameState, RoomState, OpponentState
 │
 ├── constants/              # Constants
 │   └── index.ts            # Game constants (timing, scoring, etc.)
@@ -60,7 +66,8 @@ src/
 └── utils/                  # Utilities
     ├── index.ts            # Barrel exports
     ├── calculator.ts       # Math operations
-    └── format.ts           # Display formatting
+    ├── format.ts           # Display formatting
+    └── battleEvents.ts     # Custom window event dispatch for battle mode
 ```
 
 ## Architecture Diagram
@@ -132,29 +139,32 @@ src/
 
 ## Components Overview
 
-| Component            | Responsibility                                    |
-| -------------------- | ------------------------------------------------- |
-| Window               | Reusable Mac-style window with title bar          |
-| Display              | Shows calculator value with elimination animation |
-| Keypad               | Data-driven button grid (KEYPAD_LAYOUT config)    |
-| MenuBar              | Mode selection (Calculator/Practice/Endless)      |
-| ScoreArea            | Score, chains, and breakdown display              |
-| PredictionArea       | Next operation and countdown clock                |
-| CalculationHistory   | Shows last calculation                            |
-| GameOverlay          | Game over message and retry button                |
-| MultiplicationHelper | Indian/Vedic multiplication visualization         |
+| Component            | Responsibility                                                              |
+| -------------------- | --------------------------------------------------------------------------- |
+| Window               | Reusable Mac-style window with title bar                                    |
+| Display              | Shows calculator value with elimination animation                           |
+| Keypad               | Data-driven button grid (KEYPAD_LAYOUT config)                              |
+| MenuBar              | Calculator + Game dropdown (Practice/Sprint/Endless/Battle) + About + score |
+| ScoreArea            | Score, chains, and breakdown display                                        |
+| PredictionArea       | Next operation and countdown clock                                          |
+| CalculationHistory   | Shows last calculation                                                      |
+| GameOverlay          | Game over message and retry button                                          |
+| MultiplicationHelper | Indian/Vedic multiplication visualization                                   |
 
 ### Battle Components (`src/components/battle/`)
 
-| Component           | Responsibility                            |
-| ------------------- | ----------------------------------------- |
-| BattleApp           | Battle mode UI orchestration              |
-| BattleLayout        | Desktop (50/50 split) / Mobile responsive |
-| BattleOverlay       | Waiting/Ready/Finished overlays           |
-| RoomCreation        | Create/Join room UI with QR scanner       |
-| MobileOpponentScore | Simple opponent score for mobile          |
-| OpponentHeader      | Opponent score bar for desktop            |
-| AttackIndicator     | Visual indicator when under attack        |
+| Component             | Responsibility                            |
+| --------------------- | ----------------------------------------- |
+| BattleApp             | Battle mode UI orchestration              |
+| BattleLayout          | Desktop (50/50 split) / Mobile responsive |
+| BattleOverlay         | Waiting / Ready / Joining overlays        |
+| BattleFinishedOverlay | Result + rematch / leave (inside Window)  |
+| RoomCreation          | Create / Join room UI with QR scanner     |
+| MobileOpponentScore   | Simple opponent score for mobile          |
+| OpponentHeader        | Opponent score bar for desktop            |
+
+Note: under-attack visualisation is rendered by `PredictionArea` itself
+(via `isUnderAttack` prop) — there is no separate `AttackIndicator` component.
 
 ## Design Patterns
 

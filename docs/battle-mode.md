@@ -2,12 +2,9 @@
 
 ## Overview
 
-2-player online battle mode using [nostr-arena](../packages/nostr-arena/) for real-time P2P communication.
+2-player online battle mode using the external [`nostr-arena`](https://www.npmjs.com/package/nostr-arena) npm package for real-time P2P communication over Nostr relays.
 
-For generic battle room documentation, see:
-
-- [packages/nostr-arena/docs/architecture.md](../packages/nostr-arena/docs/architecture.md)
-- [packages/nostr-arena/docs/protocol.md](../packages/nostr-arena/docs/protocol.md)
+For generic battle room documentation, see the `nostr-arena` package README/docs.
 
 ---
 
@@ -30,11 +27,7 @@ For generic battle room documentation, see:
 
 ### Room URL
 
-**形式:**
-
-```
-https://sasso.app/battle/{room-id}
-```
+**形式:** `<deployed-origin>/battle/{room-id}`（例: `https://sasso.llll-ll.com/battle/<id>`）。URL は `window.location.origin` から構築するので、ローカル開発・本番どちらでも自動追従する。
 
 | 項目     | 仕様                        |
 | -------- | --------------------------- |
@@ -53,7 +46,7 @@ https://sasso.app/battle/{room-id}
 
 ## Game State
 
-Sassoのゲーム状態（`TGameState`として送信）:
+Sassoのゲーム状態（`TGameState`として送信。実体は `src/types/battle.ts` を参照）:
 
 ```typescript
 interface SassoGameState {
@@ -61,9 +54,18 @@ interface SassoGameState {
   score: number; // スコア
   chains: number; // 現在のチェーン数
   calculationHistory: string; // 直前の計算式
-  attack?: { power: number; timestamp: number }; // 攻撃イベント
+  attack?: { power: number; timestamp: number }; // 攻撃イベント（timestamp で新規判定）
+  prediction?: Prediction | null; // 相手側に表示する予測
+  countdown?: number; // 相手側カウントダウン（ms）
+  lastScoreBreakdown?: ScoreResult | null; // 相手のスコア内訳ポップアップ用
+  isUnderAttack?: boolean; // 相手が被攻撃中か（演出用）
+  lastKey?: string | null; // 直前のキー（Keypad ハイライト演出用）
 }
 ```
+
+`attack` は `useBattleMode` が `onAttack` コールバックで `attackToSend` にセットし、
+次の state 送信時にゲーム状態へ埋め込まれる。受信側は `useArena.onOpponentState` 内で
+`timestamp` を見て新着判定し、`BATTLE_EVENTS.ATTACK` カスタムイベントを window に dispatch する。
 
 ---
 
@@ -164,4 +166,6 @@ Attack power = score from that elimination.
 | `src/components/battle/MobileOpponentScore.tsx` | Mobile opponent score display              |
 | `src/components/battle/OpponentHeader.tsx`      | Desktop opponent header bar                |
 | `src/components/battle/RoomCreation.tsx`        | Room creation/join UI with QR code scanner |
-| `src/components/battle/AttackIndicator.tsx`     | Attack visual indicator                    |
+
+被攻撃中の演出は専用コンポーネントではなく `PredictionArea` が `isUnderAttack` prop を
+受け取って自前で描画する（パルス + "!"）。
