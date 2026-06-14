@@ -63,9 +63,11 @@ interface SassoGameState {
 }
 ```
 
-`attack` は `useBattleMode` が `onAttack` コールバックで `attackToSend` にセットし、
-次の state 送信時にゲーム状態へ埋め込まれる。受信側は `useArena.onOpponentState` 内で
-`timestamp` を見て新着判定し、`BATTLE_EVENTS.ATTACK` カスタムイベントを window に dispatch する。
+`attack` は `useBattleAttack` が `queueOutgoingAttack`（旧 `onAttack`）で `outgoingAttack` に
+セットし、`useBattleMode` が次の state 送信時にゲーム状態へ埋め込んでから `clearOutgoingAttack`
+する。受信側は `useArena.onOpponentState` 内で `timestamp` を見て新着判定し、
+`BATTLE_EVENTS.ATTACK` カスタムイベントを window に dispatch する。`useBattleAttack` がこれを
+受信して `pendingAttackPower` / `isUnderAttack` をセットする。
 
 ---
 
@@ -153,19 +155,21 @@ Attack power = score from that elimination.
 
 ## Implementation Files
 
-| File                                            | Purpose                                    |
-| ----------------------------------------------- | ------------------------------------------ |
-| `src/hooks/useBattleMode.ts`                    | Main battle mode orchestrator              |
-| `src/hooks/useArena.ts`                         | Room management (uses nostr-arena pattern) |
-| `src/hooks/useSeededPrediction.ts`              | Deterministic prediction with shared seed  |
-| `src/hooks/usePredictionTimer.ts`               | Shared prediction countdown logic          |
-| `src/hooks/useElimination.ts`                   | Shared chain elimination and scoring       |
-| `src/components/battle/BattleApp.tsx`           | Battle mode UI and layout orchestration    |
-| `src/components/battle/BattleLayout.tsx`        | Desktop/Mobile responsive layout           |
-| `src/components/battle/BattleOverlay.tsx`       | Waiting/Victory/Defeat overlays            |
-| `src/components/battle/MobileOpponentScore.tsx` | Mobile opponent score display              |
-| `src/components/battle/OpponentHeader.tsx`      | Desktop opponent header bar                |
-| `src/components/battle/RoomCreation.tsx`        | Room creation/join UI with QR code scanner |
+| File                                            | Purpose                                         |
+| ----------------------------------------------- | ----------------------------------------------- |
+| `src/hooks/useBattleMode.ts`                    | Main battle mode orchestrator                   |
+| `src/hooks/useBattleAttack.ts`                  | Attack I/O (incoming receive + outgoing queue)  |
+| `src/hooks/useBattleLifecycle.ts`               | Lifecycle FSM (start/surrender/game over/reset) |
+| `src/hooks/useArena.ts`                         | Room management (uses nostr-arena pattern)      |
+| `src/hooks/useSeededPrediction.ts`              | Deterministic prediction with shared seed       |
+| `src/hooks/usePredictionTimer.ts`               | Shared prediction countdown logic               |
+| `src/hooks/useElimination.ts`                   | Shared chain elimination and scoring            |
+| `src/components/battle/BattleApp.tsx`           | Battle mode UI and layout orchestration         |
+| `src/components/battle/BattleLayout.tsx`        | Desktop/Mobile responsive layout                |
+| `src/components/battle/BattleOverlay.tsx`       | Waiting/Victory/Defeat overlays                 |
+| `src/components/battle/MobileOpponentScore.tsx` | Mobile opponent score display                   |
+| `src/components/battle/OpponentHeader.tsx`      | Desktop opponent header bar                     |
+| `src/components/battle/RoomCreation.tsx`        | Room creation/join UI with QR code scanner      |
 
 被攻撃中の演出は専用コンポーネントではなく `PredictionArea` が `isUnderAttack` prop を
 受け取って自前で描画する（パルス + "!"）。

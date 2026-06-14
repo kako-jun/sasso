@@ -6,8 +6,10 @@ import { useSeededPrediction } from './useSeededPrediction';
 import { useCalculator } from './useCalculator';
 import { useElimination } from './useElimination';
 import { usePredictionTimer } from './usePredictionTimer';
+import { useBattleAttack } from './useBattleAttack';
+import { useBattleLifecycle } from './useBattleLifecycle';
 import { checkOverflow } from '../game';
-import { operatorToSymbol, BATTLE_EVENTS } from '../utils';
+import { operatorToSymbol } from '../utils';
 
 export interface UseBattleModeReturn {
   // Room state
@@ -52,22 +54,12 @@ export function useBattleMode(): UseBattleModeReturn {
   const calculator = useCalculator();
   const prediction = useSeededPrediction();
   const elimination = useElimination();
+  const attack = useBattleAttack();
 
-  // Battle-specific state
-  const [isGameOver, setIsGameOver] = useState(false);
-  const [isSurrender, setIsSurrender] = useState(false);
-  const [isWinner, setIsWinner] = useState<boolean | null>(null);
+  // Display / input state owned by the orchestrator
   const [justPressedEqual, setJustPressedEqual] = useState(false);
   const [calculationHistory, setCalculationHistory] = useState('');
-  const [isUnderAttack, setIsUnderAttack] = useState(false);
-  const [pendingAttackPower, setPendingAttackPower] = useState(0);
-  const [gameStarted, setGameStarted] = useState(false);
   const [lastKey, setLastKey] = useState<string | null>(null);
-  // Outgoing attack - sent with next state update, then cleared
-  const [attackToSend, setAttackToSend] = useState<{
-    power: number;
-    timestamp: number;
-  } | null>(null);
 
   // Refs
   const displayRef = useRef(calculator.display);
@@ -80,94 +72,34 @@ export function useBattleMode(): UseBattleModeReturn {
     displayRef.current = calculator.display;
   }, [calculator.display]);
 
-  // Reset all game state (shared by leaveRoom and rematch)
-  const resetGameState = useCallback(
-    (seed?: number) => {
-      if (seed !== undefined) {
-        prediction.initWithSeed(seed);
-      } else {
-        prediction.resetPrediction();
-      }
-      calculator.resetCalculator();
-      elimination.resetElimination();
-      setIsGameOver(false);
-      setIsSurrender(false);
-      setIsWinner(null);
-      setCalculationHistory('');
-      setGameStarted(false);
-      setPendingAttackPower(0);
-      setIsUnderAttack(false);
-      setLastKey(null);
-      setAttackToSend(null);
-    },
-    [prediction, calculator, elimination]
-  );
+  // Clear orchestrator-owned display state (used by lifecycle reset)
+  const resetDisplay = useCallback(() => {
+    setCalculationHistory('');
+    setLastKey(null);
+  }, []);
 
-  // Handle game over (defined early, uses ref to avoid stale closure in applyPrediction)
-  const handleGameOver = useCallback(
-    (reason: 'overflow' | 'surrender' | 'disconnect') => {
-      setIsGameOver(true);
-      setIsWinner(false);
-      prediction.clearCountdown();
-      room.sendGameOver(reason, elimination.score);
-    },
-    [prediction, room, elimination.score]
-  );
+  // Clear the display state that startGame clears (history only, not lastKey)
+  const startDisplay = useCallback(() => {
+    setCalculationHistory('');
+  }, []);
 
-  // Keep handleGameOver ref updated
+  // Battle lifecycle FSM (game start / surrender / game over / reset)
+  const lifecycle = useBattleLifecycle({
+    room,
+    prediction,
+    calculator,
+    elimination,
+    attack,
+    onResetDisplay: resetDisplay,
+    onStartDisplay: startDisplay,
+  });
+  const { gameStarted, isGameOver, isSurrender, isWinner, startGame, surrender, resetGameState } =
+    lifecycle;
+
+  // Keep handleGameOver ref updated (avoids stale closure in applyPrediction / handleKey)
   useEffect(() => {
-    handleGameOverRef.current = handleGameOver;
-  }, [handleGameOver]);
-
-  // Listen for battle events from room
-  useEffect(() => {
-    const handleAttack = (e: CustomEvent<{ power: number }>) => {
-      setPendingAttackPower(e.detail.power);
-      setIsUnderAttack(true);
-    };
-
-    const handleOpponentGameOver = () => {
-      setIsGameOver(true);
-      setIsWinner(true);
-      prediction.clearCountdown();
-    };
-
-    const handleOpponentDisconnect = () => {
-      if (gameStarted && !isGameOver) {
-        setIsGameOver(true);
-        setIsWinner(true);
-        prediction.clearCountdown();
-      }
-    };
-
-    const handleRematchStart = (e: CustomEvent<{ seed: number }>) => {
-      resetGameState(e.detail.seed);
-    };
-
-    window.addEventListener(BATTLE_EVENTS.ATTACK, handleAttack as EventListener);
-    window.addEventListener(
-      BATTLE_EVENTS.OPPONENT_GAMEOVER,
-      handleOpponentGameOver as EventListener
-    );
-    window.addEventListener(
-      BATTLE_EVENTS.OPPONENT_DISCONNECT,
-      handleOpponentDisconnect as EventListener
-    );
-    window.addEventListener(BATTLE_EVENTS.REMATCH_START, handleRematchStart as EventListener);
-
-    return () => {
-      window.removeEventListener(BATTLE_EVENTS.ATTACK, handleAttack as EventListener);
-      window.removeEventListener(
-        BATTLE_EVENTS.OPPONENT_GAMEOVER,
-        handleOpponentGameOver as EventListener
-      );
-      window.removeEventListener(
-        BATTLE_EVENTS.OPPONENT_DISCONNECT,
-        handleOpponentDisconnect as EventListener
-      );
-      window.removeEventListener(BATTLE_EVENTS.REMATCH_START, handleRematchStart as EventListener);
-    };
-  }, [prediction, gameStarted, isGameOver, resetGameState]);
+    handleGameOverRef.current = lifecycle.handleGameOver;
+  }, [lifecycle.handleGameOver]);
 
   // Send state updates when display/score changes
   useEffect(() => {
@@ -180,14 +112,14 @@ export function useBattleMode(): UseBattleModeReturn {
         prediction: prediction.prediction,
         countdown: prediction.countdown,
         lastScoreBreakdown: elimination.lastScoreBreakdown,
-        isUnderAttack,
+        isUnderAttack: attack.isUnderAttack,
         lastKey,
-        attack: attackToSend ?? undefined,
+        attack: attack.outgoingAttack ?? undefined,
       };
       room.sendState(state);
       // Clear attack after sending
-      if (attackToSend) {
-        setAttackToSend(null);
+      if (attack.outgoingAttack) {
+        attack.clearOutgoingAttack();
       }
     }
   }, [
@@ -198,9 +130,10 @@ export function useBattleMode(): UseBattleModeReturn {
     prediction.prediction,
     prediction.countdown,
     elimination.lastScoreBreakdown,
-    isUnderAttack,
+    attack.isUnderAttack,
     lastKey,
-    attackToSend,
+    attack.outgoingAttack,
+    attack,
     room,
   ]);
 
@@ -211,7 +144,7 @@ export function useBattleMode(): UseBattleModeReturn {
         calculator.setDisplay(display);
       },
       onOverflow: () => handleGameOverRef.current('overflow'),
-      onAttack: (power: number) => setAttackToSend({ power, timestamp: Date.now() }),
+      onAttack: (power: number) => attack.queueOutgoingAttack(power),
       onCalculationHistory: setCalculationHistory,
       generateNextPrediction: (attackPower?: number) =>
         prediction.generateNextPrediction(attackPower),
@@ -228,7 +161,7 @@ export function useBattleMode(): UseBattleModeReturn {
         return null;
       },
     }),
-    [calculator, prediction]
+    [calculator, prediction, attack]
   );
 
   // Use shared prediction timer
@@ -238,33 +171,9 @@ export function useBattleMode(): UseBattleModeReturn {
     displayRef,
     isActive: gameStarted && !isGameOver,
     callbacks: predictionCallbacks,
-    pendingAttackPower,
-    onAttackApplied: () => {
-      setPendingAttackPower(0);
-      setIsUnderAttack(false);
-    },
+    pendingAttackPower: attack.pendingAttackPower,
+    onAttackApplied: attack.onIncomingAttackApplied,
   });
-
-  // Start the game
-  const startGame = useCallback(() => {
-    if (room.seed && !gameStarted) {
-      prediction.initWithSeed(room.seed);
-      calculator.resetCalculator();
-      elimination.resetElimination();
-      setIsGameOver(false);
-      setIsSurrender(false);
-      setIsWinner(null);
-      setCalculationHistory('');
-      setGameStarted(true);
-    }
-  }, [room.seed, gameStarted, prediction, calculator, elimination]);
-
-  // Surrender - only works if game has actually started
-  const surrender = useCallback(() => {
-    if (!gameStarted) return; // Safety check: can't surrender before game starts
-    setIsSurrender(true);
-    handleGameOver('surrender');
-  }, [gameStarted, handleGameOver]);
 
   // Leave room
   const leaveRoom = useCallback(() => {
@@ -386,7 +295,7 @@ export function useBattleMode(): UseBattleModeReturn {
     calculationHistory,
     lastScoreBreakdown: elimination.lastScoreBreakdown,
 
-    isUnderAttack,
+    isUnderAttack: attack.isUnderAttack,
 
     rematchRequested: room.rematchRequested || false,
     opponentRematchRequested: room.opponent?.rematchRequested || false,
