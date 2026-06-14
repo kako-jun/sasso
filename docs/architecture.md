@@ -43,6 +43,8 @@ src/
 │   ├── usePredictionTimer.ts # Shared prediction countdown logic
 │   ├── useEndlessMode.ts   # Endless/Sprint mode integration
 │   ├── useBattleMode.ts    # Battle mode orchestration
+│   ├── useBattleAttack.ts  # Battle attack I/O (incoming/outgoing)
+│   ├── useBattleLifecycle.ts # Battle lifecycle FSM (start/over/reset)
 │   ├── useSeededPrediction.ts # Deterministic prediction (battle sync)
 │   ├── useArena.ts         # Room management (nostr-arena)
 │   └── useKeyboard.ts      # Keyboard input handling
@@ -114,19 +116,21 @@ src/
 
 ## Hooks Overview
 
-| Hook                | Responsibility                                    |
-| ------------------- | ------------------------------------------------- |
-| useGameController   | Bridges calculator and game, handles key input    |
-| useGame             | Composes game state from sub-hooks                |
-| useCalculator       | Calculator state machine (useReducer)             |
-| useElimination      | Elimination chain animation and scoring           |
-| usePrediction       | Prediction state and generation                   |
-| usePredictionTimer  | Shared prediction countdown and application logic |
-| useEndlessMode      | Endless/Sprint mode integration                   |
-| useBattleMode       | Battle mode orchestration (room + game)           |
-| useSeededPrediction | Deterministic prediction with shared seed         |
-| useArena            | Room management using nostr-arena                 |
-| useKeyboard         | Keyboard event handling                           |
+| Hook                | Responsibility                                         |
+| ------------------- | ------------------------------------------------------ |
+| useGameController   | Bridges calculator and game, handles key input         |
+| useGame             | Composes game state from sub-hooks                     |
+| useCalculator       | Calculator state machine (useReducer)                  |
+| useElimination      | Elimination chain animation and scoring                |
+| usePrediction       | Prediction state and generation                        |
+| usePredictionTimer  | Shared prediction countdown and application logic      |
+| useEndlessMode      | Endless/Sprint mode integration                        |
+| useBattleMode       | Battle mode orchestration (room + game)                |
+| useBattleAttack     | Battle attack I/O (incoming receive + outgoing queue)  |
+| useBattleLifecycle  | Battle lifecycle FSM (start/surrender/game over/reset) |
+| useSeededPrediction | Deterministic prediction with shared seed              |
+| useArena            | Room management using nostr-arena                      |
+| useKeyboard         | Keyboard event handling                                |
 
 ## Game Logic Modules
 
