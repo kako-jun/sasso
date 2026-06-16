@@ -32,9 +32,10 @@ For generic battle room documentation, see the `nostr-arena` package README/docs
 "No relay response: timeout" で失敗しがちだった。join 失敗ではクライアントは切断されない
 （切断は `leave()` のみ）ため、ウォームになった接続を使い回す **2回目以降は即座に成功する**。
 
-そこで sasso 側で `joinRoom` を指数バックオフ付きでリトライする（`src/utils/withRetry.ts`、
-既定 3回・待機 `[0, 800, 1600]` ms）。ディープリンク自動参加・手動 "Join Room" の両方に効く。
-全試行が失敗した場合は、従来のように黙って空の Create/Join 画面へ落とすのではなく、
+そこで sasso 側で `joinRoom` を `nostr-arena` の `withRetry` でリトライする
+（`{ maxAttempts: 3, initialDelay: 800 }`）。指数バックオフ（×2）で、最初の試行は即実行・
+失敗時は 800ms → 1600ms 待機して最大 3 回試みる。ディープリンク自動参加・手動 "Join Room" の
+両方に効く。全試行が失敗した場合は、従来のように黙って空の Create/Join 画面へ落とすのではなく、
 **最後のエラー理由を Create/Join 画面（select モード）に表示する**（`RoomCreation` の
 `initialError`）。
 
