@@ -112,8 +112,9 @@ export function useBattleMode(): UseBattleModeReturn {
 
   // Send state updates when display/score changes.
   // Driven by our own gameStarted/isGameOver, NOT room.status: nostr-arena never
-  // sets 'playing' (the old `=== 'playing'` branch was dead) and only leaves the
-  // room in 'ready', so sync must follow the local game lifecycle instead.
+  // sets 'playing' (the old `=== 'playing'` branch was dead) — during play the room
+  // stays in 'ready' (it only moves to 'finished' on gameover), so sync must follow
+  // the local game lifecycle instead.
   useEffect(() => {
     // Gated on `gameStarted && !isGameOver`: when the losing move sets isGameOver=true,
     // that final render is not sent, so the opponent's displayed score can be one

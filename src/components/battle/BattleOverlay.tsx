@@ -1,10 +1,8 @@
 import { useEffect, useState } from 'react';
 import { QRCodeSVG } from 'qrcode.react';
 import type { RoomStatus } from '../../types/battle';
-import { ROOM_EXPIRY_MS } from '../../types/battle';
+import { ROOM_EXPIRY_MS, WAITING_NUDGE_MS } from '../../constants';
 import styles from './BattleOverlay.module.css';
-
-const WAITING_NUDGE_MS = 60_000; // 60s: nudge to re-share
 
 interface BattleOverlayProps {
   status: RoomStatus;

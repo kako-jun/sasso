@@ -1,7 +1,5 @@
 import type { ScoreResult, Prediction } from './index';
 
-export const ROOM_EXPIRY_MS = 600_000; // host waiting-room lifetime; also passed to nostr-arena as roomExpiry
-
 // Sasso-specific game state (matches nostr-arena TGameState)
 export interface SassoGameState {
   display: string;
@@ -29,6 +27,8 @@ export type RoomStatus =
   | 'waiting'
   | 'joining'
   | 'ready'
+  // 'playing' is never emitted by nostr-arena (it goes 'ready' -> 'finished');
+  // retained only to mirror the package's RoomStatus type. Do not branch on it.
   | 'playing'
   | 'finished';
 

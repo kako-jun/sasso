@@ -10,7 +10,7 @@ import { useArena as usePackageArena } from 'nostr-arena/react';
 import { withRetry } from 'nostr-arena';
 import type { ArenaCallbacks } from 'nostr-arena';
 import type { SassoGameState, OpponentState, RoomState } from '../types/battle';
-import { ROOM_EXPIRY_MS } from '../types/battle';
+import { ROOM_EXPIRY_MS } from '../constants';
 import { dispatchBattleEvent, BATTLE_EVENTS } from '../utils/battleEvents';
 
 export interface UseArenaReturn {
