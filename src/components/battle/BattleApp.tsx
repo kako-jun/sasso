@@ -84,6 +84,13 @@ export function BattleApp({ initialRoomId, onChangeMode }: BattleAppProps) {
     onChangeMode('calculator');
   };
 
+  // Handle expired room: return host to the Create/Join screen for a fresh room
+  const handleExpire = () => {
+    battle.leaveRoom(); // resets arena room (status -> idle) and game state
+    setShowRoomCreation(true);
+    setRoomUrl('');
+  };
+
   // Show room creation UI
   if (showRoomCreation && battle.roomState.status === 'idle') {
     return (
@@ -217,8 +224,10 @@ export function BattleApp({ initialRoomId, onChangeMode }: BattleAppProps) {
       <BattleOverlay
         status={battle.roomState.status}
         roomUrl={roomUrl}
+        createdAt={battle.roomState.createdAt}
         isGameStarted={battle.gameStarted}
         onStart={() => battle.handleKey('1')}
+        onExpire={handleExpire}
         onLeave={handleLeave}
       />
     </div>

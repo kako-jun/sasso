@@ -36,6 +36,21 @@
   color: #666;
 }
 
+/* Re-share nudge shown after WAITING_NUDGE_MS while still waiting */
+.waitingHint {
+  font-size: 11px;
+  color: #000;
+  margin-bottom: 16px;
+  line-height: 1.4;
+}
+
+/* Button row for the expired-room state */
+.waitingButtons {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+}
+
 .battleResult {
   font-size: 24px;
   font-weight: bold;

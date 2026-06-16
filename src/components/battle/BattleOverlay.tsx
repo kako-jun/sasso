@@ -1,10 +1,15 @@
+import { useEffect, useState } from 'react';
 import { QRCodeSVG } from 'qrcode.react';
 import type { RoomStatus } from '../../types/battle';
+import { ROOM_EXPIRY_MS } from '../../types/battle';
 import styles from './BattleOverlay.module.css';
+
+const WAITING_NUDGE_MS = 60_000; // 60s: nudge to re-share
 
 interface BattleOverlayProps {
   status: RoomStatus;
   roomUrl?: string;
+  createdAt?: number;
   isWinner: boolean | null;
   isSurrender: boolean;
   isGameStarted: boolean;
@@ -14,6 +19,7 @@ interface BattleOverlayProps {
   opponentRematchRequested?: boolean;
   onStart?: () => void;
   onRetry?: () => void;
+  onExpire?: () => void;
   onLeave?: () => void;
 }
 
@@ -27,10 +33,61 @@ function OverlayWrapper({ children }: { children: React.ReactNode }) {
 }
 
 // Waiting for opponent overlay
-function WaitingOverlay({ roomUrl, onLeave }: { roomUrl?: string; onLeave?: () => void }) {
+function WaitingOverlay({
+  roomUrl,
+  createdAt,
+  onExpire,
+  onLeave,
+}: {
+  roomUrl?: string;
+  createdAt?: number;
+  onExpire?: () => void;
+  onLeave?: () => void;
+}) {
+  const [elapsed, setElapsed] = useState(0);
+
+  useEffect(() => {
+    // Without a creation timestamp we can't measure elapsed time; stay at 0.
+    if (createdAt == null) {
+      setElapsed(0);
+      return;
+    }
+    const tick = () => {
+      const e = Date.now() - createdAt;
+      setElapsed(e);
+      // Once expired the link is dead; no need to keep ticking every second.
+      if (e >= ROOM_EXPIRY_MS) clearInterval(id);
+    };
+    const id = setInterval(tick, 1000);
+    tick(); // seed immediately so phase is correct on first paint
+    return () => clearInterval(id);
+  }, [createdAt]);
+
+  // Room expired: the link is dead, so offer a fresh room instead of the QR/URL.
+  if (elapsed >= ROOM_EXPIRY_MS) {
+    return (
+      <OverlayWrapper>
+        <div className={styles.battleStatus}>This room has expired.</div>
+        <div className={styles.waitingButtons}>
+          <button className={styles.retryButton} onClick={() => onExpire?.()}>
+            New Room
+          </button>
+          <button className={styles.leaveButton} onClick={onLeave}>
+            Cancel
+          </button>
+        </div>
+      </OverlayWrapper>
+    );
+  }
+
   return (
     <OverlayWrapper>
       <div className={styles.battleStatus}>Waiting for opponent...</div>
+      {elapsed >= WAITING_NUDGE_MS && (
+        <div className={styles.waitingHint}>
+          Still waiting — try re-sharing the link with your opponent.
+        </div>
+      )}
       {roomUrl && (
         <>
           <div className={styles.qrCode}>
@@ -146,13 +203,25 @@ export function BattleFinishedOverlay({
 export function BattleOverlay({
   status,
   roomUrl,
+  createdAt,
   isGameStarted,
   onStart,
+  onExpire,
   onLeave,
-}: Pick<BattleOverlayProps, 'status' | 'roomUrl' | 'isGameStarted' | 'onStart' | 'onLeave'>) {
+}: Pick<
+  BattleOverlayProps,
+  'status' | 'roomUrl' | 'createdAt' | 'isGameStarted' | 'onStart' | 'onExpire' | 'onLeave'
+>) {
   switch (status) {
     case 'waiting':
-      return <WaitingOverlay roomUrl={roomUrl} onLeave={onLeave} />;
+      return (
+        <WaitingOverlay
+          roomUrl={roomUrl}
+          createdAt={createdAt}
+          onExpire={onExpire}
+          onLeave={onLeave}
+        />
+      );
 
     case 'ready':
       if (!isGameStarted) return <ReadyOverlay onStart={onStart} />;

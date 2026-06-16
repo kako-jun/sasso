@@ -125,6 +125,7 @@ of the rules stays part of the game.
 ### Battle Mode
 
 - 2-player online mode via Nostr
+- Host waiting screen nudges to re-share at ~60s and shows an expired state at 10 min (New Room → Create screen)
 - See [battle-mode.md](battle-mode.md) for details
 
 ## Elimination Animation
