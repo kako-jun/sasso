@@ -39,3 +39,6 @@ export const ATTACK_THRESHOLDS = {
 
 // URLs
 export const GITHUB_URL = 'https://github.com/kako-jun/sasso';
+// Rules live in the README — an opt-in "manual", not an in-game tutorial,
+// so figuring out the rules stays part of the game.
+export const HOW_TO_PLAY_URL = `${GITHUB_URL}#how-to-play`;
