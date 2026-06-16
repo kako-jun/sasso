@@ -14,7 +14,9 @@
 
 @media (max-height: 500px) {
   .window {
-    top: 12px;
+    /* Clear the 20px menu bar (the window is painted above it in DOM order, so
+       a smaller offset lets the title bar overlap the bar on short viewports). */
+    top: 24px;
     transform: translateX(-50%);
   }
 }
