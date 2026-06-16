@@ -5,8 +5,9 @@
  * Attack handling is done through game state (attack field with timestamp).
  */
 
-import { useRef, useMemo } from 'react';
+import { useRef, useMemo, useCallback } from 'react';
 import { useArena as usePackageArena } from 'nostr-arena/react';
+import { withRetry } from 'nostr-arena';
 import type { ArenaCallbacks } from 'nostr-arena';
 import type { SassoGameState, OpponentState, RoomState } from '../types/battle';
 import { ROOM_EXPIRY_MS } from '../types/battle';
@@ -97,6 +98,18 @@ export function useArena(): UseArenaReturn {
   // Use the package hook
   const room = usePackageArena<SassoGameState>(config, callbacks);
 
+  // Retry join over cold relays: the first cold attempt often fails because the
+  // fresh WebSocket handshakes to the relays don't complete within the package's
+  // 5s fetch window. A later attempt reuses the now-warm connection (join failure
+  // does NOT disconnect the client), so retrying is safe and reliable. Uses the
+  // package's exponential backoff (maxAttempts 3, initialDelay 800ms, ×2 → 800ms
+  // then 1600ms) to tolerate cold relay connections.
+  const joinRoom = useCallback(
+    (roomId: string) =>
+      withRetry(() => room.joinRoom(roomId), { maxAttempts: 3, initialDelay: 800 }),
+    [room.joinRoom]
+  );
+
   // Map opponent to Sasso's OpponentState type
   const opponent: OpponentState | null = room.opponent
     ? {
@@ -122,7 +135,7 @@ export function useArena(): UseArenaReturn {
 
     // Actions
     createRoom: room.createRoom,
-    joinRoom: room.joinRoom,
+    joinRoom,
     leaveRoom: room.leaveRoom,
     reconnect: room.reconnect,
     sendState: room.sendState,

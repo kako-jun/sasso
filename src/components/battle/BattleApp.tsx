@@ -30,6 +30,7 @@ export function BattleApp({ initialRoomId, onChangeMode }: BattleAppProps) {
   const battle = useBattleMode();
   const [showRoomCreation, setShowRoomCreation] = useState(!initialRoomId);
   const [roomUrl, setRoomUrl] = useState('');
+  const [joinError, setJoinError] = useState('');
   const isDesktop = useIsDesktop();
 
   // Handle keyboard input
@@ -53,7 +54,8 @@ export function BattleApp({ initialRoomId, onChangeMode }: BattleAppProps) {
           return battle.joinRoom(initialRoomId);
         }
       })
-      .catch(() => {
+      .catch((err) => {
+        setJoinError(err instanceof Error ? err.message : 'Could not join the room');
         setShowRoomCreation(true);
       });
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -61,6 +63,7 @@ export function BattleApp({ initialRoomId, onChangeMode }: BattleAppProps) {
 
   // Handle room creation
   const handleCreateRoom = async () => {
+    setJoinError('');
     const url = await battle.createRoom();
     setRoomUrl(url);
     setShowRoomCreation(false);
@@ -72,6 +75,7 @@ export function BattleApp({ initialRoomId, onChangeMode }: BattleAppProps) {
 
   // Handle room join
   const handleJoinRoom = async (roomId: string) => {
+    setJoinError('');
     await battle.joinRoom(roomId);
     setShowRoomCreation(false);
     // Update browser URL
@@ -97,6 +101,7 @@ export function BattleApp({ initialRoomId, onChangeMode }: BattleAppProps) {
       <div className="desktop">
         <MenuBar gameMode="battle" onChangeMode={onChangeMode} score={0} />
         <RoomCreation
+          initialError={joinError}
           onCreateRoom={handleCreateRoom}
           onJoinRoom={handleJoinRoom}
           onCancel={() => onChangeMode('calculator')}
