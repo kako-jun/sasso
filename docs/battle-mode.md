@@ -226,6 +226,20 @@ Attack power = score from that elimination.
 
 ---
 
+## 既知の無害なログ
+
+対戦から離脱（Cancel / Leave）すると、コンソールに
+`WebSocket is already in CLOSING or CLOSED state.` が数件（接続リレー数ぶん）出ることがある。
+
+- 原因: `nostr-arena` / `nostr-tools`（SimplePool）が teardown 時に、すでに閉じかけたソケットへ
+  購読 CLOSE を送るため。**ブラウザが直接出力する native ログ**で、`console.error` を上書きしても
+  消せない（アプリ側からは抑制不可能。実機で検証済み）。
+- 影響: 機能影響なし。離脱は正常に完了し、リスナー/タイマーのリークも無い（監査で確認済み）。
+- 恒久対応: 送信前に `readyState === OPEN` をガードする修正は `nostr-arena` / `nostr-tools` 側に属する。
+  将来パッケージを更新／fork できる時に対応する。それまでは静観（参照: issue #23）。
+
+---
+
 ## Implementation Files
 
 | File                                            | Purpose                                         |
