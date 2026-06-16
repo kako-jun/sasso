@@ -36,6 +36,14 @@ For generic battle room documentation, see the `nostr-arena` package README/docs
 | 有効期限 | 10分（作成から）            |
 | 使用回数 | 1回のみ（対戦終了後は無効） |
 
+#### ホストの待機画面の挙動（タイムアウト/期限）
+
+nostr-arena は `roomExpiry`（既定 10分）を join 側でしか検査しないため、ホストの待機画面は `roomState.createdAt` を使って sasso 側で経過時間を表示・判定する。
+
+- **作成〜60秒**: 通常の "Waiting for opponent..."（QR・URL・Copy・Cancel）。
+- **60秒〜10分**: 上記に加えて "Still waiting — try re-sharing the link with your opponent." の再共有を促すヒントを表示する。QR・URL・Copy は引き続き有効。
+- **10分以降（期限切れ）**: リンクが無効なため QR・URL は隠し、"This room has expired." と **New Room** ボタンを表示する。New Room を押すと `leaveRoom()` で部屋を idle に戻して Create/Join 画面へ戻る（自動遷移はせず、ユーザーのクリックを待つ）。
+
 ### Returning to Single-Player
 
 - **対戦中**: Surrender (C/Eキー or digit after =) → Leave
