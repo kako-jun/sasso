@@ -1,13 +1,29 @@
 // @vitest-environment jsdom
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach, beforeAll } from 'vitest';
 import { render, screen, cleanup, act } from '@testing-library/react';
 import { SprintRanking } from './SprintRanking';
+
+// jsdom does not implement scrollIntoView; the component calls it to bring the
+// highlighted "(you)" row into view, so stub it globally for these tests.
+beforeAll(() => {
+  Element.prototype.scrollIntoView = vi.fn();
+});
 
 const entries = [
   { rank: 1, name: 'CleverDog711', score: 350, displayScore: '350', createdAt: '2026-01-14' },
   { rank: 2, name: 'SwiftCat42', score: 210, displayScore: '210', createdAt: '2026-01-13' },
   { rank: 3, name: 'BraveFox9', score: 120, displayScore: '120', createdAt: '2026-01-12' },
 ];
+
+// Ten entries to exercise the limit=10 / MAX_ROWS=10 alignment (every fetched
+// row must render, including rank 9–10 which the old 8-row cap dropped).
+const tenEntries = Array.from({ length: 10 }, (_, i) => ({
+  rank: i + 1,
+  name: `Player${i + 1}`,
+  score: 1000 - i * 10,
+  displayScore: String(1000 - i * 10),
+  createdAt: '2026-01-14',
+}));
 
 function mockFetchResolving(data: unknown) {
   const fn = vi.fn(() =>
@@ -75,6 +91,21 @@ describe('SprintRanking', () => {
     mockFetchResolving({ success: true, data: { entries: [] } });
     render(<SprintRanking playerScore={0} />);
     expect(await screen.findByText('No scores yet')).toBeTruthy();
+  });
+
+  it('renders all 10 fetched entries (no 8-row cap) and highlights rank 9', async () => {
+    mockFetchResolving({ success: true, data: { entries: tenEntries } });
+    // Rank 9's score is 1000 - 8*10 = 920.
+    render(<SprintRanking playerScore={920} />);
+
+    // The last fetched row must be rendered, not dropped.
+    expect(await screen.findByText('Player10')).toBeTruthy();
+    expect(screen.getByText('Player9')).toBeTruthy();
+
+    // The rank-9 row (player's score) is the highlighted one.
+    const youRow = screen.getByText('Player9').closest('li');
+    expect(youRow?.getAttribute('data-you')).toBe('true');
+    expect(screen.getByText('(you)')).toBeTruthy();
   });
 });
 

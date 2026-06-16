@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import styles from './SprintRanking.module.css';
 
 const RANKING_ID = 'sasso-5d582992';
@@ -6,7 +6,9 @@ const RANKING_URL = `https://api.nostalgic.llll-ll.com/ranking?action=get&id=${R
 // The score submit fires ~1s after game over; re-fetch once afterwards so the
 // player's freshly-submitted score has a chance to appear in the list.
 const REFETCH_DELAY_MS = 2500;
-const MAX_ROWS = 8;
+// Render every entry the API returns (limit=10) so a player landing at rank
+// 9–10 is shown and highlighted rather than silently dropped; the .list scrolls.
+const MAX_ROWS = 10;
 
 interface Entry {
   rank: number;
@@ -24,6 +26,7 @@ export function SprintRanking({ playerScore }: SprintRankingProps) {
   // null = still loading the very first response.
   const [entries, setEntries] = useState<Entry[] | null>(null);
   const [error, setError] = useState(false);
+  const youRef = useRef<HTMLLIElement | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -65,6 +68,12 @@ export function SprintRanking({ playerScore }: SprintRankingProps) {
     };
   }, []);
 
+  // When the highlighted "(you)" row exists below the fold, scroll it into the
+  // visible part of the (max-height capped) list. Guarded: only if a ref landed.
+  useEffect(() => {
+    youRef.current?.scrollIntoView({ block: 'nearest' });
+  }, [entries]);
+
   let body: React.ReactNode;
   if (entries === null && !error) {
     body = <div className={styles.message}>Loading…</div>;
@@ -77,11 +86,16 @@ export function SprintRanking({ playerScore }: SprintRankingProps) {
     body = (
       <ol className={styles.list}>
         {(entries ?? []).slice(0, MAX_ROWS).map((entry, i) => {
+          // Best-effort identity match: the submit uses a server-generated name,
+          // so the client has no stable identity to match on. We highlight the
+          // first row whose score equals ours; a tie at the same score may
+          // highlight another player's row instead of the real one.
           const isYou = !highlighted && entry.score === playerScore;
           if (isYou) highlighted = true;
           return (
             <li
               key={`${entry.rank}-${i}`}
+              ref={isYou ? youRef : undefined}
               className={isYou ? `${styles.row} ${styles.you}` : styles.row}
               data-you={isYou ? 'true' : undefined}
             >
