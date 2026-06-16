@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useBattleMode, useKeyboard, useIsDesktop } from '../../hooks';
+import { useBattleMode, useKeyboard, useIsDesktop, useConnectionError } from '../../hooks';
 import {
   MenuBar,
   Window,
@@ -16,6 +16,7 @@ import { RoomCreation } from './RoomCreation';
 import { MobileOpponentScore } from './MobileOpponentScore';
 import { OpponentHeader } from './OpponentHeader';
 import type { GameMode } from '../../types';
+import styles from './BattleApp.module.css';
 
 interface BattleAppProps {
   initialRoomId?: string;
@@ -32,6 +33,7 @@ export function BattleApp({ initialRoomId, onChangeMode }: BattleAppProps) {
   const [roomUrl, setRoomUrl] = useState('');
   const [joinError, setJoinError] = useState('');
   const isDesktop = useIsDesktop();
+  const hasConnError = useConnectionError();
 
   // Handle keyboard input
   useKeyboard(battle.handleKey);
@@ -199,6 +201,13 @@ export function BattleApp({ initialRoomId, onChangeMode }: BattleAppProps) {
 
         {/* Calculator Window */}
         <Window title="Sasso" onClose={handleLeave}>
+          {/* Non-blocking, in-window connection-error indicator (see useArena onError).
+              Stays inside the calculator window per the design system — never a toast. */}
+          {hasConnError && (
+            <div className={styles.connError} role="status">
+              Reconnecting…
+            </div>
+          )}
           {battle.roomState.status === 'finished' && (
             <BattleFinishedOverlay
               isWinner={battle.isWinner}
