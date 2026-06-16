@@ -5,6 +5,8 @@ export const MAX_TIME_FACTOR = 300000; // 5 minutes for difficulty scaling
 export const ELIMINATION_ANIMATION_MS = 400; // Flash animation duration
 export const CHAIN_CHECK_DELAY_MS = 100; // Delay before checking for chain
 export const BANNER_DISMISS_MS = 4000; // connection-error indicator auto-dismiss
+export const WAITING_NUDGE_MS = 60_000; // battle: nudge the host to re-share the link
+export const ROOM_EXPIRY_MS = 600_000; // battle: host waiting-room lifetime; also passed to nostr-arena as roomExpiry
 
 // Display
 export const MAX_DISPLAY_DIGITS = 12; // Game over at 13+ digits
