@@ -141,6 +141,8 @@ function JoiningOverlay() {
 interface BattleFinishedOverlayProps {
   isWinner: boolean | null;
   isSurrender: boolean;
+  /** Round ended because of a disconnect (win: opponent left; loss: we were dropped). */
+  isDisconnectEnd?: boolean;
   rematchRequested?: boolean;
   opponentRematchRequested?: boolean;
   onRetry?: () => void;
@@ -154,13 +156,23 @@ interface BattleFinishedOverlayProps {
 export function BattleFinishedOverlay({
   isWinner,
   isSurrender,
+  isDisconnectEnd,
   rematchRequested,
   opponentRematchRequested,
   onRetry,
   onLeave,
 }: BattleFinishedOverlayProps) {
-  const resultMessage =
-    isWinner === null ? 'DRAW' : isWinner ? 'VICTORY' : isSurrender ? 'SURRENDER' : 'DEFEAT';
+  const resultMessage = isDisconnectEnd
+    ? isWinner
+      ? 'OPPONENT LEFT'
+      : 'DISCONNECTED'
+    : isWinner === null
+      ? 'DRAW'
+      : isWinner
+        ? 'VICTORY'
+        : isSurrender
+          ? 'SURRENDER'
+          : 'DEFEAT';
 
   const getRematchButtonLabel = () => {
     if (rematchRequested && opponentRematchRequested) return 'Starting...';

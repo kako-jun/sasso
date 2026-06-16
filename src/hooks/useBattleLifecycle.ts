@@ -25,6 +25,7 @@ export interface UseBattleLifecycleReturn {
   isGameOver: boolean;
   isSurrender: boolean;
   isWinner: boolean | null;
+  isDisconnectEnd: boolean;
 
   startGame: () => void;
   surrender: () => void;
@@ -51,6 +52,7 @@ export function useBattleLifecycle({
   const [isGameOver, setIsGameOver] = useState(false);
   const [isSurrender, setIsSurrender] = useState(false);
   const [isWinner, setIsWinner] = useState<boolean | null>(null);
+  const [isDisconnectEnd, setIsDisconnectEnd] = useState(false);
   const [gameStarted, setGameStarted] = useState(false);
 
   // Reset all game state (shared by leaveRoom and rematch)
@@ -66,6 +68,7 @@ export function useBattleLifecycle({
       setIsGameOver(false);
       setIsSurrender(false);
       setIsWinner(null);
+      setIsDisconnectEnd(false);
       setGameStarted(false);
       attack.reset();
       onResetDisplay();
@@ -86,17 +89,29 @@ export function useBattleLifecycle({
 
   // Listen for opponent lifecycle events from room
   useEffect(() => {
-    const handleOpponentGameOver = () => {
+    const handleOpponentGameOver = (e: CustomEvent<{ reason?: string; finalScore?: number }>) => {
+      if (isGameOver) return; // first finalization wins; ignore late/duplicate opponent end events
       setIsGameOver(true);
-      setIsWinner(true);
       prediction.clearCountdown();
+      if (e.detail?.reason === 'disconnect') {
+        // The opponent detected MY disconnect and claimed the win → I lost.
+        setIsWinner(false);
+        setIsDisconnectEnd(true);
+      } else {
+        setIsWinner(true);
+      }
     };
 
     const handleOpponentDisconnect = () => {
       if (gameStarted && !isGameOver) {
         setIsGameOver(true);
         setIsWinner(true);
+        setIsDisconnectEnd(true);
         prediction.clearCountdown();
+        // Authoritative: tell the (possibly-returning) opponent they lost by disconnect,
+        // so the two clients agree instead of both believing they won. Ephemeral event,
+        // so a fully-departed client may miss it — best effort.
+        room.sendGameOver('disconnect', elimination.score);
       }
     };
 
@@ -125,7 +140,7 @@ export function useBattleLifecycle({
       );
       window.removeEventListener(BATTLE_EVENTS.REMATCH_START, handleRematchStart as EventListener);
     };
-  }, [prediction, gameStarted, isGameOver, resetGameState]);
+  }, [prediction, gameStarted, isGameOver, resetGameState, room, elimination.score]);
 
   // Start the game
   const startGame = useCallback(() => {
@@ -136,6 +151,7 @@ export function useBattleLifecycle({
       setIsGameOver(false);
       setIsSurrender(false);
       setIsWinner(null);
+      setIsDisconnectEnd(false);
       onStartDisplay();
       setGameStarted(true);
     }
@@ -153,6 +169,7 @@ export function useBattleLifecycle({
     isGameOver,
     isSurrender,
     isWinner,
+    isDisconnectEnd,
     startGame,
     surrender,
     handleGameOver,

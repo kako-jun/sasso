@@ -212,6 +212,7 @@ export function BattleApp({ initialRoomId, onChangeMode }: BattleAppProps) {
             <BattleFinishedOverlay
               isWinner={battle.isWinner}
               isSurrender={battle.isSurrender}
+              isDisconnectEnd={battle.isDisconnectEnd}
               rematchRequested={battle.rematchRequested}
               opponentRematchRequested={battle.opponentRematchRequested}
               onRetry={battle.requestRematch}

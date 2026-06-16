@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { describe, it, expect, vi, afterEach } from 'vitest';
 import { act, render, screen, cleanup } from '@testing-library/react';
-import { BattleOverlay } from './BattleOverlay';
+import { BattleOverlay, BattleFinishedOverlay } from './BattleOverlay';
 
 const NOW = 1_700_000_000_000;
 const ROOM_URL = 'https://sasso.example/battle/abc123';
@@ -111,5 +111,28 @@ describe('BattleOverlay waiting timeout/expiry', () => {
 
     expect(screen.getByText('This room has expired.')).toBeTruthy();
     expect(document.querySelector('svg')).toBeNull();
+  });
+});
+
+describe('BattleFinishedOverlay disconnect end result', () => {
+  it('shows OPPONENT LEFT when the round ended by disconnect and we won', () => {
+    render(<BattleFinishedOverlay isWinner={true} isSurrender={false} isDisconnectEnd />);
+
+    expect(screen.getByText('OPPONENT LEFT')).toBeTruthy();
+    expect(screen.queryByText('VICTORY')).toBeNull();
+  });
+
+  it('shows DISCONNECTED when the round ended by disconnect and we lost', () => {
+    render(<BattleFinishedOverlay isWinner={false} isSurrender={false} isDisconnectEnd />);
+
+    expect(screen.getByText('DISCONNECTED')).toBeTruthy();
+    expect(screen.queryByText('DEFEAT')).toBeNull();
+  });
+
+  it('still shows VICTORY for a normal win when isDisconnectEnd is absent', () => {
+    render(<BattleFinishedOverlay isWinner={true} isSurrender={false} />);
+
+    expect(screen.getByText('VICTORY')).toBeTruthy();
+    expect(screen.queryByText('OPPONENT LEFT')).toBeNull();
   });
 });
