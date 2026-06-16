@@ -6,17 +6,24 @@ interface RoomCreationProps {
   onCreateRoom: () => Promise<string>;
   onJoinRoom: (roomId: string) => Promise<void>;
   onCancel: () => void;
+  /** Error from a prior (e.g. deep-link auto) join, shown on the select screen. */
+  initialError?: string;
 }
 
 /**
  * Room creation/joining UI.
  * Allows creating a new room or joining an existing one.
  */
-export function RoomCreation({ onCreateRoom, onJoinRoom, onCancel }: RoomCreationProps) {
+export function RoomCreation({
+  onCreateRoom,
+  onJoinRoom,
+  onCancel,
+  initialError,
+}: RoomCreationProps) {
   const [mode, setMode] = useState<'select' | 'create' | 'join'>('select');
   const [roomUrl, setRoomUrl] = useState('');
   const [joinInput, setJoinInput] = useState('');
-  const [error, setError] = useState('');
+  const [error, setError] = useState(initialError ?? '');
   const [isLoading, setIsLoading] = useState(false);
   const [scannerError, setScannerError] = useState('');
 

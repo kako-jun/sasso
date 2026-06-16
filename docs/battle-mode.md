@@ -25,6 +25,19 @@ For generic battle room documentation, see the `nostr-arena` package README/docs
 9. Leave ボタンで1人用モードに戻る
 ```
 
+#### ディープリンク参加のリトライ（冷たいリレー対策）
+
+招待URL（`/battle/<id>`）をコールドな状態で開くと、4つのリレーへの WebSocket ハンドシェイクが
+`nostr-arena` の 5秒 fetch 窓に間に合わず、最初の join が "Room not found" /
+"No relay response: timeout" で失敗しがちだった。join 失敗ではクライアントは切断されない
+（切断は `leave()` のみ）ため、ウォームになった接続を使い回す **2回目以降は即座に成功する**。
+
+そこで sasso 側で `joinRoom` を指数バックオフ付きでリトライする（`src/utils/withRetry.ts`、
+既定 3回・待機 `[0, 800, 1600]` ms）。ディープリンク自動参加・手動 "Join Room" の両方に効く。
+全試行が失敗した場合は、従来のように黙って空の Create/Join 画面へ落とすのではなく、
+**最後のエラー理由を Create/Join 画面（select モード）に表示する**（`RoomCreation` の
+`initialError`）。
+
 ### Room URL
 
 **形式:** `<deployed-origin>/battle/{room-id}`（例: `https://sasso.llll-ll.com/battle/<id>`）。URL は `window.location.origin` から構築するので、ローカル開発・本番どちらでも自動追従する。
