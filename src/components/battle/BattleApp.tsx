@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useBattleMode, useKeyboard, useIsDesktop } from '../../hooks';
+import { useBattleMode, useKeyboard, useIsDesktop, useConnectionError } from '../../hooks';
 import {
   MenuBar,
   Window,
@@ -16,6 +16,7 @@ import { RoomCreation } from './RoomCreation';
 import { MobileOpponentScore } from './MobileOpponentScore';
 import { OpponentHeader } from './OpponentHeader';
 import type { GameMode } from '../../types';
+import styles from './BattleApp.module.css';
 
 interface BattleAppProps {
   initialRoomId?: string;
@@ -32,6 +33,7 @@ export function BattleApp({ initialRoomId, onChangeMode }: BattleAppProps) {
   const [roomUrl, setRoomUrl] = useState('');
   const [joinError, setJoinError] = useState('');
   const isDesktop = useIsDesktop();
+  const hasConnError = useConnectionError();
 
   // Handle keyboard input
   useKeyboard(battle.handleKey);
@@ -173,6 +175,13 @@ export function BattleApp({ initialRoomId, onChangeMode }: BattleAppProps) {
 
   return (
     <div className="desktop">
+      {/* Non-blocking banner for transient relay/publish errors (see useArena onError) */}
+      {hasConnError && (
+        <div className={styles.connectionBanner} role="status">
+          Connection issue — reconnecting…
+        </div>
+      )}
+
       {/* Mobile: MenuBar at top */}
       {!isDesktop && <MenuBar gameMode="battle" onChangeMode={onChangeMode} score={battle.score} />}
       {!isDesktop && battle.opponent && (

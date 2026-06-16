@@ -12,4 +12,5 @@ export const BATTLE_EVENTS = {
   OPPONENT_DISCONNECT: 'sasso-opponent-disconnect',
   REMATCH_REQUESTED: 'sasso-rematch-requested',
   REMATCH_START: 'sasso-rematch-start',
+  ERROR: 'sasso-error',
 } as const;

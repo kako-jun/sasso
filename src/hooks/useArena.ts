@@ -90,6 +90,7 @@ export function useArena(): UseArenaReturn {
       },
       onError: (error: Error) => {
         console.error('Arena error:', error.message);
+        dispatchBattleEvent(BATTLE_EVENTS.ERROR, { message: error.message });
       },
     }),
     []
