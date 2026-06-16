@@ -14,8 +14,9 @@
 
 @media (max-height: 500px) {
   .window {
-    /* Clear the 20px menu bar (the window is painted above it in DOM order, so
-       a smaller offset lets the title bar overlap the bar on short viewports). */
+    /* Clear the 20px menu bar: this window is absolutely positioned, so it
+       paints above the in-flow menu bar — a smaller offset would let the title
+       bar cover the bar on short viewports. */
     top: 24px;
     transform: translateX(-50%);
   }

@@ -124,13 +124,14 @@ No blur, no spread, no colored shadows. This is a pixel-art shadow system.
 
 ## 8. Responsive Behavior
 
-| Condition           | Behavior                                                                |
-| ------------------- | ----------------------------------------------------------------------- |
-| Default             | Calculator centered on desktop, natural size                            |
-| `max-height: 500px` | Reduce button sizes, tighten padding                                    |
-| Small viewports     | Scale down the calculator proportionally; desktop fills remaining space |
+| Condition           | Behavior                                                                                                  |
+| ------------------- | --------------------------------------------------------------------------------------------------------- |
+| Default             | Calculator centered on desktop, natural size                                                              |
+| `max-height: 720px` | Multiplication helper pins to the viewport bottom (`fixed; bottom: 12px; scale .8`) so it stays on-screen |
+| `max-height: 500px` | Window pins near the top (`top: 24px`, clearing the 20px menu bar); helper tucks higher (`bottom: 28px`)  |
+| Small viewports     | Scale down auxiliary overlays proportionally; desktop fills remaining space                               |
 
-The calculator window should not reflow into a different layout. It maintains its fixed aspect ratio and grid. On very small screens, CSS `transform: scale()` can shrink the entire window while preserving pixel relationships.
+The calculator window should not reflow into a different layout. It maintains its fixed aspect ratio and grid. On short viewports the window is pinned near the top (offset to clear the menu bar) rather than vertically centered, and the multiplication helper is pinned to the viewport bottom (with `transform: scale()`) so it never overflows the fold.
 
 ## 9. Agent Prompt Guide
 

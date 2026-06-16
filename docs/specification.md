@@ -39,6 +39,7 @@ of the rules stays part of the game.
 - Border: 3px solid black
 - Shadow: 5px 5px 0 black
 - Centered on screen
+- On short viewports (`max-height: 500px`) the window is pinned to `top: 24px` instead of vertically centered, so its title bar clears the 20px menu bar. The multiplication helper has its own short-viewport rules (see [Multiplication Helper](#multiplication-helper)).
 
 ### Title Bar
 
@@ -143,6 +144,13 @@ of the rules stays part of the game.
 - Positioned below calculator window
 - Max width: 300px with word-break
 - Operators displayed in bold
+
+## Multiplication Helper
+
+- Shown in prediction modes (Endless / Battle) only when the upcoming prediction is a multiplication (`×N`); visualizes the Indian "井" line method
+- Default: positioned just below the calculator window (`top: calc(50% + 215px)`, centered)
+- `max-height: 720px`: pinned to the viewport bottom (`position: fixed; bottom: 12px; transform: scale(.8)`) so it never overflows below the fold on short portrait phones
+- `max-height: 500px`: tucked slightly higher and smaller (`bottom: 28px; scale(.75)`) for landscape
 
 ## Keyboard Controls
 

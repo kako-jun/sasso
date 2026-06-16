@@ -45,11 +45,16 @@
   }
 }
 
-/* Landscape / very short: tuck it a touch higher and smaller. Declared after the
-   720px rule so these two properties win in the cascade at <=500px. */
+/* Landscape / very short: same bottom-pinned layout, tucked a touch higher and
+   smaller. Self-contained (does not rely on inheriting position/left/origin from
+   the 720px block) so reordering or extracting either block can't break it. */
 @media (max-height: 500px) {
   .multiplicationHelper {
+    position: fixed;
+    top: auto;
     bottom: 28px;
+    left: 50%;
     transform: translateX(-50%) scale(0.75);
+    transform-origin: bottom center;
   }
 }
