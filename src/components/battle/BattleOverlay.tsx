@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react';
 import { QRCodeSVG } from 'qrcode.react';
 import type { RoomStatus } from '../../types/battle';
+import { ROOM_EXPIRY_MS } from '../../types/battle';
 import styles from './BattleOverlay.module.css';
 
 const WAITING_NUDGE_MS = 60_000; // 60s: nudge to re-share
-const ROOM_EXPIRY_MS = 600_000; // 10min: room expired (mirrors nostr-arena default roomExpiry)
 
 interface BattleOverlayProps {
   status: RoomStatus;
@@ -52,9 +52,14 @@ function WaitingOverlay({
       setElapsed(0);
       return;
     }
-    const tick = () => setElapsed(Date.now() - createdAt);
-    tick(); // seed immediately so phase is correct on first paint
+    const tick = () => {
+      const e = Date.now() - createdAt;
+      setElapsed(e);
+      // Once expired the link is dead; no need to keep ticking every second.
+      if (e >= ROOM_EXPIRY_MS) clearInterval(id);
+    };
     const id = setInterval(tick, 1000);
+    tick(); // seed immediately so phase is correct on first paint
     return () => clearInterval(id);
   }, [createdAt]);
 
@@ -64,7 +69,7 @@ function WaitingOverlay({
       <OverlayWrapper>
         <div className={styles.battleStatus}>This room has expired.</div>
         <div className={styles.waitingButtons}>
-          <button className={styles.copyButton} onClick={() => onExpire?.()}>
+          <button className={styles.retryButton} onClick={() => onExpire?.()}>
             New Room
           </button>
           <button className={styles.leaveButton} onClick={onLeave}>

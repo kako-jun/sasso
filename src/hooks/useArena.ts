@@ -9,6 +9,7 @@ import { useRef, useMemo } from 'react';
 import { useArena as usePackageArena } from 'nostr-arena/react';
 import type { ArenaCallbacks } from 'nostr-arena';
 import type { SassoGameState, OpponentState, RoomState } from '../types/battle';
+import { ROOM_EXPIRY_MS } from '../types/battle';
 import { dispatchBattleEvent, BATTLE_EVENTS } from '../utils/battleEvents';
 
 export interface UseArenaReturn {
@@ -48,6 +49,7 @@ export function useArena(): UseArenaReturn {
         'wss://relay.snort.social',
         'wss://relay.primal.net',
       ],
+      roomExpiry: ROOM_EXPIRY_MS,
     }),
     []
   );

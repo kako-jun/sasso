@@ -38,7 +38,7 @@
 
 /* Re-share nudge shown after WAITING_NUDGE_MS while still waiting */
 .waitingHint {
-  font-size: 12px;
+  font-size: 11px;
   color: #000;
   margin-bottom: 16px;
   line-height: 1.4;

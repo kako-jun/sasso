@@ -1,5 +1,7 @@
 import type { ScoreResult, Prediction } from './index';
 
+export const ROOM_EXPIRY_MS = 600_000; // host waiting-room lifetime; also passed to nostr-arena as roomExpiry
+
 // Sasso-specific game state (matches nostr-arena TGameState)
 export interface SassoGameState {
   display: string;

@@ -11,17 +11,19 @@ afterEach(() => {
   vi.useRealTimers();
 });
 
-function renderWaiting(overrides: { onExpire?: () => void } = {}) {
+function renderWaiting(
+  overrides: { onExpire?: () => void; onLeave?: () => void; createdAt?: number } = {}
+) {
   vi.useFakeTimers();
   vi.setSystemTime(NOW);
   return render(
     <BattleOverlay
       status="waiting"
       roomUrl={ROOM_URL}
-      createdAt={NOW}
+      createdAt={'createdAt' in overrides ? overrides.createdAt : NOW}
       isGameStarted={false}
       onExpire={overrides.onExpire}
-      onLeave={() => {}}
+      onLeave={overrides.onLeave ?? (() => {})}
     />
   );
 }
@@ -64,5 +66,50 @@ describe('BattleOverlay waiting timeout/expiry', () => {
       newRoomButton.click();
     });
     expect(onExpire).toHaveBeenCalledTimes(1);
+  });
+
+  it('without createdAt stays in plain waiting state even past expiry', () => {
+    renderWaiting({ createdAt: undefined });
+
+    act(() => {
+      vi.advanceTimersByTime(600_000);
+    });
+
+    expect(screen.getByText('Waiting for opponent...')).toBeTruthy();
+    expect(screen.queryByText(/try re-sharing the link/)).toBeNull();
+    expect(screen.queryByText('This room has expired.')).toBeNull();
+  });
+
+  it('Cancel in the expired state calls onLeave (not onExpire)', () => {
+    const onExpire = vi.fn();
+    const onLeave = vi.fn();
+    renderWaiting({ onExpire, onLeave });
+
+    act(() => {
+      vi.advanceTimersByTime(600_000);
+    });
+
+    expect(screen.getByText('This room has expired.')).toBeTruthy();
+
+    const cancelButton = screen.getByRole('button', { name: 'Cancel' });
+    act(() => {
+      cancelButton.click();
+    });
+
+    expect(onLeave).toHaveBeenCalledTimes(1);
+    expect(onExpire).not.toHaveBeenCalled();
+  });
+
+  it('hides the QR code once the room has expired', () => {
+    renderWaiting();
+
+    expect(document.querySelector('svg')).not.toBeNull();
+
+    act(() => {
+      vi.advanceTimersByTime(600_000);
+    });
+
+    expect(screen.getByText('This room has expired.')).toBeTruthy();
+    expect(document.querySelector('svg')).toBeNull();
   });
 });
