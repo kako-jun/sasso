@@ -1,4 +1,4 @@
-import { GITHUB_URL } from '../constants';
+import { GITHUB_URL, HOW_TO_PLAY_URL } from '../constants';
 import styles from './AboutModal.module.css';
 import { VisitorCounter } from './VisitorCounter';
 
@@ -28,6 +28,9 @@ export function AboutModal({ isOpen, onClose }: AboutModalProps) {
           by <strong>kako-jun</strong>
         </div>
         <div className={styles.aboutLinks}>
+          <a href={HOW_TO_PLAY_URL} target="_blank" rel="noopener noreferrer">
+            How to Play
+          </a>
           <a href={GITHUB_URL} target="_blank" rel="noopener noreferrer">
             GitHub
           </a>

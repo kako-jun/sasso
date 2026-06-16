@@ -25,6 +25,14 @@ Sasso is a calculator-based puzzle game with Classic Macintosh System 7 inspired
 - Current score shown right-aligned during gameplay
 - Height: 20px
 
+### About Dialog
+
+Opened from the `About` menu item. Shows the app name, version, the worldwide play
+counter, and the line "Figuring out the rules is part of the game." Links row:
+**How to Play** (opens the README rules, `#how-to-play`), GitHub, Homepage — plus a Sponsor
+button. The rules link is intentionally opt-in (only reachable via About) so the discovery
+of the rules stays part of the game.
+
 ### Window
 
 - Border radius: 8px
