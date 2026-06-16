@@ -167,5 +167,8 @@ Static assets served from `public/` (copied verbatim into `dist/` by Vite):
 
 - `robots.txt` — allows all crawlers, references the sitemap, and disallows the ephemeral `/battle` room URLs
 - `sitemap.xml` — single canonical entry for `https://sasso.llll-ll.com/`
+- `og-image.png` — 1200×630 Classic Mac styled share card (used by Open Graph + Twitter `summary_large_image`)
 
-`index.html` carries the canonical link plus Open Graph / Twitter Card metadata. Canonical URL: `https://sasso.llll-ll.com/`.
+`index.html` carries the canonical link, Open Graph / Twitter Card metadata, and a JSON-LD
+`VideoGame` block (rendered as an inline `<script type="application/ld+json">`). Canonical URL:
+`https://sasso.llll-ll.com/`.
