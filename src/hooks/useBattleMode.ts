@@ -115,6 +115,9 @@ export function useBattleMode(): UseBattleModeReturn {
   // sets 'playing' (the old `=== 'playing'` branch was dead) and only leaves the
   // room in 'ready', so sync must follow the local game lifecycle instead.
   useEffect(() => {
+    // Gated on `gameStarted && !isGameOver`: when the losing move sets isGameOver=true,
+    // that final render is not sent, so the opponent's displayed score can be one
+    // elimination stale at game end. The game is over; the match outcome is unaffected.
     if (gameStarted && !isGameOver) {
       const state = {
         display: calculator.display,

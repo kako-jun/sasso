@@ -159,6 +159,50 @@ describe('useBattleLifecycle', () => {
     expect(fakes.prediction.clearCountdown).toHaveBeenCalled();
   });
 
+  it('OPPONENT_GAMEOVER does not override an already-finalized result (first finalization wins)', () => {
+    const { result } = render();
+
+    // First finalization: a normal opponent gameover → I win.
+    act(() => {
+      window.dispatchEvent(
+        new CustomEvent(BATTLE_EVENTS.OPPONENT_GAMEOVER, { detail: { reason: 'overflow' } })
+      );
+    });
+    expect(result.current.isWinner).toBe(true);
+    expect(result.current.isGameOver).toBe(true);
+    expect(result.current.isDisconnectEnd).toBe(false);
+
+    // Late/duplicate disconnect gameover (e.g. a mutual-disconnect race) must NOT flip the result.
+    act(() => {
+      window.dispatchEvent(
+        new CustomEvent(BATTLE_EVENTS.OPPONENT_GAMEOVER, { detail: { reason: 'disconnect' } })
+      );
+    });
+    expect(result.current.isWinner).toBe(true);
+    expect(result.current.isDisconnectEnd).toBe(false);
+    expect(result.current.isGameOver).toBe(true);
+  });
+
+  it('a late OPPONENT_GAMEOVER does not override a disconnect-finalized win', () => {
+    const { result } = render();
+    act(() => result.current.startGame());
+
+    // Finalize via opponent disconnect → I win.
+    act(() => {
+      window.dispatchEvent(new CustomEvent(BATTLE_EVENTS.OPPONENT_DISCONNECT));
+    });
+    expect(result.current.isWinner).toBe(true);
+    expect(result.current.isGameOver).toBe(true);
+
+    // A late disconnect gameover (the returning opponent's claim) must not flip me to loser.
+    act(() => {
+      window.dispatchEvent(
+        new CustomEvent(BATTLE_EVENTS.OPPONENT_GAMEOVER, { detail: { reason: 'disconnect' } })
+      );
+    });
+    expect(result.current.isWinner).toBe(true);
+  });
+
   it('OPPONENT_DISCONNECT is ignored before the game starts', () => {
     const { result } = render();
 

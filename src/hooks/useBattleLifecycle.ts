@@ -90,6 +90,7 @@ export function useBattleLifecycle({
   // Listen for opponent lifecycle events from room
   useEffect(() => {
     const handleOpponentGameOver = (e: CustomEvent<{ reason?: string; finalScore?: number }>) => {
+      if (isGameOver) return; // first finalization wins; ignore late/duplicate opponent end events
       setIsGameOver(true);
       prediction.clearCountdown();
       if (e.detail?.reason === 'disconnect') {
