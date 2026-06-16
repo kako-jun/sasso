@@ -1,0 +1,15 @@
+User-agent: *
+Allow: /
+
+# Sitemap
+Sitemap: https://sasso.llll-ll.com/sitemap.xml
+
+# Allow common crawlers explicitly
+User-agent: Googlebot
+Allow: /
+
+User-agent: Bingbot
+Allow: /
+
+# Battle rooms are ephemeral per-match URLs, not worth indexing
+Disallow: /battle
