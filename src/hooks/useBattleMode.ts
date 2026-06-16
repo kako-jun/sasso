@@ -30,6 +30,7 @@ export interface UseBattleModeReturn {
   isGameOver: boolean;
   isSurrender: boolean;
   isWinner: boolean | null;
+  isDisconnectEnd: boolean;
   eliminatingIndices: number[];
   calculationHistory: string;
   lastScoreBreakdown: ScoreResult | null;
@@ -93,17 +94,28 @@ export function useBattleMode(): UseBattleModeReturn {
     onResetDisplay: resetDisplay,
     onStartDisplay: startDisplay,
   });
-  const { gameStarted, isGameOver, isSurrender, isWinner, startGame, surrender, resetGameState } =
-    lifecycle;
+  const {
+    gameStarted,
+    isGameOver,
+    isSurrender,
+    isWinner,
+    isDisconnectEnd,
+    startGame,
+    surrender,
+    resetGameState,
+  } = lifecycle;
 
   // Keep handleGameOver ref updated (avoids stale closure in applyPrediction / handleKey)
   useEffect(() => {
     handleGameOverRef.current = lifecycle.handleGameOver;
   }, [lifecycle.handleGameOver]);
 
-  // Send state updates when display/score changes
+  // Send state updates when display/score changes.
+  // Driven by our own gameStarted/isGameOver, NOT room.status: nostr-arena never
+  // sets 'playing' (the old `=== 'playing'` branch was dead) and only leaves the
+  // room in 'ready', so sync must follow the local game lifecycle instead.
   useEffect(() => {
-    if (room.status === 'playing' || room.status === 'ready') {
+    if (gameStarted && !isGameOver) {
       const state = {
         display: calculator.display,
         score: elimination.score,
@@ -135,6 +147,8 @@ export function useBattleMode(): UseBattleModeReturn {
     attack.outgoingAttack,
     attack,
     room,
+    gameStarted,
+    isGameOver,
   ]);
 
   // Prediction timer callbacks
@@ -291,6 +305,7 @@ export function useBattleMode(): UseBattleModeReturn {
     isGameOver,
     isSurrender,
     isWinner,
+    isDisconnectEnd,
     eliminatingIndices: elimination.eliminatingIndices,
     calculationHistory,
     lastScoreBreakdown: elimination.lastScoreBreakdown,

@@ -129,6 +129,36 @@ describe('useBattleLifecycle', () => {
     expect(fakes.prediction.clearCountdown).toHaveBeenCalled();
   });
 
+  it('OPPONENT_GAMEOVER with a normal reason marks a win, not a disconnect end', () => {
+    const { result, fakes } = render();
+
+    act(() => {
+      window.dispatchEvent(
+        new CustomEvent(BATTLE_EVENTS.OPPONENT_GAMEOVER, { detail: { reason: 'overflow' } })
+      );
+    });
+
+    expect(result.current.isWinner).toBe(true);
+    expect(result.current.isDisconnectEnd).toBe(false);
+    expect(result.current.isGameOver).toBe(true);
+    expect(fakes.prediction.clearCountdown).toHaveBeenCalled();
+  });
+
+  it('OPPONENT_GAMEOVER with reason=disconnect means I was dropped → I lost', () => {
+    const { result, fakes } = render();
+
+    act(() => {
+      window.dispatchEvent(
+        new CustomEvent(BATTLE_EVENTS.OPPONENT_GAMEOVER, { detail: { reason: 'disconnect' } })
+      );
+    });
+
+    expect(result.current.isWinner).toBe(false);
+    expect(result.current.isDisconnectEnd).toBe(true);
+    expect(result.current.isGameOver).toBe(true);
+    expect(fakes.prediction.clearCountdown).toHaveBeenCalled();
+  });
+
   it('OPPONENT_DISCONNECT is ignored before the game starts', () => {
     const { result } = render();
 
@@ -152,6 +182,24 @@ describe('useBattleLifecycle', () => {
     expect(result.current.isWinner).toBe(true);
   });
 
+  it('OPPONENT_DISCONNECT authoritatively notifies the (returning) opponent they lost', () => {
+    const { result, fakes } = render();
+    // startGame requires room.seed truthy (777 in makeFakes) to flip gameStarted.
+    act(() => result.current.startGame());
+    expect(result.current.gameStarted).toBe(true);
+
+    act(() => {
+      window.dispatchEvent(new CustomEvent(BATTLE_EVENTS.OPPONENT_DISCONNECT));
+    });
+
+    expect(result.current.isWinner).toBe(true);
+    expect(result.current.isDisconnectEnd).toBe(true);
+    expect(result.current.isGameOver).toBe(true);
+    expect(fakes.prediction.clearCountdown).toHaveBeenCalled();
+    // Authoritative gameover notice: ('disconnect', <elimination.score === 42>).
+    expect(fakes.room.sendGameOver).toHaveBeenCalledWith('disconnect', 42);
+  });
+
   it('OPPONENT_DISCONNECT is ignored after the game is already over', () => {
     const { result } = render();
     act(() => result.current.startGame());
@@ -169,13 +217,30 @@ describe('useBattleLifecycle', () => {
     const { result, fakes } = render();
 
     act(() => {
-      window.dispatchEvent(
-        new CustomEvent(BATTLE_EVENTS.REMATCH_START, { detail: { seed: 555 } })
-      );
+      window.dispatchEvent(new CustomEvent(BATTLE_EVENTS.REMATCH_START, { detail: { seed: 555 } }));
     });
 
     expect(fakes.prediction.initWithSeed).toHaveBeenCalledWith(555);
     expect(result.current.gameStarted).toBe(false);
     expect(result.current.isGameOver).toBe(false);
+  });
+
+  it('REMATCH_START clears a disconnect-end result', () => {
+    const { result } = render();
+    act(() => result.current.startGame());
+
+    // End the round via opponent disconnect → isDisconnectEnd is set.
+    act(() => {
+      window.dispatchEvent(new CustomEvent(BATTLE_EVENTS.OPPONENT_DISCONNECT));
+    });
+    expect(result.current.isDisconnectEnd).toBe(true);
+
+    act(() => {
+      window.dispatchEvent(new CustomEvent(BATTLE_EVENTS.REMATCH_START, { detail: { seed: 321 } }));
+    });
+
+    expect(result.current.isDisconnectEnd).toBe(false);
+    expect(result.current.isGameOver).toBe(false);
+    expect(result.current.gameStarted).toBe(false);
   });
 });
