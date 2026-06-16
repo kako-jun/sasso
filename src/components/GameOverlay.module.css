@@ -19,6 +19,12 @@
   font-weight: bold;
 }
 
+.yourScore {
+  font-size: 12px;
+  font-weight: bold;
+  color: #000;
+}
+
 .retryButton {
   padding: 8px 24px;
   font-size: 14px;
