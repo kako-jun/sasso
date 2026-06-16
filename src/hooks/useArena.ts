@@ -90,6 +90,8 @@ export function useArena(): UseArenaReturn {
       },
       onError: (error: Error) => {
         console.error('Arena error:', error.message);
+        // NOTE: `detail.message` is currently unused by the UI — the in-window
+        // indicator shows a fixed "Reconnecting…" string. Included for future use.
         dispatchBattleEvent(BATTLE_EVENTS.ERROR, { message: error.message });
       },
     }),

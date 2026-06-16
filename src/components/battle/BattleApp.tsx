@@ -175,13 +175,6 @@ export function BattleApp({ initialRoomId, onChangeMode }: BattleAppProps) {
 
   return (
     <div className="desktop">
-      {/* Non-blocking banner for transient relay/publish errors (see useArena onError) */}
-      {hasConnError && (
-        <div className={styles.connectionBanner} role="status">
-          Connection issue — reconnecting…
-        </div>
-      )}
-
       {/* Mobile: MenuBar at top */}
       {!isDesktop && <MenuBar gameMode="battle" onChangeMode={onChangeMode} score={battle.score} />}
       {!isDesktop && battle.opponent && (
@@ -208,6 +201,13 @@ export function BattleApp({ initialRoomId, onChangeMode }: BattleAppProps) {
 
         {/* Calculator Window */}
         <Window title="Sasso" onClose={handleLeave}>
+          {/* Non-blocking, in-window connection-error indicator (see useArena onError).
+              Stays inside the calculator window per the design system — never a toast. */}
+          {hasConnError && (
+            <div className={styles.connError} role="status">
+              Reconnecting…
+            </div>
+          )}
           {battle.roomState.status === 'finished' && (
             <BattleFinishedOverlay
               isWinner={battle.isWinner}

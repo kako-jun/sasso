@@ -1,13 +1,14 @@
-/* Non-blocking connection-error banner (System 7: black bar, white text). */
-.connectionBanner {
-  position: fixed;
+/* In-window connection-error indicator (System 7: black strip, white text).
+   Sits inside the calculator window body; never a floating toast. */
+.connError {
+  position: absolute;
   top: 0;
   left: 0;
   right: 0;
-  z-index: 100;
+  z-index: 9; /* below .finishedOverlay (z-index:10) so the game-over overlay covers it */
   text-align: center;
   font-size: 11px;
-  padding: 3px 8px;
+  padding: 2px 4px;
   background: #000;
   color: #fff;
   pointer-events: none; /* never block gameplay input */

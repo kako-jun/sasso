@@ -39,16 +39,21 @@ For generic battle room documentation, see the `nostr-arena` package README/docs
 **最後のエラー理由を Create/Join 画面（select モード）に表示する**（`RoomCreation` の
 `initialError`）。
 
-#### 対戦中の一時的なエラー表示（接続バナー）
+#### 対戦中の一時的なエラー表示（接続インジケータ）
 
 対戦中に発生する一過性のリレー/配信エラー（publish 失敗・room イベントのパース失敗・
 "not connected" 等）は、これまで `useArena` の `onError` で `console.error` するだけで
 ユーザーには見えなかった。これらを `BATTLE_EVENTS.ERROR` カスタムイベントとして window に
-dispatch し、`useConnectionError` フックが受信して、画面上部に短い**非ブロッキングのバナー**
-（"Connection issue — reconnecting…"）を表示する。バナーは `pointer-events: none` で
-クリック・キー入力を一切奪わず、ゲームプレイは裏で継続する。最後のエラーから一定時間
-（既定 4 秒）で自動的に消え、連続してエラーが来た場合はタイマーが再設定されるため、
-不安定なリレーでも 1 本の安定したバナーにまとまる。
+dispatch し、`useConnectionError` フックが受信して、**電卓ウィンドウの内側**に小さく目立たない
+**非ブロッキングのインジケータ**（"Reconnecting…"）を表示する。
+
+トースト（画面に浮く通知）はデザインシステムで禁止されているため、これはフロート通知ではなく、
+ゲームオーバー表示（`BattleFinishedOverlay`）と同じく**ウィンドウ内に収まる**要素として、
+電卓ウィンドウ本体の上端に貼り付く黒帯（System 7 風の白文字）で出す。`pointer-events: none`
+かつ `z-index: 9`（ゲームオーバーオーバーレイの `z-index: 10` より下）なので、クリック・キー入力を
+一切奪わず、ゲームオーバー時はオーバーレイに覆われる。最後のエラーから一定時間
+（既定 4 秒 = `BANNER_DISMISS_MS`）で自動的に消え、連続してエラーが来た場合はタイマーが
+再設定されるため、不安定なリレーでも 1 本の安定したインジケータにまとまる。
 
 ### Room URL
 

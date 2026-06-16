@@ -1,12 +1,13 @@
 import { useEffect, useRef, useState } from 'react';
 import { BATTLE_EVENTS } from '../utils';
+import { BANNER_DISMISS_MS } from '../constants';
 
 /**
  * True for `timeoutMs` after the most recent battle error event, then auto-dismisses.
  * Repeated errors push the dismissal back (debounced hide), so a flapping relay
- * shows one steady banner rather than spamming.
+ * shows one steady indicator rather than spamming.
  */
-export function useConnectionError(timeoutMs = 4000): boolean {
+export function useConnectionError(timeoutMs = BANNER_DISMISS_MS): boolean {
   const [hasError, setHasError] = useState(false);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
