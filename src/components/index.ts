@@ -7,6 +7,7 @@ export { ScoreArea } from './ScoreArea';
 export { PredictionArea } from './PredictionArea';
 export { CalculationHistory } from './CalculationHistory';
 export { GameOverOverlay, StartPrompt } from './GameOverlay';
+export { SprintRanking } from './SprintRanking';
 export { MultiplicationHelper } from './MultiplicationHelper';
 
 // Battle components

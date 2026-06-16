@@ -61,7 +61,12 @@ function SinglePlayerApp({
 
       <Window title="Sasso" onClose={() => onChangeMode('calculator')}>
         {controller.isGameOver && (
-          <GameOverOverlay isSurrender={controller.isSurrender} onRetry={controller.resetAll} />
+          <GameOverOverlay
+            isSurrender={controller.isSurrender}
+            onRetry={controller.resetAll}
+            gameMode={controller.gameMode}
+            score={controller.score}
+          />
         )}
         <Display value={controller.display} eliminatingIndices={controller.eliminatingIndices} />
         <Keypad onKey={controller.handleKey} />
