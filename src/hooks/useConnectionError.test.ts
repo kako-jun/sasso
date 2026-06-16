@@ -48,4 +48,15 @@ describe('useConnectionError', () => {
     act(() => vi.advanceTimersByTime(2000));
     expect(result.current).toBe(false);
   });
+
+  it('removes its listener on unmount and ignores later events', () => {
+    const { unmount } = renderHook(() => useConnectionError(4000));
+    unmount();
+
+    // The listener is gone: a post-unmount event must not throw or schedule work.
+    expect(() => act(() => fireError())).not.toThrow();
+
+    // Draining timers afterward must not trip any unmounted-component state update.
+    expect(() => act(() => vi.advanceTimersByTime(4000))).not.toThrow();
+  });
 });
