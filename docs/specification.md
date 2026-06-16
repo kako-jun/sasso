@@ -160,3 +160,12 @@ Sasso is a calculator-based puzzle game with Classic Macintosh System 7 inspired
 - Manual digit input is capped at `MAX_DISPLAY_DIGITS` (12) — additional digit presses are ignored, like a real calculator
 - Calculation results longer than 10 characters are formatted as 4-digit exponential notation
 - Any exponential notation result, or a digit count exceeding `MAX_DISPLAY_DIGITS`, triggers overflow (game over)
+
+## SEO / Discoverability
+
+Static assets served from `public/` (copied verbatim into `dist/` by Vite):
+
+- `robots.txt` — allows all crawlers, references the sitemap, and disallows the ephemeral `/battle` room URLs
+- `sitemap.xml` — single canonical entry for `https://sasso.llll-ll.com/`
+
+`index.html` carries the canonical link plus Open Graph / Twitter Card metadata. Canonical URL: `https://sasso.llll-ll.com/`.

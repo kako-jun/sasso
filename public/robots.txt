@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+# Battle rooms are ephemeral per-match URLs, not worth indexing
+Disallow: /battle
+
+Sitemap: https://sasso.llll-ll.com/sitemap.xml
