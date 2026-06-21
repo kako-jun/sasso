@@ -67,6 +67,19 @@ describe('formatDisplay', () => {
   it('shows a tiny magnitude as a plain decimal, not exponential', () => {
     const out = formatDisplay(1 / 99 / 99 / 99 / 99); // ~1.04e-8
     expect(out).not.toMatch(/e/i);
-    expect(out.startsWith('0.000000')).toBe(true);
+    expect(out).toBe('0.0000000104');
+  });
+
+  it('collapses sub-display-resolution magnitudes to "0" (never "-0")', () => {
+    expect(formatDisplay(1e-12)).toBe('0');
+    expect(formatDisplay(-1e-12)).toBe('0');
+  });
+
+  it('renders a value that rounds up to a whole number as an integer', () => {
+    expect(formatDisplay(2.9999999999)).toBe('3');
+  });
+
+  it('keeps a large non-integer within 10 significant digits (fraction drops off)', () => {
+    expect(formatDisplay(123456789012.5)).toBe('123456789000');
   });
 });

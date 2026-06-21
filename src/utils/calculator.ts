@@ -47,5 +47,8 @@ export function formatDisplay(value: number): string {
 
   // Very small magnitudes (|x| < 1e-6) stringify to exponential; render as a
   // plain trimmed decimal so they stay in play rather than reading as overflow.
-  return rounded.toFixed(DISPLAY_PRECISION).replace(/0+$/, '').replace(/\.$/, '');
+  // Values below the display's resolution collapse to "0" — never "-0" — matching
+  // the integer branch's normalization (a real calculator never shows a signed zero).
+  const small = rounded.toFixed(DISPLAY_PRECISION).replace(/0+$/, '').replace(/\.$/, '');
+  return parseFloat(small) === 0 ? '0' : small;
 }
