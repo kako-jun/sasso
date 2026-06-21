@@ -27,6 +27,8 @@ Eliminate digits by making them adjacent and identical. When two or more identic
 - **Surrender**: Pressing C (Clear) or E (Entry Clear) is immediate surrender
 - **Misoperation**: Pressing a digit after `=` is also surrender (you should press an operator to continue)
 
+The game-over screen names the cause (`overflow` / `time up` / `C or E` / `digit after =`), so you always learn which rule you hit.
+
 ### Special Rules
 
 - **Negative numbers**: Allowed and can be strategic

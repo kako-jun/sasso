@@ -152,7 +152,7 @@ src/
 | ScoreArea            | Score, chains, and breakdown display                                        |
 | PredictionArea       | Next operation and countdown clock                                          |
 | CalculationHistory   | Shows last calculation                                                      |
-| GameOverlay          | Game over message and retry button                                          |
+| GameOverlay          | Game over message (cause + hint) and retry button                           |
 | MultiplicationHelper | Indian/Vedic multiplication visualization                                   |
 
 ### Battle Components (`src/components/battle/`)
