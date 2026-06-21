@@ -5,6 +5,7 @@ import {
   checkOverflow,
   getDigitCount,
 } from './elimination';
+import { formatDisplay } from '../utils/calculator';
 
 describe('findEliminationIndices', () => {
   it('returns empty for no adjacent duplicates', () => {
@@ -105,6 +106,16 @@ describe('checkOverflow', () => {
     expect(checkOverflow('-123456789012')).toBe(false);
     expect(checkOverflow('-1234567890123')).toBe(true);
     expect(checkOverflow('1234567890.12')).toBe(false);
+  });
+
+  // End-to-end with formatDisplay: a non-terminating division must not read as
+  // overflow, while a genuinely-too-big integer still must.
+  it('does not flag a rounded repeating decimal (1÷3) as overflow', () => {
+    expect(checkOverflow(formatDisplay(1 / 3))).toBe(false);
+  });
+
+  it('flags a 13-digit integer result as overflow', () => {
+    expect(checkOverflow(formatDisplay(1234567890123))).toBe(true);
   });
 });
 

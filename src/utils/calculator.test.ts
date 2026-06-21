@@ -42,13 +42,31 @@ describe('formatDisplay', () => {
     expect(formatDisplay(-Infinity)).toBe('E');
   });
 
-  it('switches to 4-digit exponential for values longer than 10 chars', () => {
-    const out = formatDisplay(1234567890123);
-    expect(out).toMatch(/e[+-]?\d+$/i);
+  it('rounds a repeating decimal to fit instead of going exponential (1÷3)', () => {
+    // Regression: this used to become "3.3333e-1", which checkOverflow read as
+    // overflow → instant game over on a harmless 0.33.
+    const out = formatDisplay(1 / 3);
+    expect(out).not.toMatch(/e/i);
+    expect(out).toBe('0.3333333333');
+  });
+
+  it('renders a too-big integer in full so checkOverflow catches it (13+ digits)', () => {
+    expect(formatDisplay(1234567890123)).toBe('1234567890123');
+  });
+
+  it('renders a 10-digit negative integer in full, not exponential', () => {
+    // Regression: "-1234567890" used to be 11 chars → exponential → overflow.
+    expect(formatDisplay(-1234567890)).toBe('-1234567890');
   });
 
   it('keeps 10-char results in fixed notation', () => {
     // 1234567890 is exactly 10 chars
     expect(formatDisplay(1234567890)).toBe('1234567890');
+  });
+
+  it('shows a tiny magnitude as a plain decimal, not exponential', () => {
+    const out = formatDisplay(1 / 99 / 99 / 99 / 99); // ~1.04e-8
+    expect(out).not.toMatch(/e/i);
+    expect(out.startsWith('0.000000')).toBe(true);
   });
 });
