@@ -107,7 +107,9 @@ export function eliminateMatches(displayStr: string): { result: string; eliminat
   if (resultStr.includes('.')) {
     const [intPart, decPart] = resultStr.split('.');
     const cleanInt = intPart.replace(/^0+/, '') || '0';
-    resultStr = cleanInt + '.' + decPart;
+    // If the whole decimal part was eliminated, drop the trailing dot so we never
+    // emit a malformed "5." (e.g. "5.55" → "5", "0.11" → "0").
+    resultStr = decPart === '' ? cleanInt : cleanInt + '.' + decPart;
   } else {
     resultStr = resultStr.replace(/^0+/, '') || '0';
   }

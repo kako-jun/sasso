@@ -23,7 +23,7 @@ A puzzle game where you use the four arithmetic operations to create adjacent id
 
 ### Game Over Conditions
 
-- Overflow = Game Over: a result whose integer part reaches 13+ digits (too big to hold), or a divide-by-zero (shown as `E`)
+- Overflow = Game Over: a result that still reaches 13+ digits **after elimination**, or a divide-by-zero (shown as `E`). Adjacent matches are eliminated first (which shrinks the value) — "eliminate, and if it still overflows, game over". So e.g. `1000000 × 1000000 = 1000000000000` collapses its zero run to `1` and survives
 - A non-terminating decimal (e.g. 1÷3) is **not** overflow — it is rounded to fit the display like a real calculator, and play continues (the decimal point still acts as a wall)
 - Sprint mode: Time runs out (3:00) = Game Over
 

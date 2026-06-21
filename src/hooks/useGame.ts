@@ -1,7 +1,7 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
 import type { GameMode, GameOverReason, Prediction, ScoreResult } from '../types';
 import type { EliminationCallbacks } from './useElimination';
-import { checkOverflow, generateInitialState } from '../game';
+import { checkOverflow, findEliminationIndices, generateInitialState } from '../game';
 import { SPRINT_TIME_LIMIT } from '../constants';
 import { usePrediction } from './usePrediction';
 import { useElimination } from './useElimination';
@@ -183,7 +183,11 @@ export function useGame(options: UseGameOptions = {}): UseGameReturn {
     (display: string) => {
       displayRef.current = display;
       if (gameMode !== 'calculator' && gameStarted && !isGameOver) {
-        if (checkOverflow(display)) {
+        // Overflow only ends the game when there is nothing left to eliminate.
+        // If the (over-long) value still has adjacent matches, let the
+        // elimination pipeline run first — it shrinks the value and re-checks
+        // overflow per step. "Eliminate, and if it still overflows, game over."
+        if (checkOverflow(display) && findEliminationIndices(display).length === 0) {
           endGame('overflow');
         }
       }

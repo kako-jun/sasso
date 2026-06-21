@@ -82,6 +82,14 @@ describe('eliminateMatches', () => {
     // "-110.0" → result is 0 → no sign
     expect(eliminateMatches('-110.0')).toEqual({ result: '0.0', eliminated: 2 });
   });
+
+  it('drops the decimal point when the whole decimal part is eliminated', () => {
+    // Regression: must not emit a malformed "5." — the trailing dot is dropped
+    expect(eliminateMatches('5.55')).toEqual({ result: '5', eliminated: 2 });
+    expect(eliminateMatches('0.11')).toEqual({ result: '0', eliminated: 2 });
+    expect(eliminateMatches('12.00')).toEqual({ result: '12', eliminated: 2 });
+    expect(eliminateMatches('-5.55')).toEqual({ result: '-5', eliminated: 2 });
+  });
 });
 
 describe('checkOverflow', () => {

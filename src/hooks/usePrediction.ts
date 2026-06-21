@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback } from 'react';
 import type { Prediction } from '../types';
 import { generatePrediction } from '../game';
 import { COUNTDOWN_TIME } from '../constants';
@@ -13,7 +13,6 @@ export interface UsePredictionReturn {
   prediction: Prediction | null;
   countdown: number;
   gameStartTime: number | null;
-  countdownRef: React.MutableRefObject<number | null>;
   initPrediction: () => void;
   clearCountdown: () => void;
   resetPrediction: () => void;
@@ -26,13 +25,11 @@ export function usePrediction(): UsePredictionReturn {
   const [countdown, setCountdown] = useState(0);
   const [gameStartTime, setGameStartTime] = useState<number | null>(null);
 
-  const countdownRef = useRef<number | null>(null);
-
   const clearCountdown = useCallback(() => {
-    if (countdownRef.current) {
-      clearInterval(countdownRef.current);
-      countdownRef.current = null;
-    }
+    // The countdown interval itself is owned by usePredictionTimer (and stops via
+    // its isActive effect cleanup). Here we just clear the visible value on game
+    // over / reset.
+    setCountdown(0);
   }, []);
 
   const resetPrediction = useCallback(() => {
@@ -61,7 +58,6 @@ export function usePrediction(): UsePredictionReturn {
     prediction,
     countdown,
     gameStartTime,
-    countdownRef,
     initPrediction,
     clearCountdown,
     resetPrediction,
