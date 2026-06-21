@@ -82,6 +82,16 @@ describe('eliminateMatches', () => {
     // "-110.0" → result is 0 → no sign
     expect(eliminateMatches('-110.0')).toEqual({ result: '0.0', eliminated: 2 });
   });
+
+  it('drops the decimal point when the whole decimal part is eliminated', () => {
+    // Regression: must not emit a malformed "5." — the trailing dot is dropped
+    expect(eliminateMatches('5.55')).toEqual({ result: '5', eliminated: 2 });
+    expect(eliminateMatches('0.11')).toEqual({ result: '0', eliminated: 2 });
+    expect(eliminateMatches('12.00')).toEqual({ result: '12', eliminated: 2 });
+    expect(eliminateMatches('-5.55')).toEqual({ result: '-5', eliminated: 2 });
+    // dec-drop + sign-drop together: "-0.11" → "0" (not "-0", not "0.")
+    expect(eliminateMatches('-0.11')).toEqual({ result: '0', eliminated: 2 });
+  });
 });
 
 describe('checkOverflow', () => {
@@ -116,6 +126,23 @@ describe('checkOverflow', () => {
 
   it('flags a 13-digit integer result as overflow', () => {
     expect(checkOverflow(formatDisplay(1234567890123))).toBe(true);
+  });
+});
+
+// The syncDisplay overflow guard ends the game only when checkOverflow is true
+// AND there is nothing left to eliminate. These pin the exact predicate inputs
+// it relies on (full hooks-layer wiring is verified live; see PR notes).
+describe('overflow-vs-elimination guard inputs', () => {
+  it('an over-long value with an eliminable run defers (elimination runs first)', () => {
+    const display = '1000000000000'; // 13 digits, run of zeros
+    expect(checkOverflow(display)).toBe(true);
+    expect(findEliminationIndices(display).length).toBeGreaterThan(0);
+  });
+
+  it('an over-long value with nothing to eliminate is overflow (game over)', () => {
+    const display = '1234567890123'; // 13 digits, no adjacent matches
+    expect(checkOverflow(display)).toBe(true);
+    expect(findEliminationIndices(display).length).toBe(0);
   });
 });
 
