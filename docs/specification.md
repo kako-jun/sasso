@@ -171,14 +171,14 @@ of the rules stays part of the game.
 
 ## Error Handling
 
-- Division by zero: displays "E"
-- Overflow: exponential notation (4 digit precision)
+- Division by zero: displays "E" (treated as overflow → game over)
+- Overflow (game over): a value that still has 13+ digits **after elimination**, or a non-finite result ("E"). Adjacent matches are eliminated first; only if it still overflows does the game end
 
 ## Display Format
 
 - Manual digit input is capped at `MAX_DISPLAY_DIGITS` (12) — additional digit presses are ignored, like a real calculator
-- Calculation results longer than 10 characters are formatted as 4-digit exponential notation
-- Any exponential notation result, or a digit count exceeding `MAX_DISPLAY_DIGITS`, triggers overflow (game over)
+- Whole-number results render in full, so a genuinely-too-big integer (13+ digits) is caught as overflow via its digit count
+- Non-terminating decimals (e.g. 1÷3) are rounded to fit the display — **not** switched to exponential — so they keep playing like a real calculator (the decimal point still acts as a wall). Exponential only appears for magnitudes too large to show as a plain number
 
 ## SEO / Discoverability
 
