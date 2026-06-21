@@ -284,7 +284,10 @@ Left side:
 - [x] Pending calculation at prediction → Discard and revert to pre-operator value
 - [x] Game over reason display → big word + small hint, reveals only the death rule (overflow / time up / C·E / digit after =), never strategy
 - [x] Sound → **none.** The System 7 Calculator desk accessory was silent; staying silent is the faithful choice, so no button clicks / chimes are added
-- [x] Ranking → **never resets daily.** The world ranking is all-time cumulative. A future daily-seed board would share the same all-time ranking, not a per-day reset
+- [x] Ranking → **never resets daily.** The world ranking is all-time cumulative
+- [x] Randomness is sacred → **no shared / daily seed.** A fixed seed makes the next draw knowable (memorizable) and kills the "you don't know what's coming" tension. The luck of the draw is intentional; skill is board-agnostic (e.g. `×0` discards any starting board), so different-board scores already compare fairly — a shared board adds nothing
+- [x] Survival is a false summit → defensive play (cancel a predicted `÷3` with `×3`, reset via `×0`, type your own value) lets you avoid game over, so a player feels they have "mastered" it. But pure safety doesn't grow the score and can't win. That gap is the intrinsic signal that a deeper scoring layer exists to discover. **Not a bug; do not "fix" it**
+- [x] Open discovery space → an absolutely-safe, high-scoring mechanism may exist that even the author hasn't found, and that is acceptable by design. **Do not balance-patch to remove dominant strategies** — the Risk-cap dead zone, the Sprint difficulty ceiling, and `×0`'s power are all left as-is on purpose
 
 ## Future Development
 
