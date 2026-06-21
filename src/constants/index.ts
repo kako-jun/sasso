@@ -1,7 +1,11 @@
 // Timing
 export const COUNTDOWN_TIME = 10000; // 10 seconds
 export const SPRINT_TIME_LIMIT = 180000; // 3 minutes
-export const MAX_TIME_FACTOR = 300000; // 5 minutes for difficulty scaling
+// Difficulty ramps to full over this window. The game was originally 5 minutes
+// and was shortened to 3; this stayed at 5 by mistake, capping Sprint difficulty
+// at 60%. Couple it to the deadline so the ramp completes exactly when Sprint
+// ends (and Endless reaches full difficulty at the same 3-minute mark).
+export const MAX_TIME_FACTOR = SPRINT_TIME_LIMIT; // 3 minutes for difficulty scaling
 export const ELIMINATION_ANIMATION_MS = 400; // Flash animation duration
 export const CHAIN_CHECK_DELAY_MS = 100; // Delay before checking for chain
 export const BANNER_DISMISS_MS = 4000; // connection-error indicator auto-dismiss
