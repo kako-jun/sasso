@@ -23,7 +23,7 @@ Eliminate digits by making them adjacent and identical. When two or more identic
 
 ### Game Over
 
-- **Overflow**: If your number exceeds 13 digits, you lose
+- **Overflow**: If your number still has 13+ digits after elimination, you lose (a divide that gives a long decimal is rounded, not a loss)
 - **Surrender**: Pressing C (Clear) or E (Entry Clear) is immediate surrender
 - **Misoperation**: Pressing a digit after `=` is also surrender (you should press an operator to continue)
 
