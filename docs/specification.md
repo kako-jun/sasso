@@ -121,7 +121,8 @@ of the rules stays part of the game.
 
 - Same as Endless but with 3-minute time limit
 - Game ends when time runs out
-- On game over (not surrender), the overlay shows the player's score and the world **Ranking** (Top N from Nostalgic `sasso-5d582992`), with the player's own row highlighted. This world ranking is distinct from personal records.
+- On game over (not surrender), the overlay shows the player's score and the world **Ranking** (Top N from Nostalgic `sasso-5d582992`), with the player's own row highlighted. This world ranking is distinct from personal records. It never resets daily — the ranking is all-time cumulative.
+- The overlay always names the cause: a big word (`GAME OVER` / `SURRENDER`) plus a small hint line (`overflow` / `time up` / `C or E` / `digit after =`). Only the death rule is revealed, never scoring strategy.
 
 ### Battle Mode
 

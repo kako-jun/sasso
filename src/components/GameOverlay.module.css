@@ -25,6 +25,15 @@
   font-weight: bold;
 }
 
+/* Small hint naming the death rule (overflow / time up / C or E / digit after =).
+   Status-text styling per DESIGN.md: Geneva 11px. Sits just under the big word
+   in the banner, and stands in for it in the Sprint ranking view. */
+.gameOverHint {
+  margin-top: -4px;
+  font-family: Geneva, system-ui;
+  font-size: 11px;
+}
+
 .yourScore {
   font-size: 12px;
   font-weight: bold;

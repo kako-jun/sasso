@@ -10,6 +10,7 @@ export interface UseGameControllerReturn {
   gameStarted: boolean;
   isGameOver: boolean;
   isSurrender: boolean;
+  gameOverReason: ReturnType<typeof useGame>['gameOverReason'];
   score: number;
   chains: number;
   prediction: ReturnType<typeof useGame>['prediction'];
@@ -102,9 +103,9 @@ export function useGameController(): UseGameControllerReturn {
         calculator.setDisplay(game.startGame());
       }
 
-      // Surrender on digit after =
+      // Surrender on digit after = (misoperation)
       if (isActiveGame && game.justPressedEqual && /^\d$/.test(key)) {
-        game.surrender();
+        game.surrender('misinput');
         return;
       }
 
@@ -119,7 +120,7 @@ export function useGameController(): UseGameControllerReturn {
       // Special keys
       if (key === 'C' || key === 'E') {
         if (isActiveGame) {
-          game.surrender();
+          game.surrender('surrender');
         } else if (key === 'C') {
           calculator.clearAll();
         } else {
@@ -162,6 +163,7 @@ export function useGameController(): UseGameControllerReturn {
     gameStarted: game.gameStarted,
     isGameOver: game.isGameOver,
     isSurrender: game.isSurrender,
+    gameOverReason: game.gameOverReason,
     score: game.score,
     chains: game.chains,
     prediction: game.prediction,

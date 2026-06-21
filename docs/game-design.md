@@ -33,6 +33,23 @@ A puzzle game where you use the four arithmetic operations to create adjacent id
 - Pressing C or E → Surrender
   - These buttons are decorative or surrender buttons during gameplay
 
+### Game Over Reason Display
+
+The game-over overlay names **why** the run ended, with a big word plus a small
+hint line. We reveal only the _death rules_ here — never strategy — so figuring
+out how to score stays part of the game, while losing always tells you which
+rule you hit.
+
+| Reason        | Big word    | Hint            |
+| ------------- | ----------- | --------------- |
+| overflow      | `GAME OVER` | `overflow`      |
+| time up       | `GAME OVER` | `time up`       |
+| C / E         | `SURRENDER` | `C or E`        |
+| digit after = | `SURRENDER` | `digit after =` |
+
+In Sprint mode a non-surrender end (overflow / time up) shows the world ranking
+instead of the big banner; the small hint is kept so the cause is still named.
+
 ### Consecutive = Presses
 
 - Pressing = repeatedly repeats the previous calculation (standard calculator behavior)
@@ -265,6 +282,9 @@ Left side:
 - [x] Score system → Base×Chain×Prep×Risk formula
 - [x] Attack algorithm → Score-based difficulty scaling
 - [x] Pending calculation at prediction → Discard and revert to pre-operator value
+- [x] Game over reason display → big word + small hint, reveals only the death rule (overflow / time up / C·E / digit after =), never strategy
+- [x] Sound → **none.** The System 7 Calculator desk accessory was silent; staying silent is the faithful choice, so no button clicks / chimes are added
+- [x] Ranking → **never resets daily.** The world ranking is all-time cumulative. A future daily-seed board would share the same all-time ranking, not a per-day reset
 
 ## Future Development
 

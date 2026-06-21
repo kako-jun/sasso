@@ -11,7 +11,7 @@ interface UseEndlessModeOptions {
   gameMode: string;
   gameStarted: boolean;
   isGameOver: boolean;
-  setIsGameOver: (value: boolean) => void;
+  onGameOver: (reason: 'overflow') => void;
   setCalculationHistory: (value: string) => void;
   finalizePendingCalculation?: () => string | null;
 }
@@ -24,7 +24,7 @@ export function useEndlessMode({
   gameMode,
   gameStarted,
   isGameOver,
-  setIsGameOver,
+  onGameOver,
   setCalculationHistory,
   finalizePendingCalculation,
 }: UseEndlessModeOptions) {
@@ -37,8 +37,7 @@ export function useEndlessMode({
         externalDisplayUpdateRef.current?.(display);
       },
       onOverflow: () => {
-        setIsGameOver(true);
-        predictionHook.clearCountdown();
+        onGameOver('overflow');
       },
       onCalculationHistory: setCalculationHistory,
       generateNextPrediction: () => predictionHook.generateNextPrediction(),
@@ -46,7 +45,7 @@ export function useEndlessMode({
     }),
     [
       predictionHook,
-      setIsGameOver,
+      onGameOver,
       setCalculationHistory,
       externalDisplayUpdateRef,
       finalizePendingCalculation,

@@ -5,6 +5,10 @@ export type CalcOperator = '+' | '-' | '*' | '/' | null;
 export type GameMode = 'calculator' | 'practice' | 'sprint' | 'endless' | 'battle';
 export type Operator = '+' | '-' | '*' | '/';
 
+// Why a single-player game ended. We surface only these *death* rules to the
+// player (never strategy), so figuring out how to score stays part of the game.
+export type GameOverReason = 'overflow' | 'timeup' | 'surrender' | 'misinput' | null;
+
 // Prediction
 export interface Prediction {
   operator: Operator;

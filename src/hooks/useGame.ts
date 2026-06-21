@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
-import type { GameMode, Prediction, ScoreResult } from '../types';
+import type { GameMode, GameOverReason, Prediction, ScoreResult } from '../types';
 import type { EliminationCallbacks } from './useElimination';
 import { checkOverflow, generateInitialState } from '../game';
 import { SPRINT_TIME_LIMIT } from '../constants';
@@ -18,6 +18,7 @@ export interface UseGameReturn {
   gameStarted: boolean;
   isGameOver: boolean;
   isSurrender: boolean;
+  gameOverReason: GameOverReason;
   justPressedEqual: boolean;
 
   // Score
@@ -40,7 +41,7 @@ export interface UseGameReturn {
   // Actions
   changeGameMode: (mode: GameMode) => void;
   startGame: () => string;
-  surrender: () => void;
+  surrender: (reason: 'surrender' | 'misinput') => void;
   resetGame: () => void;
   setJustPressedEqual: (value: boolean) => void;
   incrementCalculationCount: () => void;
@@ -57,7 +58,8 @@ export function useGame(options: UseGameOptions = {}): UseGameReturn {
   const [gameMode, setGameMode] = useState<GameMode>('calculator');
   const [gameStarted, setGameStarted] = useState(false);
   const [isGameOver, setIsGameOver] = useState(false);
-  const [isSurrender, setIsSurrender] = useState(false);
+  const [gameOverReason, setGameOverReason] = useState<GameOverReason>(null);
+  const isSurrender = gameOverReason === 'surrender' || gameOverReason === 'misinput';
   const [justPressedEqual, setJustPressedEqual] = useState(false);
   const [calculationHistory, setCalculationHistory] = useState('');
   const [sprintTimeRemaining, setSprintTimeRemaining] = useState(SPRINT_TIME_LIMIT);
@@ -71,6 +73,16 @@ export function useGame(options: UseGameOptions = {}): UseGameReturn {
   const predictionHook = usePrediction();
   const eliminationHook = useElimination();
 
+  // Centralised game-over: record the cause, stop the clock.
+  const endGame = useCallback(
+    (reason: Exclude<GameOverReason, null>) => {
+      setIsGameOver(true);
+      setGameOverReason(reason);
+      predictionHook.clearCountdown();
+    },
+    [predictionHook]
+  );
+
   // Endless mode logic
   useEndlessMode({
     predictionHook,
@@ -80,7 +92,7 @@ export function useGame(options: UseGameOptions = {}): UseGameReturn {
     gameMode,
     gameStarted,
     isGameOver,
-    setIsGameOver,
+    onGameOver: endGame,
     setCalculationHistory,
     finalizePendingCalculation,
   });
@@ -103,6 +115,7 @@ export function useGame(options: UseGameOptions = {}): UseGameReturn {
       setSprintTimeRemaining((prev) => {
         if (prev <= 100) {
           setIsGameOver(true);
+          setGameOverReason('timeup');
           predictionHook.clearCountdown();
           return 0;
         }
@@ -171,17 +184,17 @@ export function useGame(options: UseGameOptions = {}): UseGameReturn {
       displayRef.current = display;
       if (gameMode !== 'calculator' && gameStarted && !isGameOver) {
         if (checkOverflow(display)) {
-          setIsGameOver(true);
+          endGame('overflow');
         }
       }
     },
-    [gameMode, gameStarted, isGameOver]
+    [gameMode, gameStarted, isGameOver, endGame]
   );
 
   const resetGame = useCallback(() => {
     setGameStarted(false);
     setIsGameOver(false);
-    setIsSurrender(false);
+    setGameOverReason(null);
     setJustPressedEqual(false);
     setCalculationHistory('');
     setSprintTimeRemaining(SPRINT_TIME_LIMIT);
@@ -212,22 +225,22 @@ export function useGame(options: UseGameOptions = {}): UseGameReturn {
     return initialState;
   }, [gameMode, predictionHook]);
 
-  const surrender = useCallback(() => {
-    setIsSurrender(true);
-    setIsGameOver(true);
-    predictionHook.clearCountdown();
-  }, [predictionHook]);
+  const surrender = useCallback(
+    (reason: 'surrender' | 'misinput') => {
+      endGame(reason);
+    },
+    [endGame]
+  );
 
   const checkGameOverState = useCallback(
     (displayStr: string): boolean => {
       if (checkOverflow(displayStr)) {
-        setIsGameOver(true);
-        predictionHook.clearCountdown();
+        endGame('overflow');
         return true;
       }
       return false;
     },
-    [predictionHook]
+    [endGame]
   );
 
   return {
@@ -235,6 +248,7 @@ export function useGame(options: UseGameOptions = {}): UseGameReturn {
     gameStarted,
     isGameOver,
     isSurrender,
+    gameOverReason,
     justPressedEqual,
     score: eliminationHook.score,
     chains: eliminationHook.chains,
