@@ -72,4 +72,17 @@ describe('useCalculator', () => {
     act(() => void result.current.handleEqual()); // 125
     expect(result.current.display).toBe('125');
   });
+
+  it('leaves op= a no-op, so the next digit appends (2 + = then 5 → 25)', () => {
+    // The one = exit that intentionally keeps waitingForOperand=false: an operator
+    // with no second operand (2 + =) does nothing and the next digit continues
+    // the displayed value. Locks this asymmetry against a future "unify =" change.
+    const { result } = setup();
+    act(() => result.current.inputDigit('2'));
+    act(() => void result.current.performOperation('+'));
+    act(() => void result.current.handleEqual()); // no-op: display stays "2"
+    expect(result.current.display).toBe('2');
+    act(() => result.current.inputDigit('5'));
+    expect(result.current.display).toBe('25');
+  });
 });
