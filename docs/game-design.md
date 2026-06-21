@@ -192,7 +192,7 @@ Falling puzzle format:
 
 - All operators: 1-99 (unified range)
 - Time progression and attack effects increase the probability of larger numbers
-- Base range expands from 10 to 50 over 5 minutes
+- Base range expands from 10 to 50, fully ramped by the Sprint deadline (3 minutes)
 - Attack multiplier can scale up to 2.0x (max 99)
 
 ### Difficulty Progression
