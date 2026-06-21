@@ -189,6 +189,9 @@ export function useCalculator(): UseCalculatorReturn {
       const result = calculate(currentValue, state.lastOperand, state.lastOperator);
       const newDisplay = formatDisplay(result);
       dispatch({ type: 'SET_DISPLAY', payload: newDisplay });
+      // Like a real calculator: the next digit starts a fresh number, it does not
+      // append to the result.
+      dispatch({ type: 'SET_WAITING', payload: true });
       return { newDisplay, left: currentValue, op: state.lastOperator, right: state.lastOperand };
     }
 
@@ -215,7 +218,10 @@ export function useCalculator(): UseCalculatorReturn {
     dispatch({ type: 'SET_DISPLAY', payload: newDisplay });
     dispatch({ type: 'SET_ACCUMULATOR', payload: null });
     dispatch({ type: 'SET_OPERATOR', payload: null });
-    dispatch({ type: 'SET_WAITING', payload: false });
+    // Like a real calculator: after =, the next digit starts a fresh number
+    // rather than appending to the result. Pressing an operator instead keeps
+    // operating on the displayed result (waitingForOperand is ignored there).
+    dispatch({ type: 'SET_WAITING', payload: true });
 
     return calcInfo;
   }, [state]);
