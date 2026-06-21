@@ -183,10 +183,12 @@ export function useGame(options: UseGameOptions = {}): UseGameReturn {
     (display: string) => {
       displayRef.current = display;
       if (gameMode !== 'calculator' && gameStarted && !isGameOver) {
-        // Overflow only ends the game when there is nothing left to eliminate.
-        // If the (over-long) value still has adjacent matches, let the
-        // elimination pipeline run first — it shrinks the value and re-checks
-        // overflow per step. "Eliminate, and if it still overflows, game over."
+        // Overflow ends the game only when there is nothing left to eliminate.
+        // This is a one-shot suppression: if the (over-long) value still has
+        // adjacent matches, defer — the elimination pipeline (startEliminationChain)
+        // then runs, shrinks the value, and re-checks overflow per step. So:
+        // "eliminate, and if it still overflows, game over." (Battle reaches the
+        // same semantics through the chain only; it does not use syncDisplay.)
         if (checkOverflow(display) && findEliminationIndices(display).length === 0) {
           endGame('overflow');
         }
