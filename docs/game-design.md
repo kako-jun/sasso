@@ -23,7 +23,8 @@ A puzzle game where you use the four arithmetic operations to create adjacent id
 
 ### Game Over Conditions
 
-- Digit overflow (13+ digits or exponential notation) = Game Over
+- Overflow = Game Over: a result whose integer part reaches 13+ digits (too big to hold), or a divide-by-zero (shown as `E`)
+- A non-terminating decimal (e.g. 1÷3) is **not** overflow — it is rounded to fit the display like a real calculator, and play continues (the decimal point still acts as a wall)
 - Sprint mode: Time runs out (3:00) = Game Over
 
 ### Surrender (Immediate Loss)
@@ -62,6 +63,7 @@ instead of the big banner; the small hint is kept so the cause is still named.
 - Decimal point: Does not trigger elimination even when adjacent
   - Example: "3.3" has identical digits adjacent but won't eliminate
   - Decimal point acts as a "wall" in elimination logic
+- Division that doesn't divide evenly (e.g. 1÷3) is rounded to fit the display; it does not error or overflow (the resulting decimal is a wall, so it is hard to clear — that is the real danger, not instant death)
 
 ### Initial State
 
