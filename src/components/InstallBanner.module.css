@@ -5,9 +5,13 @@
    the same screen (RoomCreation/BattleOverlay: 100, AboutModal/menu
    dropdown: 1000) so the banner never covers something the player is
    already interacting with. MultiplicationHelper has no explicit z-index
-   (so any positive z-index here would still paint over it) - App.tsx
-   suppresses the banner for the whole Endless/Sprint prediction window
-   instead, see the isPredictionMode gate there. */
+   (so any positive z-index here would still paint over it) - it's rendered
+   by two different callers with two different prediction-state sources
+   (SinglePlayerApp via useGameController, BattleApp via useBattleMode,
+   including the desktop split-screen opponent panel), so instead of relying
+   on stacking order, both callers each suppress <InstallBanner /> for their
+   own whole prediction window before rendering it - see the isPredictionMode
+   guard next to <InstallBanner /> in App.tsx and BattleApp.tsx. */
 .installBanner {
   position: fixed;
   left: 50%;

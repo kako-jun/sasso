@@ -32,20 +32,26 @@ function getRoomIdFromUrl(): string | undefined {
 function SinglePlayerApp({
   controller,
   onChangeMode,
-  isPredictionMode,
 }: {
   controller: ReturnType<typeof useGameController>;
   onChangeMode: (mode: GameMode) => void;
-  isPredictionMode: boolean;
 }) {
   useKeyboard(controller.handleKey);
 
   const isPlaying = controller.gameMode !== 'calculator';
-  // isPredictionMode is computed once in App() (shared with the InstallBanner
-  // visibility gate below) instead of duplicated here.
+  const isPredictionMode =
+    (controller.gameMode === 'endless' || controller.gameMode === 'sprint') &&
+    controller.gameStarted &&
+    !controller.isGameOver;
 
   return (
     <div className="desktop">
+      {/* MultiplicationHelper below can occupy the bottom of short viewports
+          during Endless/Sprint '*' predictions - suppress the banner for the
+          whole prediction window (not just '*') so they never overlap.
+          BattleApp has its own separate isPredictionMode/InstallBanner pair
+          for the same reason in battle mode - see there for that copy. */}
+      {!isPredictionMode && <InstallBanner />}
       <MenuBar
         gameMode={controller.gameMode}
         onChangeMode={onChangeMode}
@@ -90,17 +96,6 @@ function SinglePlayerApp({
 function App() {
   const controller = useGameController();
   const [arenaRoomId, setBattleRoomId] = useState<string | undefined>(getRoomIdFromUrl);
-
-  // Endless/Sprint mid-run: PredictionArea and (for '*' predictions)
-  // MultiplicationHelper can occupy the bottom of short viewports (see their
-  // @media (max-height: 720px/500px) rules). InstallBanner is also
-  // bottom-fixed, so it's suppressed for the whole of this window rather than
-  // only while a '*' prediction is showing - simpler than tracking viewport
-  // height in JS, and non-overlap holds by construction.
-  const isPredictionMode =
-    (controller.gameMode === 'endless' || controller.gameMode === 'sprint') &&
-    controller.gameStarted &&
-    !controller.isGameOver;
 
   // Handle URL changes (browser back/forward)
   useEffect(() => {
@@ -149,19 +144,13 @@ function App() {
     [controller]
   );
 
-  return (
-    <>
-      {!isPredictionMode && <InstallBanner />}
-      {controller.gameMode === 'battle' ? (
-        <BattleApp initialRoomId={arenaRoomId} onChangeMode={handleModeChange} />
-      ) : (
-        <SinglePlayerApp
-          controller={controller}
-          onChangeMode={handleModeChange}
-          isPredictionMode={isPredictionMode}
-        />
-      )}
-    </>
+  // InstallBanner is rendered inside SinglePlayerApp / BattleApp (not here)
+  // because each owns a different isPredictionMode source (useGameController
+  // vs useBattleMode) and needs to suppress the banner using its own.
+  return controller.gameMode === 'battle' ? (
+    <BattleApp initialRoomId={arenaRoomId} onChangeMode={handleModeChange} />
+  ) : (
+    <SinglePlayerApp controller={controller} onChangeMode={handleModeChange} />
   );
 }
 

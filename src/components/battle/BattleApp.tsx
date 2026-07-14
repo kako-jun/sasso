@@ -9,6 +9,7 @@ import {
   PredictionArea,
   CalculationHistory,
   MultiplicationHelper,
+  InstallBanner,
 } from '../';
 import { BattleLayout } from './BattleLayout';
 import { BattleOverlay, BattleFinishedOverlay } from './BattleOverlay';
@@ -101,6 +102,7 @@ export function BattleApp({ initialRoomId, onChangeMode }: BattleAppProps) {
   if (showRoomCreation && battle.roomState.status === 'idle') {
     return (
       <div className="desktop">
+        <InstallBanner />
         <MenuBar gameMode="battle" onChangeMode={onChangeMode} score={0} />
         <RoomCreation
           initialError={joinError}
@@ -175,6 +177,13 @@ export function BattleApp({ initialRoomId, onChangeMode }: BattleAppProps) {
 
   return (
     <div className="desktop">
+      {/* MultiplicationHelper below can occupy the bottom of short viewports
+          during a '*' prediction (self or, on desktop, the opponent) -
+          suppress the banner for the whole prediction window so they never
+          overlap. Mirrors the same guard in SinglePlayerApp (App.tsx), kept
+          separate because this isPredictionMode comes from useBattleMode,
+          not useGameController. */}
+      {!isPredictionMode && <InstallBanner />}
       {/* Mobile: MenuBar at top */}
       {!isDesktop && <MenuBar gameMode="battle" onChangeMode={onChangeMode} score={battle.score} />}
       {!isDesktop && battle.opponent && (
