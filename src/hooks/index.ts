@@ -19,3 +19,5 @@ export { useBattleMode } from './useBattleMode';
 export type { UseBattleModeReturn } from './useBattleMode';
 export { useConnectionError } from './useConnectionError';
 export { useIsDesktop } from './useMediaQuery';
+export { usePWAInstall } from './usePWAInstall';
+export type { UsePWAInstallReturn, BeforeInstallPromptEvent } from './usePWAInstall';

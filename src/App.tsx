@@ -13,6 +13,7 @@ import {
   StartPrompt,
   MultiplicationHelper,
   BattleApp,
+  InstallBanner,
 } from './components';
 import type { GameMode } from './types';
 
@@ -137,13 +138,16 @@ function App() {
     [controller]
   );
 
-  // Render battle mode
-  if (controller.gameMode === 'battle') {
-    return <BattleApp initialRoomId={arenaRoomId} onChangeMode={handleModeChange} />;
-  }
-
-  // Render single-player modes
-  return <SinglePlayerApp controller={controller} onChangeMode={handleModeChange} />;
+  return (
+    <>
+      <InstallBanner />
+      {controller.gameMode === 'battle' ? (
+        <BattleApp initialRoomId={arenaRoomId} onChangeMode={handleModeChange} />
+      ) : (
+        <SinglePlayerApp controller={controller} onChangeMode={handleModeChange} />
+      )}
+    </>
+  );
 }
 
 export default App;

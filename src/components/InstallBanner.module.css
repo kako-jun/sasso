@@ -1,0 +1,70 @@
+/* PWA Install Banner - fixed to the bottom so it never shifts the
+   viewport-percentage-positioned calculator UI (Window/ScoreArea/etc. all
+   anchor off 50%, so pushing them via an in-flow banner would desync their
+   layout). Sits below explicit user-opened modals (AboutModal, menu
+   dropdown: z-index 1000) so it never blocks something the player opened. */
+.installBanner {
+  position: fixed;
+  left: 50%;
+  bottom: 12px;
+  transform: translateX(-50%);
+  z-index: 500;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  max-width: calc(100vw - 32px);
+  background: #fff;
+  border: 2px solid #000;
+  box-shadow: 3px 3px 0 #000;
+  padding: 8px 12px;
+  animation: install-banner-slide-up 0.2s ease-out;
+}
+
+@keyframes install-banner-slide-up {
+  from {
+    transform: translate(-50%, 12px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(-50%);
+    opacity: 1;
+  }
+}
+
+.installIcon {
+  flex-shrink: 0;
+  border: 1px solid #000;
+}
+
+.installMessage {
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.installActions {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.installButton,
+.dismissButton {
+  padding: 4px 12px;
+  font-size: 12px;
+  background: #fff;
+  border: 2px solid #000;
+  box-shadow: 2px 2px 0 #000;
+  cursor: pointer;
+}
+
+.installButton:active,
+.dismissButton:active {
+  box-shadow: none;
+  transform: translate(2px, 2px);
+}
+
+@media (max-width: 480px) {
+  .installMessage {
+    white-space: normal;
+  }
+}
