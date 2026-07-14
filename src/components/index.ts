@@ -9,6 +9,7 @@ export { CalculationHistory } from './CalculationHistory';
 export { GameOverOverlay, StartPrompt } from './GameOverlay';
 export { SprintRanking } from './SprintRanking';
 export { MultiplicationHelper } from './MultiplicationHelper';
+export { InstallBanner } from './InstallBanner';
 
 // Battle components
 export {

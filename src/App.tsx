@@ -13,6 +13,7 @@ import {
   StartPrompt,
   MultiplicationHelper,
   BattleApp,
+  InstallBanner,
 } from './components';
 import type { GameMode } from './types';
 
@@ -45,6 +46,12 @@ function SinglePlayerApp({
 
   return (
     <div className="desktop">
+      {/* MultiplicationHelper below can occupy the bottom of short viewports
+          during Endless/Sprint '*' predictions - suppress the banner for the
+          whole prediction window (not just '*') so they never overlap.
+          BattleApp has its own separate isPredictionMode/InstallBanner pair
+          for the same reason in battle mode - see there for that copy. */}
+      {!isPredictionMode && <InstallBanner />}
       <MenuBar
         gameMode={controller.gameMode}
         onChangeMode={onChangeMode}
@@ -137,13 +144,14 @@ function App() {
     [controller]
   );
 
-  // Render battle mode
-  if (controller.gameMode === 'battle') {
-    return <BattleApp initialRoomId={arenaRoomId} onChangeMode={handleModeChange} />;
-  }
-
-  // Render single-player modes
-  return <SinglePlayerApp controller={controller} onChangeMode={handleModeChange} />;
+  // InstallBanner is rendered inside SinglePlayerApp / BattleApp (not here)
+  // because each owns a different isPredictionMode source (useGameController
+  // vs useBattleMode) and needs to suppress the banner using its own.
+  return controller.gameMode === 'battle' ? (
+    <BattleApp initialRoomId={arenaRoomId} onChangeMode={handleModeChange} />
+  ) : (
+    <SinglePlayerApp controller={controller} onChangeMode={handleModeChange} />
+  );
 }
 
 export default App;
