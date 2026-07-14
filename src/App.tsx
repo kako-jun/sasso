@@ -32,17 +32,17 @@ function getRoomIdFromUrl(): string | undefined {
 function SinglePlayerApp({
   controller,
   onChangeMode,
+  isPredictionMode,
 }: {
   controller: ReturnType<typeof useGameController>;
   onChangeMode: (mode: GameMode) => void;
+  isPredictionMode: boolean;
 }) {
   useKeyboard(controller.handleKey);
 
   const isPlaying = controller.gameMode !== 'calculator';
-  const isPredictionMode =
-    (controller.gameMode === 'endless' || controller.gameMode === 'sprint') &&
-    controller.gameStarted &&
-    !controller.isGameOver;
+  // isPredictionMode is computed once in App() (shared with the InstallBanner
+  // visibility gate below) instead of duplicated here.
 
   return (
     <div className="desktop">
@@ -90,6 +90,17 @@ function SinglePlayerApp({
 function App() {
   const controller = useGameController();
   const [arenaRoomId, setBattleRoomId] = useState<string | undefined>(getRoomIdFromUrl);
+
+  // Endless/Sprint mid-run: PredictionArea and (for '*' predictions)
+  // MultiplicationHelper can occupy the bottom of short viewports (see their
+  // @media (max-height: 720px/500px) rules). InstallBanner is also
+  // bottom-fixed, so it's suppressed for the whole of this window rather than
+  // only while a '*' prediction is showing - simpler than tracking viewport
+  // height in JS, and non-overlap holds by construction.
+  const isPredictionMode =
+    (controller.gameMode === 'endless' || controller.gameMode === 'sprint') &&
+    controller.gameStarted &&
+    !controller.isGameOver;
 
   // Handle URL changes (browser back/forward)
   useEffect(() => {
@@ -140,11 +151,15 @@ function App() {
 
   return (
     <>
-      <InstallBanner />
+      {!isPredictionMode && <InstallBanner />}
       {controller.gameMode === 'battle' ? (
         <BattleApp initialRoomId={arenaRoomId} onChangeMode={handleModeChange} />
       ) : (
-        <SinglePlayerApp controller={controller} onChangeMode={handleModeChange} />
+        <SinglePlayerApp
+          controller={controller}
+          onChangeMode={handleModeChange}
+          isPredictionMode={isPredictionMode}
+        />
       )}
     </>
   );

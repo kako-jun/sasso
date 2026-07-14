@@ -1,14 +1,19 @@
 /* PWA Install Banner - fixed to the bottom so it never shifts the
    viewport-percentage-positioned calculator UI (Window/ScoreArea/etc. all
    anchor off 50%, so pushing them via an in-flow banner would desync their
-   layout). Sits below explicit user-opened modals (AboutModal, menu
-   dropdown: z-index 1000) so it never blocks something the player opened. */
+   layout). z-index sits below every existing fixed overlay that can occupy
+   the same screen (RoomCreation/BattleOverlay: 100, AboutModal/menu
+   dropdown: 1000) so the banner never covers something the player is
+   already interacting with. MultiplicationHelper has no explicit z-index
+   (so any positive z-index here would still paint over it) - App.tsx
+   suppresses the banner for the whole Endless/Sprint prediction window
+   instead, see the isPredictionMode gate there. */
 .installBanner {
   position: fixed;
   left: 50%;
   bottom: 12px;
   transform: translateX(-50%);
-  z-index: 500;
+  z-index: 50;
   display: flex;
   align-items: center;
   gap: 12px;

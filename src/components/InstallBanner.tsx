@@ -20,7 +20,7 @@ export function InstallBanner() {
   };
 
   return (
-    <div className={styles.installBanner}>
+    <div className={styles.installBanner} role="status">
       <img src="/icon-192.png" alt="" width={28} height={28} className={styles.installIcon} />
       <span className={styles.installMessage}>Add Sasso to your home screen</span>
       <div className={styles.installActions}>
