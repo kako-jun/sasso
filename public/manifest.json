@@ -1,7 +1,7 @@
 {
   "name": "Sasso",
   "short_name": "Sasso",
-  "description": "A puzzle game that Mensa members would appreciate",
+  "description": "A Classic Mac-style calculator puzzle game where arithmetic creates matching digits, chains, attacks, and high scores.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#808080",
